@@ -1027,6 +1027,41 @@ document.querySelectorAll(".modal-overlay").forEach(m=>{
 // ── INIT ───────────────────────────────────────────────────────────────────
 renderDashboard();
 atualizarBadgeUrgente();
+  function editarOSAtual(){
+  if(!osDetalheId) return;
+
+  const o = ordens.find(x => x.id === osDetalheId);
+  if(!o) return;
+
+  // Preencher os campos do modal de OS
+  document.getElementById("nos-equip").value = o.equipId;
+  document.getElementById("nos-tipo").value = o.tipo;
+  document.getElementById("nos-prio").value = o.prio;
+  document.getElementById("nos-tecnico").value = o.tecnico;
+  document.getElementById("nos-desc").value = o.desc;
+  document.getElementById("nos-pecas").value = o.pecas || "";
+
+  // Fecha detalhe e abre o modal de edição
+  fecharModal("modal-detalhe-os");
+  abrirModal("modal-nova-os");
+}function editarOSAtual(){
+  if(!osDetalheId) return;
+
+  const o = ordens.find(x => x.id === osDetalheId);
+  if(!o) return;
+
+  // Preencher os campos do modal de OS
+  document.getElementById("nos-equip").value = o.equipId;
+  document.getElementById("nos-tipo").value = o.tipo;
+  document.getElementById("nos-prio").value = o.prio;
+  document.getElementById("nos-tecnico").value = o.tecnico;
+  document.getElementById("nos-desc").value = o.desc;
+  document.getElementById("nos-pecas").value = o.pecas || "";
+
+  // Fecha detalhe e abre o modal de edição
+  fecharModal("modal-detalhe-os");
+  abrirModal("modal-nova-os");
+}
 </script>
 </body>
 </html>
