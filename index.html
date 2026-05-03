@@ -427,7 +427,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     <div class="field"><label>Técnico Responsável</label><select id="nos-tecnico"></select></div>
     <div class="field"><label>Descrição do Problema *</label><textarea id="nos-desc" rows="3" placeholder="Descreva o problema ou serviço..."></textarea></div>
     <div class="field"><label>Peças / Materiais</label><input id="nos-pecas" placeholder="Ex: Filtro AR-200, Óleo 5L"/></div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="fecharModal('modal-nova-os')">Cancelar</button><button class="btn btn-primary" onclick="salvarOS()">Abrir OS</button></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="fecharModal('modal-nova-os')">Cancelar</button><button id="btn-salvar-os" class="btn btn-primary" onclick="salvarOS()">Abrir OS</button></div>
   </div>
 </div>
 
@@ -740,10 +740,23 @@ function renderOS(){
 function setFiltroOS(f){filtroOS=f;renderOS();}
 
 function abrirModalNovaOS(){
-  document.getElementById("nos-equip").innerHTML=equipamentos.map(e=>`<option value="${e.id}">${e.nome}</option>`).join("");
-  const tecnicos=listarTecnicos();
-  document.getElementById("nos-tecnico").innerHTML=tecnicos.map(t=>`<option>${t}</option>`).join("");
-  document.getElementById("nos-desc").value="";document.getElementById("nos-pecas").value="";
+  // 🔧 Reset estado
+  osEditandoId = null;
+  document.getElementById("btn-salvar-os").textContent = "Abrir OS";
+
+  // 🔽 Popular selects
+  document.getElementById("nos-equip").innerHTML =
+    equipamentos.map(e=>`<option value="${e.id}">${e.nome}</option>`).join("");
+
+  const tecnicos = listarTecnicos();
+  document.getElementById("nos-tecnico").innerHTML =
+    tecnicos.map(t=>`<option>${t}</option>`).join("");
+
+  // 🧹 Limpar campos
+  document.getElementById("nos-desc").value = "";
+  document.getElementById("nos-pecas").value = "";
+
+  // 🚀 Abrir modal
   abrirModal("modal-nova-os");
 }
 
@@ -764,9 +777,16 @@ function salvarOS(){
       o.tecnico = document.getElementById("nos-tecnico").value;
       o.desc = desc;
       o.pecas = document.getElementById("nos-pecas").value;
+
+      // ✅ controle de edição
+      o.editadoPor = "Admin";
+      o.editadoEm = hoje();
     }
+
     osEditandoId = null;
+
   } else {
+    // ✅ criação de nova OS
     const num = String(ordens.length+1).padStart(3,"0");
     ordens.unshift({
       id:`OS-${num}`,
@@ -1071,6 +1091,7 @@ atualizarBadgeUrgente();
   document.getElementById("nos-tecnico").value = o.tecnico;
   document.getElementById("nos-desc").value = o.desc;
   document.getElementById("nos-pecas").value = o.pecas || "";
+  document.getElementById("btn-salvar-os").textContent = "Salvar alterações";
 
   fecharModal("modal-detalhe-os");
 }
