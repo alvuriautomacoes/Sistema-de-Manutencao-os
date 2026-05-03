@@ -748,17 +748,45 @@ function abrirModalNovaOS(){
 }
 
 function salvarOS(){
-  const desc=document.getElementById("nos-desc").value.trim();
-  if(!desc){alert("Preencha a descrição!");return;}
-  const equipId=parseInt(document.getElementById("nos-equip").value);
-  const eq=equipamentos.find(e=>e.id===equipId)||equipamentos[0];
-  const num=String(ordens.length+1).padStart(3,"0");
-  ordens.unshift({id:`OS-${num}`,equipId:eq.id,equip:eq.nome,
-    tipo:document.getElementById("nos-tipo").value,
-    prio:document.getElementById("nos-prio").value,
-    status:"aberta",tecnico:document.getElementById("nos-tecnico").value,
-    desc,pecas:document.getElementById("nos-pecas").value,abertura:hoje(),conclusao:null});
-  fecharModal("modal-nova-os");popularFiltroTecnico();renderOS();atualizarBadgeUrgente();
+  const desc = document.getElementById("nos-desc").value.trim();
+  if(!desc){ alert("Preencha a descrição!"); return; }
+
+  const equipId = parseInt(document.getElementById("nos-equip").value);
+  const eq = equipamentos.find(e => e.id === equipId) || equipamentos[0];
+
+  if(osEditandoId){
+    const o = ordens.find(x => x.id === osEditandoId);
+    if(o){
+      o.equipId = eq.id;
+      o.equip = eq.nome;
+      o.tipo = document.getElementById("nos-tipo").value;
+      o.prio = document.getElementById("nos-prio").value;
+      o.tecnico = document.getElementById("nos-tecnico").value;
+      o.desc = desc;
+      o.pecas = document.getElementById("nos-pecas").value;
+    }
+    osEditandoId = null;
+  } else {
+    const num = String(ordens.length+1).padStart(3,"0");
+    ordens.unshift({
+      id:`OS-${num}`,
+      equipId:eq.id,
+      equip:eq.nome,
+      tipo:document.getElementById("nos-tipo").value,
+      prio:document.getElementById("nos-prio").value,
+      status:"aberta",
+      tecnico:document.getElementById("nos-tecnico").value,
+      desc,
+      pecas:document.getElementById("nos-pecas").value,
+      abertura:hoje(),
+      conclusao:null
+    });
+  }
+
+  fecharModal("modal-nova-os");
+  popularFiltroTecnico();
+  renderOS();
+  atualizarBadgeUrgente();
 }
 
 function avancarStatus(id){
@@ -1033,7 +1061,10 @@ atualizarBadgeUrgente();
   const o = ordens.find(x => x.id === osDetalheId);
   if(!o) return;
 
-  // Preencher os campos do modal de OS
+  osEditandoId = o.id;
+
+  abrirModalNovaOS();
+
   document.getElementById("nos-equip").value = o.equipId;
   document.getElementById("nos-tipo").value = o.tipo;
   document.getElementById("nos-prio").value = o.prio;
@@ -1041,9 +1072,7 @@ atualizarBadgeUrgente();
   document.getElementById("nos-desc").value = o.desc;
   document.getElementById("nos-pecas").value = o.pecas || "";
 
-  // Fecha detalhe e abre o modal de edição
   fecharModal("modal-detalhe-os");
-  abrirModal("modal-nova-os");
 }
 </script>
 </body>
