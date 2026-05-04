@@ -8,126 +8,183 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  /* Paleta azul médio neutro */
-  --blue-50:#f0f5fb;
-  --blue-100:#dce8f5;
-  --blue-200:#b8d1eb;
-  --blue-300:#8cb4dc;
-  --blue-400:#5f96cc;
-  --blue-500:#3d7ab8;
-  --blue-600:#2d62a0;
-  --blue-700:#1e4d82;
-  --blue-800:#143a68;
-  --blue-900:#0c2a4f;
-
-  --bg:#eef3f9;
-  --bg2:#e4ecf5;
-  --card:#ffffff;
-  --card2:#f5f8fc;
-  --border:#c8daea;
-  --border2:#b0cce0;
-  --txt:#0e2a47;
-  --txt2:#1e4270;
-  --sub:#5a7a9a;
-  --muted:#8aaec8;
-  --line:#d5e4f0;
-  --accent:var(--blue-600);
-  --shadow:rgba(30,80,140,0.07);
-  --shadow2:rgba(30,80,140,0.13);
-
-  /* Status */
+  --blue-50:#f0f5fb; --blue-100:#dce8f5; --blue-200:#b8d1eb; --blue-300:#8cb4dc;
+  --blue-400:#5f96cc; --blue-500:#3d7ab8; --blue-600:#2d62a0; --blue-700:#1e4d82;
+  --blue-800:#143a68; --blue-900:#0c2a4f;
+  --bg:#eef3f9; --bg2:#e4ecf5; --card:#ffffff; --card2:#f5f8fc;
+  --border:#c8daea; --border2:#b0cce0; --txt:#0e2a47; --txt2:#1e4270;
+  --sub:#5a7a9a; --muted:#8aaec8; --line:#d5e4f0;
+  --shadow:rgba(30,80,140,0.07); --shadow2:rgba(30,80,140,0.13);
   --s-aberta-bg:#eff6ff;     --s-aberta-txt:#2d62a0;     --s-aberta-bd:#b8d1eb;
   --s-andamento-bg:#fffbeb;  --s-andamento-txt:#a06010;  --s-andamento-bd:#f0d060;
   --s-aguardando-bg:#f0f9ff; --s-aguardando-txt:#0e6490; --s-aguardando-bd:#a0d8f0;
   --s-concluida-bg:#edfaf3;  --s-concluida-txt:#1a7a42;  --s-concluida-bd:#9ae8bf;
   --s-cancelada-bg:#fff0f0;  --s-cancelada-txt:#c02020;  --s-cancelada-bd:#f0a0a0;
-
-  /* Prioridade */
-  --p-baixa-bg:#f2f5f9;    --p-baixa-txt:#5a7a9a;    --p-baixa-bd:#c0d4e8;
-  --p-media-bg:#eff6ff;    --p-media-txt:#2d62a0;    --p-media-bd:#b8d1eb;
-  --p-alta-bg:#fff8ec;     --p-alta-txt:#b05010;     --p-alta-bd:#f0c870;
-  --p-urgente-bg:#fff0f0;  --p-urgente-txt:#c02020;  --p-urgente-bd:#f0a0a0;
-
-  /* Equip status */
-  --e-ativo-bg:#edfaf3;   --e-ativo-txt:#1a7a42;   --e-ativo-bd:#9ae8bf;
-  --e-alerta-bg:#fff8ec;  --e-alerta-txt:#b05010;  --e-alerta-bd:#f0c870;
-  --e-critico-bg:#fff0f0; --e-critico-txt:#c02020; --e-critico-bd:#f0a0a0;
-  --e-inativo-bg:#f2f5f9; --e-inativo-txt:#5a7a9a; --e-inativo-bd:#c0d4e8;
+  --p-baixa-bg:#f2f5f9;  --p-baixa-txt:#5a7a9a;  --p-baixa-bd:#c0d4e8;
+  --p-media-bg:#eff6ff;  --p-media-txt:#2d62a0;  --p-media-bd:#b8d1eb;
+  --p-alta-bg:#fff8ec;   --p-alta-txt:#b05010;   --p-alta-bd:#f0c870;
+  --p-urgente-bg:#fff0f0;--p-urgente-txt:#c02020;--p-urgente-bd:#f0a0a0;
+  --e-ativo-bg:#edfaf3;  --e-ativo-txt:#1a7a42;  --e-ativo-bd:#9ae8bf;
+  --e-alerta-bg:#fff8ec; --e-alerta-txt:#b05010; --e-alerta-bd:#f0c870;
+  --e-critico-bg:#fff0f0;--e-critico-txt:#c02020;--e-critico-bd:#f0a0a0;
+  --e-inativo-bg:#f2f5f9;--e-inativo-txt:#5a7a9a;--e-inativo-bd:#c0d4e8;
 }
 
-body{background:var(--bg);color:var(--txt);font-family:'IBM Plex Sans',sans-serif;display:flex;min-height:100vh;font-size:14px;}
+/* ════════════════════════════════════════════
+   TELA DE LOGIN
+════════════════════════════════════════════ */
+body{font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:var(--txt);background:var(--bg);}
+
+#app-login{display:flex;min-height:100vh;width:100%;}
+#app-sistema{display:none;min-height:100vh;}
+#app-loading{display:none;position:fixed;inset:0;background:var(--blue-900);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+
+/* Loading screen */
+.ld-logo{width:60px;height:60px;background:var(--blue-500);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:8px;}
+.ld-title{font-size:20px;font-weight:700;color:#fff;}
+.ld-sub{font-size:13px;color:rgba(255,255,255,0.5);}
+.ld-bar-wrap{width:220px;height:3px;background:rgba(255,255,255,0.15);margin-top:8px;overflow:hidden;}
+.ld-bar{height:100%;width:0%;background:var(--blue-400);transition:width .35s ease;}
+.ld-usuario{font-size:12px;color:rgba(255,255,255,0.6);font-family:'IBM Plex Mono',monospace;margin-top:6px;}
+
+/* Painel esquerdo login */
+.login-left{width:420px;flex-shrink:0;background:var(--blue-800);display:flex;flex-direction:column;justify-content:space-between;padding:48px 44px;position:relative;overflow:hidden;}
+.login-left::before{content:'';position:absolute;top:-80px;right:-80px;width:320px;height:320px;background:rgba(255,255,255,0.03);border-radius:50%;}
+.login-left::after{content:'';position:absolute;bottom:-60px;left:-60px;width:260px;height:260px;background:rgba(255,255,255,0.03);border-radius:50%;}
+.brand-area{position:relative;z-index:1;}
+.brand-logo{width:48px;height:48px;background:var(--blue-500);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:20px;box-shadow:0 4px 16px rgba(0,0,0,0.25);}
+.brand-name{font-size:22px;font-weight:700;color:#fff;letter-spacing:.2px;line-height:1.2;}
+.brand-sub{font-size:11px;font-weight:500;color:rgba(255,255,255,0.4);letter-spacing:1.2px;margin-top:4px;text-transform:uppercase;}
+.brand-desc{margin-top:32px;font-size:13px;line-height:1.7;color:rgba(255,255,255,0.55);}
+.perfis-lista{position:relative;z-index:1;}
+.perfis-title{font-size:9.5px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:1.4px;text-transform:uppercase;margin-bottom:12px;}
+.perfil-item{display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:6px;background:rgba(255,255,255,0.05);border-left:2px solid rgba(255,255,255,0.15);}
+.perfil-icon{font-size:16px;flex-shrink:0;}
+.perfil-nome{font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);}
+.perfil-desc{font-size:10.5px;color:rgba(255,255,255,0.4);margin-top:1px;}
+.left-footer{position:relative;z-index:1;font-size:10px;color:rgba(255,255,255,0.25);}
+
+/* Painel direito login */
+.login-right{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 32px;background:var(--bg);}
+.login-box{width:100%;max-width:420px;}
+.login-header{margin-bottom:32px;}
+.login-title{font-size:22px;font-weight:700;color:var(--txt);margin-bottom:6px;}
+.login-sub{font-size:12.5px;color:var(--sub);line-height:1.5;}
+
+.field-login{display:flex;flex-direction:column;gap:5px;margin-bottom:16px;}
+.field-login label{font-size:10.5px;font-weight:700;color:var(--sub);letter-spacing:.5px;text-transform:uppercase;}
+.input-wrap{position:relative;}
+.input-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--muted);pointer-events:none;}
+.field-login input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--txt);padding:10px 12px 10px 38px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;outline:none;transition:border-color .14s,box-shadow .14s;}
+.field-login input:focus{border-color:var(--blue-400);box-shadow:0 0 0 3px rgba(61,122,184,0.12);}
+.field-login input::placeholder{color:var(--muted);}
+.toggle-senha{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:2px 4px;font-family:inherit;}
+.toggle-senha:hover{color:var(--sub);}
+
+.login-options{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;}
+.check-label{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--sub);cursor:pointer;user-select:none;}
+.check-label input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(--blue-600);}
+.link-esqueci{font-size:12px;color:var(--blue-500);text-decoration:none;font-weight:500;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;}
+.link-esqueci:hover{color:var(--blue-700);text-decoration:underline;}
+
+.btn-entrar{width:100%;padding:12px;background:var(--blue-600);color:#fff;border:none;font-size:13.5px;font-weight:700;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;letter-spacing:.3px;transition:background .14s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-entrar:hover{background:var(--blue-700);}
+.btn-entrar:disabled{background:var(--muted);cursor:not-allowed;}
+.btn-entrar .spinner{display:none;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.msg-erro{display:none;background:#fff0f0;border:1px solid #f0a0a0;border-left:3px solid #c02020;padding:10px 14px;margin-bottom:16px;font-size:12.5px;color:#c02020;}
+.msg-erro.visivel{display:block;}
+
+.perfil-detectado{display:none;align-items:center;gap:10px;background:var(--blue-50);border:1px solid var(--blue-200);border-left:3px solid var(--blue-500);padding:10px 14px;margin-bottom:16px;font-size:12px;}
+.perfil-detectado.visivel{display:flex;}
+.pd-nome{font-weight:700;color:var(--txt2);font-size:12.5px;}
+.pd-desc{color:var(--sub);font-size:11px;margin-top:1px;}
+
+.divisor{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--muted);font-size:11px;}
+.divisor::before,.divisor::after{content:'';flex:1;height:1px;background:var(--border);}
+.login-footer{margin-top:28px;text-align:center;font-size:11px;color:var(--muted);}
+.btn-demo{padding:8px 10px;background:var(--card2);border:1px solid var(--border);cursor:pointer;font-family:inherit;font-size:11.5px;color:var(--txt2);font-weight:600;text-align:left;transition:all .14s;}
+.btn-demo:hover{border-color:var(--blue-300);background:var(--blue-50);}
+
+/* Modal login */
+.modal-login{display:none;position:fixed;inset:0;background:rgba(14,42,71,0.55);z-index:999;align-items:center;justify-content:center;padding:20px;}
+.modal-login.aberto{display:flex;}
+.modal-login-box{background:var(--card);border:1px solid var(--border2);padding:30px;width:100%;max-width:400px;box-shadow:0 8px 40px var(--shadow2);}
+.modal-login-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.modal-login-title{font-weight:700;font-size:15px;color:var(--txt);}
+.modal-login-close{background:none;border:none;color:var(--sub);font-size:18px;cursor:pointer;}
+
+@media(max-width:760px){.login-left{display:none;}.login-right{padding:32px 20px;}}
+
+/* ════════════════════════════════════════════
+   TOPBAR (substitui sidebar fixa — aparece no sistema)
+   Sidebar mantida abaixo
+════════════════════════════════════════════ */
+#app-sistema{display:none;min-height:100vh;background:var(--bg);}
 
 /* ── SIDEBAR ── */
-#sidebar{
-  width:232px;background:var(--blue-800);border-right:none;
-  display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;
-  z-index:100;box-shadow:3px 0 16px rgba(14,42,71,0.18);
-}
-.logo-area{
-  padding:22px 18px 18px;border-bottom:1px solid rgba(255,255,255,0.10);
-  display:flex;align-items:center;gap:12px;
-}
-.logo-icon{
-  width:36px;height:36px;background:var(--blue-500);
-  display:flex;align-items:center;justify-content:center;
-  font-size:16px;flex-shrink:0;border-radius:0;
-  box-shadow:0 2px 8px rgba(0,0,0,0.2);
-}
+#sidebar{width:232px;background:var(--blue-800);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;box-shadow:3px 0 16px rgba(14,42,71,0.18);}
+.logo-area{padding:22px 18px 18px;border-bottom:1px solid rgba(255,255,255,0.10);display:flex;align-items:center;gap:12px;}
+.logo-icon{width:36px;height:36px;background:var(--blue-500);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
 .logo-name{font-weight:700;font-size:13px;color:#fff;letter-spacing:.3px;}
 .logo-sub{color:rgba(255,255,255,0.45);font-size:10px;font-weight:500;letter-spacing:.8px;margin-top:1px;}
-
 nav{flex:1;padding:16px 10px;overflow-y:auto;}
 .nav-section{font-size:9.5px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:1.4px;text-transform:uppercase;padding:10px 10px 5px;}
-.nav-btn{
-  width:100%;display:flex;align-items:center;gap:10px;
-  padding:9px 13px;cursor:pointer;margin-bottom:2px;
-  background:transparent;border:none;color:rgba(255,255,255,0.6);
-  font-size:12.5px;text-align:left;font-family:inherit;
-  font-weight:500;transition:all .14s;border-radius:0;
-}
+.nav-btn{width:100%;display:flex;align-items:center;gap:10px;padding:9px 13px;cursor:pointer;margin-bottom:2px;background:transparent;border:none;color:rgba(255,255,255,0.6);font-size:12.5px;text-align:left;font-family:inherit;font-weight:500;transition:all .14s;}
 .nav-btn.ativo{background:var(--blue-500);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.18);}
 .nav-btn:hover:not(.ativo){background:rgba(255,255,255,0.08);color:#fff;}
+.nav-btn.bloqueado{opacity:.35;cursor:not-allowed;}
+.nav-btn.bloqueado:hover{background:transparent;color:rgba(255,255,255,0.6);}
 .nav-icon{font-size:14px;}
-.badge-urgente{
-  background:#c02020;color:#fff;border:none;
-  font-size:9px;font-weight:700;padding:2px 6px;border-radius:0;margin-left:auto;
-}
+.badge-urgente{background:#c02020;color:#fff;border:none;font-size:9px;font-weight:700;padding:2px 6px;margin-left:auto;}
 
-.user-area{
-  padding:14px 16px;border-top:1px solid rgba(255,255,255,0.10);
-  display:flex;align-items:center;gap:10px;
-}
-.user-avatar{
-  width:32px;height:32px;background:var(--blue-500);
-  display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:700;color:#fff;flex-shrink:0;border-radius:0;
-}
+/* Área do usuário logado na sidebar */
+.user-area{padding:14px 16px;border-top:1px solid rgba(255,255,255,0.10);}
+.user-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.user-avatar{width:32px;height:32px;background:var(--blue-500);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
 .user-name{font-size:12px;font-weight:600;color:#fff;}
 .user-role{font-size:10px;color:rgba(255,255,255,0.45);margin-top:1px;}
+.user-empresa{font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+.btn-sair{width:100%;padding:7px 10px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:11px;font-family:inherit;cursor:pointer;text-align:left;transition:all .14s;display:flex;align-items:center;gap:7px;}
+.btn-sair:hover{background:rgba(255,0,0,0.15);color:#fca5a5;border-color:rgba(255,0,0,0.25);}
 
 /* ── CONTEÚDO ── */
 #conteudo{margin-left:232px;flex:1;padding:28px;min-height:100vh;}
-.tela{display:none;} .tela.ativa{display:block;}
+.tela{display:none;}.tela.ativa{display:block;}
+
+/* ── ACESSO RESTRITO ── */
+.acesso-restrito{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;color:var(--sub);text-align:center;}
+.acesso-restrito-icon{font-size:40px;margin-bottom:16px;opacity:.4;}
+.acesso-restrito-title{font-size:16px;font-weight:700;color:var(--txt2);margin-bottom:8px;}
+.acesso-restrito-sub{font-size:13px;color:var(--sub);max-width:320px;line-height:1.6;}
+
+/* ── BANNER PERFIL (topo do sistema) ── */
+.perfil-banner{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--blue-50);border:1px solid var(--blue-200);border-left:3px solid var(--blue-500);margin-bottom:20px;font-size:12px;}
+.perfil-banner-icon{font-size:16px;}
+.perfil-banner-txt{color:var(--txt2);font-weight:600;}
+.perfil-banner-sub{color:var(--sub);font-size:11px;margin-top:1px;}
 
 /* ── CARDS ── */
-.card{background:#fff;border:1px solid var(--border);padding:18px;border-radius:0;box-shadow:0 1px 6px var(--shadow);}
-
+.card{background:#fff;border:1px solid var(--border);padding:18px;box-shadow:0 1px 6px var(--shadow);}
 .grid-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:22px;}
-.stat-card{
-  background:#fff;border:1px solid var(--border);padding:20px 18px;
-  border-radius:0;box-shadow:0 1px 6px var(--shadow);position:relative;overflow:hidden;
-}
+.stat-card{background:#fff;border:1px solid var(--border);padding:20px 18px;box-shadow:0 1px 6px var(--shadow);position:relative;overflow:hidden;}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--blue-400);}
 .stat-num{font-size:34px;font-weight:700;line-height:1;margin:8px 0 4px;font-family:'IBM Plex Mono',monospace;color:var(--blue-700);}
 .stat-label{font-size:12.5px;font-weight:600;color:var(--txt2);}
 .stat-sub{font-size:11px;color:var(--sub);margin-top:3px;}
 .stat-icon{font-size:19px;opacity:.6;}
+.stat-card.accent-urgente::before{background:#c02020;}
+.stat-card.accent-alerta::before{background:#e08020;}
+.stat-card.accent-ok::before{background:#1a7a42;}
 
 /* ── BADGES ── */
-.badge{display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;font-weight:600;white-space:nowrap;border-radius:0;border:1px solid transparent;}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;font-weight:600;white-space:nowrap;border:1px solid transparent;}
+.tipo-badge{background:var(--blue-50);color:var(--blue-600);border:1px solid var(--blue-200);}
+.esp-tag{display:inline-block;padding:2px 8px;background:var(--blue-50);color:var(--blue-600);border:1px solid var(--blue-200);font-size:10.5px;font-weight:600;margin:2px 2px 2px 0;}
 
 /* ── BUTTONS ── */
-.btn{padding:8px 16px;cursor:pointer;font-weight:600;font-size:12.5px;font-family:inherit;transition:all .14s;border:none;border-radius:0;}
+.btn{padding:8px 16px;cursor:pointer;font-weight:600;font-size:12.5px;font-family:inherit;transition:all .14s;border:none;}
 .btn-primary{background:var(--blue-600);color:#fff;}
 .btn-primary:hover{background:var(--blue-700);}
 .btn-ghost{background:transparent;color:var(--sub);border:1px solid var(--border2)!important;}
@@ -137,30 +194,19 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 .btn-danger{background:#c02020;color:#fff;border:none!important;}
 .btn-danger:hover{background:#a01818;}
 
-/* ── FORM FIELDS ── */
+/* ── FORM ── */
 .field{display:flex;flex-direction:column;gap:4px;margin-bottom:13px;}
 .field label{color:var(--sub);font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;}
-.field input,.field select,.field textarea{
-  background:var(--card2);border:1px solid var(--border);color:var(--txt);
-  padding:8px 11px;font-size:13px;font-family:inherit;outline:none;width:100%;border-radius:0;
-}
+.field input,.field select,.field textarea{background:var(--card2);border:1px solid var(--border);color:var(--txt);padding:8px 11px;font-size:13px;font-family:inherit;outline:none;width:100%;}
 .field textarea{resize:vertical;}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue-400);box-shadow:0 0 0 3px rgba(61,122,184,0.12);}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
 
 /* ── SEARCH ── */
 .busca-wrap{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
-.busca-input{
-  flex:1;min-width:200px;background:#fff;border:1px solid var(--border);
-  color:var(--txt);padding:8px 13px;font-size:13px;font-family:inherit;outline:none;
-  box-shadow:0 1px 3px var(--shadow);border-radius:0;
-}
+.busca-input{flex:1;min-width:200px;background:#fff;border:1px solid var(--border);color:var(--txt);padding:8px 13px;font-size:13px;font-family:inherit;outline:none;box-shadow:0 1px 3px var(--shadow);}
 .busca-input:focus{border-color:var(--blue-400);box-shadow:0 0 0 3px rgba(61,122,184,0.12);}
-.busca-select{
-  background:#fff;border:1px solid var(--border);color:var(--sub);
-  padding:8px 11px;font-size:12px;font-family:inherit;outline:none;cursor:pointer;border-radius:0;
-}
+.busca-select{background:#fff;border:1px solid var(--border);color:var(--sub);padding:8px 11px;font-size:12px;font-family:inherit;outline:none;cursor:pointer;}
 
 /* ── PAGE HEADER ── */
 .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
@@ -169,22 +215,13 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 
 /* ── FILTER TABS ── */
 .filtro-abas{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;}
-.filtro-aba{
-  padding:5px 13px;cursor:pointer;font-size:11.5px;font-weight:600;
-  background:#fff;border:1px solid var(--border);color:var(--sub);
-  font-family:inherit;transition:all .13s;border-radius:0;
-}
+.filtro-aba{padding:5px 13px;cursor:pointer;font-size:11.5px;font-weight:600;background:#fff;border:1px solid var(--border);color:var(--sub);font-family:inherit;transition:all .13s;}
 .filtro-aba.ativo{background:var(--blue-600);border-color:var(--blue-600);color:#fff;}
 .filtro-aba:hover:not(.ativo){color:var(--blue-600);border-color:var(--blue-300);}
 
 /* ── OS LIST ── */
 .os-list{display:flex;flex-direction:column;gap:7px;}
-.os-item{
-  background:#fff;border:1px solid var(--border);padding:14px 16px;
-  display:flex;gap:14px;align-items:flex-start;
-  border-radius:0;box-shadow:0 1px 4px var(--shadow);transition:all .13s;
-  border-left:3px solid var(--blue-300);
-}
+.os-item{background:#fff;border:1px solid var(--border);padding:14px 16px;display:flex;gap:14px;align-items:flex-start;box-shadow:0 1px 4px var(--shadow);transition:all .13s;border-left:3px solid var(--blue-300);}
 .os-item:hover{box-shadow:0 4px 12px var(--shadow2);border-left-color:var(--blue-500);}
 .os-info{flex:1;min-width:0;}
 .os-id{font-weight:700;color:var(--sub);font-size:11.5px;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px;}
@@ -194,240 +231,356 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 .os-actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
 .badges-row{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px;}
 
-/* ── EQUIP GRID ── */
+/* ── GRIDS ── */
 .equip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;}
-.equip-card{
-  background:#fff;border:1px solid var(--border);padding:16px;
-  border-radius:0;box-shadow:0 1px 5px var(--shadow);transition:all .13s;
-  border-top:3px solid var(--blue-400);
-}
+.equip-card{background:#fff;border:1px solid var(--border);padding:16px;box-shadow:0 1px 5px var(--shadow);transition:all .13s;border-top:3px solid var(--blue-400);}
 .equip-card:hover{box-shadow:0 4px 14px var(--shadow2);}
-.equip-icon{font-size:20px;margin-bottom:10px;opacity:.6;}
 .equip-nome{font-weight:700;font-size:13.5px;margin-bottom:2px;color:var(--txt);}
 .equip-sub{color:var(--sub);font-size:11.5px;margin-bottom:10px;}
 .equip-info{font-size:11px;color:var(--sub);margin-bottom:3px;}
 .equip-info span{color:var(--txt2);font-weight:600;}
 
-/* ── PROFISSIONAIS GRID ── */
 .prof-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;}
-.prof-card{
-  background:#fff;border:1px solid var(--border);padding:18px;
-  border-radius:0;box-shadow:0 1px 5px var(--shadow);transition:all .13s;
-  border-top:3px solid var(--blue-400);
-  display:flex;flex-direction:column;gap:0;
-}
+.prof-card{background:#fff;border:1px solid var(--border);padding:18px;box-shadow:0 1px 5px var(--shadow);transition:all .13s;border-top:3px solid var(--blue-400);display:flex;flex-direction:column;}
 .prof-card:hover{box-shadow:0 4px 14px var(--shadow2);}
 .prof-avatar-area{display:flex;align-items:center;gap:12px;margin-bottom:13px;}
-.prof-avatar{
-  width:46px;height:46px;background:var(--blue-600);border-radius:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:16px;font-weight:700;color:#fff;flex-shrink:0;
-}
+.prof-avatar{width:46px;height:46px;background:var(--blue-600);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;}
 .prof-nome{font-weight:700;font-size:14px;color:var(--txt);}
 .prof-cargo{color:var(--sub);font-size:11.5px;margin-top:1px;}
 .prof-info{font-size:11.5px;color:var(--sub);margin-bottom:4px;display:flex;gap:5px;}
 .prof-info span{color:var(--txt2);font-weight:600;}
 .prof-actions{display:flex;gap:6px;margin-top:13px;}
 
-/* ── PLANOS GRID ── */
 .planos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;}
-.plano-card{
-  background:#fff;border:1px solid var(--border);padding:16px;
-  border-radius:0;box-shadow:0 1px 5px var(--shadow);transition:all .13s;
-  border-top:3px solid var(--blue-400);
-}
+.plano-card{background:#fff;border:1px solid var(--border);padding:16px;box-shadow:0 1px 5px var(--shadow);transition:all .13s;border-top:3px solid var(--blue-400);}
 .plano-card:hover{box-shadow:0 4px 14px var(--shadow2);}
 .plano-nome{font-weight:700;font-size:13.5px;margin-bottom:2px;color:var(--txt);}
 .plano-sub{color:var(--sub);font-size:11.5px;margin-bottom:10px;}
 .plano-info{font-size:11px;color:var(--sub);margin-bottom:3px;}
 .plano-info span{color:var(--txt2);font-weight:600;}
-.plano-vencido{margin-top:11px;padding:7px 10px;background:#fff0f0;border-left:2px solid #f0a0a0;font-size:11px;color:#a01818;border-radius:0;}
+.plano-vencido{margin-top:11px;padding:7px 10px;background:#fff0f0;border-left:2px solid #f0a0a0;font-size:11px;color:#a01818;}
 
 /* ── MODALS ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,30,60,.4);z-index:999;align-items:center;justify-content:center;padding:20px;}
 .modal-overlay.aberto{display:flex;}
-.modal-box{
-  background:#fff;border:1px solid var(--border);padding:26px;
-  width:100%;max-width:520px;max-height:90vh;overflow-y:auto;
-  box-shadow:0 20px 60px rgba(14,42,71,0.18);border-radius:0;
-}
+.modal-box{background:#fff;border:1px solid var(--border);padding:26px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(14,42,71,0.18);}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:13px;}
 .modal-title{font-weight:700;font-size:14px;color:var(--txt);}
-.modal-close{background:none;border:none;color:var(--sub);font-size:17px;cursor:pointer;padding:2px 6px;border-radius:0;}
+.modal-close{background:none;border:none;color:var(--sub);font-size:17px;cursor:pointer;padding:2px 6px;}
 .modal-close:hover{color:var(--txt);background:var(--bg2);}
 .modal-footer{display:flex;gap:8px;margin-top:16px;}
 .modal-footer .btn{flex:1;}
-
 .detalhe-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px;}
 .detalhe-key{color:var(--sub);}
 .detalhe-val{font-weight:600;color:var(--txt2);font-family:'IBM Plex Mono',monospace;font-size:12px;}
-.detalhe-desc{
-  background:var(--card2);border:1px solid var(--border);border-left:3px solid var(--blue-300);
-  padding:11px 12px;font-size:12.5px;line-height:1.65;margin-top:8px;color:var(--txt2);border-radius:0;
-}
+.detalhe-desc{background:var(--card2);border:1px solid var(--border);border-left:3px solid var(--blue-300);padding:11px 12px;font-size:12.5px;line-height:1.65;margin-top:8px;color:var(--txt2);}
 
 /* ── PROGRESS ── */
 .progress-wrap{margin:16px 0;}
 .progress-track{display:flex;gap:4px;margin-bottom:7px;}
-.progress-seg{flex:1;height:4px;border-radius:2px;transition:all .3s;}
+.progress-seg{flex:1;height:4px;transition:all .3s;}
 .progress-labels{display:flex;}
 .progress-lbl{flex:1;text-align:center;font-size:9px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
 
-/* ── DASHBOARD ── */
+/* ── MISC ── */
 .dash-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
-.mini-item{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:9px 11px;background:var(--card2);border:1px solid var(--border);margin-bottom:5px;
-  border-radius:0;transition:background .12s;
-}
+.mini-item{display:flex;justify-content:space-between;align-items:center;padding:9px 11px;background:var(--card2);border:1px solid var(--border);margin-bottom:5px;transition:background .12s;}
 .mini-item:hover{background:var(--blue-50);}
 .mini-nome{font-size:12px;font-weight:600;color:var(--txt);}
 .mini-sub{font-size:10.5px;color:var(--sub);margin-top:1px;font-family:'IBM Plex Mono',monospace;}
-
-.alerta-bar{
-  background:#fff0f0;border:1px solid #f0a0a0;border-left:3px solid #c02020;
-  padding:9px 14px;margin-bottom:16px;font-size:12px;color:#a01818;border-radius:0;
-}
+.alerta-bar{background:#fff0f0;border:1px solid #f0a0a0;border-left:3px solid #c02020;padding:9px 14px;margin-bottom:16px;font-size:12px;color:#a01818;}
 .empty{text-align:center;padding:48px 0;color:var(--sub);}
 .empty-icon{font-size:28px;margin-bottom:10px;opacity:.4;}
 .section-title{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+.confirm-bar{background:#fff0f0;border:1px solid #f0a0a0;padding:10px 12px;margin-top:10px;font-size:12px;color:#a01818;}
 
-/* tipo badges */
-.tipo-badge{background:var(--blue-50);color:var(--blue-600);border:1px solid var(--blue-200);}
+/* Barra exportação OS */
+#os-barra-acoes{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;padding:10px 12px;background:#fff;border:1px solid var(--border);box-shadow:0 1px 4px var(--shadow);}
+.btn-export{padding:7px 14px;cursor:pointer;font-weight:600;font-size:12px;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all .14s;}
+.btn-imprimir{background:#fff;border:1px solid var(--border2)!important;color:var(--txt2);}
+.btn-imprimir:hover{background:var(--blue-50);border-color:var(--blue-400)!important;}
+.btn-pdf{background:var(--blue-700);color:#fff;border:none!important;}
+.btn-pdf:hover{background:var(--blue-800);}
+.export-sep{width:1px;height:22px;background:var(--border);margin:0 2px;}
+.os-count-print{font-size:11px;color:var(--sub);font-family:'IBM Plex Mono',monospace;margin-left:auto;}
+#print-header{display:none;}
+#print-info{display:none;}
 
-/* ── ESPECIALIDADE TAGS ── */
-.esp-tag{
-  display:inline-block;padding:2px 8px;background:var(--blue-50);color:var(--blue-600);
-  border:1px solid var(--blue-200);font-size:10.5px;font-weight:600;border-radius:0;margin:2px 2px 2px 0;
+@media print{
+  #sidebar,#os-barra-acoes,.os-actions,.page-header button,.busca-wrap,.filtro-abas,.modal-overlay{display:none!important;}
+  #conteudo{margin-left:0!important;padding:12px 18px!important;}
+  body{background:#fff!important;color:#000!important;}
+  .tela{display:none!important;}
+  #tela-os{display:block!important;}
+  .os-item{box-shadow:none!important;border:1px solid #bbb!important;page-break-inside:avoid;margin-bottom:7px;border-left:3px solid #1e4d82!important;}
+  #print-header{display:block!important;border-bottom:2px solid #1e4d82;padding-bottom:10px;margin-bottom:12px;}
+  #print-info{display:flex!important;gap:24px;font-size:10px;color:#555;margin-bottom:14px;font-family:monospace;flex-wrap:wrap;}
 }
-
-/* ── STAT ACCENT ── */
-.stat-card.accent-urgente::before{background:#c02020;}
-.stat-card.accent-alerta::before{background:#e08020;}
-.stat-card.accent-ok::before{background:#1a7a42;}
-
-/* delete confirm */
-.confirm-bar{background:#fff0f0;border:1px solid #f0a0a0;border-radius:0;padding:10px 12px;margin-top:10px;font-size:12px;color:#a01818;}
-
 </style>
 </head>
 <body>
 
-<div id="sidebar">
-  <div class="logo-area">
-    <div class="logo-icon">🔩</div>
-    <div>
-      <div class="logo-name">ManutençãoOS</div>
-      <div class="logo-sub">by ALVURI</div>
+<!-- ══════════════════════════════════════════
+     TELA DE LOADING
+══════════════════════════════════════════ -->
+<div id="app-loading">
+  <div class="ld-logo">🔩</div>
+  <div class="ld-title">ManutençãoOS</div>
+  <div class="ld-sub" id="ld-sub-txt">Verificando credenciais...</div>
+  <div class="ld-bar-wrap"><div class="ld-bar" id="ld-bar"></div></div>
+  <div class="ld-usuario" id="ld-usuario"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA DE LOGIN
+══════════════════════════════════════════ -->
+<div id="app-login">
+  <div class="login-left">
+    <div class="brand-area">
+      <div class="brand-logo">🔩</div>
+      <div class="brand-name">ManutençãoOS</div>
+      <div class="brand-sub">by ALVURI</div>
+      <div class="brand-desc">Sistema de gestão de ordens de serviço, manutenção preventiva e controle de equipamentos industriais.</div>
     </div>
+    <div class="perfis-lista">
+      <div class="perfis-title">Níveis de acesso</div>
+      <div class="perfil-item"><div class="perfil-icon">👑</div><div><div class="perfil-nome">Administrador</div><div class="perfil-desc">Acesso total — todas as empresas e recursos</div></div></div>
+      <div class="perfil-item"><div class="perfil-icon">📊</div><div><div class="perfil-nome">Gerente</div><div class="perfil-desc">Dados da empresa + relatórios</div></div></div>
+      <div class="perfil-item"><div class="perfil-icon">📋</div><div><div class="perfil-nome">Administrativo / Encarregado</div><div class="perfil-desc">Sistema completo</div></div></div>
+      <div class="perfil-item"><div class="perfil-icon">🔧</div><div><div class="perfil-nome">Técnico de Manutenção</div><div class="perfil-desc">Somente suas ordens de serviço</div></div></div>
+    </div>
+    <div class="left-footer">© 2025 ALVURI · Todos os direitos reservados</div>
   </div>
-  <nav>
-    <div class="nav-section">Menu</div>
-    <button class="nav-btn ativo" onclick="irPara('dashboard')" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</button>
-    <button class="nav-btn" onclick="irPara('os')" id="nav-os"><span class="nav-icon">🔧</span> Ordens de Serviço<span class="badge-urgente" id="badge-urgente" style="display:none">0</span></button>
-    <button class="nav-btn" onclick="irPara('equip')" id="nav-equip"><span class="nav-icon">⚙️</span> Equipamentos</button>
-    <button class="nav-btn" onclick="irPara('planos')" id="nav-planos"><span class="nav-icon">📅</span> Planos de Manutenção</button>
-    <button class="nav-btn" onclick="irPara('profissionais')" id="nav-profissionais"><span class="nav-icon">👷</span> Profissionais</button>
-  </nav>
-  <div class="user-area">
-    <div class="user-avatar">R</div>
-    <div>
-      <div class="user-name">Roberto Souza</div>
-      <div class="user-role">Administrador</div>
+
+  <div class="login-right">
+    <div class="login-box">
+      <div class="login-header">
+        <div class="login-title">Bem-vindo de volta</div>
+        <div class="login-sub">Informe seu CPF e senha para acessar o sistema.</div>
+      </div>
+
+      <div class="msg-erro" id="msg-erro">⚠️ <span id="msg-erro-txt"></span></div>
+
+      <div class="perfil-detectado" id="perfil-detectado">
+        <div style="font-size:18px" id="pd-icon"></div>
+        <div><div class="pd-nome" id="pd-nome"></div><div class="pd-desc" id="pd-desc"></div></div>
+      </div>
+
+      <div class="field-login">
+        <label>CPF — Usuário</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input type="text" id="input-cpf" placeholder="000.000.000-00" maxlength="14" autocomplete="username" oninput="formatarCPF(this)" onblur="detectarPerfil()"/>
+        </div>
+      </div>
+
+      <div class="field-login">
+        <label>Senha</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="input-senha" placeholder="Digite sua senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')fazerLogin()"/>
+          <button class="toggle-senha" onclick="toggleSenha()" type="button" id="btn-toggle-senha">👁</button>
+        </div>
+      </div>
+
+      <div class="login-options">
+        <label class="check-label"><input type="checkbox" id="lembrar"/> Lembrar meu CPF</label>
+        <button class="link-esqueci" onclick="abrirModalEsqueci()">Esqueci minha senha</button>
+      </div>
+
+      <button class="btn-entrar" id="btn-entrar" onclick="fazerLogin()">
+        <span class="spinner" id="spinner"></span>
+        <span id="btn-entrar-txt">Entrar no sistema</span>
+      </button>
+
+      <div class="divisor">Acesso de demonstração</div>
+      <div style="margin-bottom:4px;font-size:10.5px;color:var(--muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase;">Clique para preencher automaticamente:</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
+        <button class="btn-demo" onclick="preencherDemo('admin')">👑 Administrador</button>
+        <button class="btn-demo" onclick="preencherDemo('gerente')">📊 Gerente</button>
+        <button class="btn-demo" onclick="preencherDemo('admin_enc')">📋 Administrativo</button>
+        <button class="btn-demo" onclick="preencherDemo('tecnico')">🔧 Técnico</button>
+      </div>
+
+      <div class="login-footer">ManutençãoOS v1.0 · by ALVURI · suporte@alvuri.com.br</div>
     </div>
   </div>
 </div>
 
-<div id="conteudo">
-
-  <!-- DASHBOARD -->
-  <div id="tela-dashboard" class="tela ativa">
-    <div style="margin-bottom:22px">
-      <div style="font-size:18px;font-weight:700;color:var(--txt);margin-bottom:3px;">Visão Geral</div>
-      <div style="color:var(--sub);font-size:12px;font-family:'IBM Plex Mono',monospace;">Acompanhe o status de toda a operação</div>
+<!-- Modal esqueci senha -->
+<div class="modal-login" id="modal-esqueci">
+  <div class="modal-login-box">
+    <div class="modal-login-header">
+      <div class="modal-login-title">🔑 Recuperar Senha</div>
+      <button class="modal-login-close" onclick="fecharModalLogin('modal-esqueci')">✕</button>
     </div>
-    <div class="grid-stats" id="dash-stats"></div>
-    <div class="card" style="margin-bottom:12px"><div class="section-title">Ordens de Serviço Recentes</div><div id="dash-os-recentes"></div></div>
-    <div class="dash-grid2">
-      <div class="card"><div class="section-title">Equipamentos</div><div id="dash-equip"></div></div>
-      <div class="card"><div class="section-title">Próximas Manutenções</div><div id="dash-planos"></div></div>
+    <p style="font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:18px;">Informe seu CPF cadastrado. O administrador receberá uma solicitação de redefinição.</p>
+    <div class="field-login">
+      <label>CPF</label>
+      <div class="input-wrap">
+        <span class="input-icon">👤</span>
+        <input type="text" id="rec-cpf" placeholder="000.000.000-00" maxlength="14" oninput="formatarCPF(this)"/>
+      </div>
+    </div>
+    <div id="rec-msg" style="display:none;background:#edfaf3;border:1px solid #9ae8bf;border-left:3px solid #1a7a42;padding:10px 14px;font-size:12.5px;color:#1a7a42;margin-bottom:14px;">✅ Solicitação enviada! O administrador foi notificado.</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="fecharModalLogin('modal-esqueci')" style="flex:1;padding:10px;background:transparent;border:1px solid var(--border2);cursor:pointer;font-family:inherit;font-size:12.5px;color:var(--sub);font-weight:600;">Cancelar</button>
+      <button onclick="enviarRecuperacao()" style="flex:1;padding:10px;background:var(--blue-600);color:#fff;border:none;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:700;">Enviar solicitação</button>
     </div>
   </div>
-
-  <!-- OS -->
-  <div id="tela-os" class="tela">
-    <div class="page-header">
-      <div><div class="page-title">Ordens de Serviço</div><div class="page-sub" id="os-count"></div></div>
-      <button class="btn btn-primary" onclick="abrirModalNovaOS()">+ Nova OS</button>
-    </div>
-    <div class="busca-wrap">
-      <input class="busca-input" id="os-busca" placeholder="Buscar por número, equipamento, técnico, tipo, status, peças..." oninput="renderOS()"/>
-      <select class="busca-select" id="os-filtro-tecnico" onchange="renderOS()"><option value="">Todos os técnicos</option></select>
-      <select class="busca-select" id="os-filtro-tipo" onchange="renderOS()">
-        <option value="">Todos os tipos</option>
-        <option>Preventiva</option><option>Corretiva</option><option>Preditiva</option><option>Emergencial</option>
-      </select>
-    </div>
-    <div class="filtro-abas" id="os-filtros"></div>
-    <div class="os-list" id="os-lista"></div>
-  </div>
-
-  <!-- EQUIPAMENTOS -->
-  <div id="tela-equip" class="tela">
-    <div class="page-header">
-      <div><div class="page-title">Equipamentos</div><div class="page-sub" id="equip-count"></div></div>
-      <button class="btn btn-primary" onclick="abrirModalNovoEquip()">+ Novo Equipamento</button>
-    </div>
-    <input class="busca-input" id="equip-busca" placeholder="Buscar equipamento, setor, marca, modelo..." oninput="renderEquip()" style="margin-bottom:16px;width:100%"/>
-    <div class="equip-grid" id="equip-grid"></div>
-  </div>
-
-  <!-- PLANOS -->
-  <div id="tela-planos" class="tela">
-    <div class="page-header">
-      <div><div class="page-title">Planos de Manutenção</div><div class="page-sub" id="planos-count"></div></div>
-      <button class="btn btn-primary" onclick="abrirModalNovoPlano()">+ Novo Plano</button>
-    </div>
-    <div id="planos-alerta" class="alerta-bar" style="display:none"></div>
-    <div class="planos-grid" id="planos-grid"></div>
-  </div>
-
-  <!-- PROFISSIONAIS -->
-  <div id="tela-profissionais" class="tela">
-    <div class="page-header">
-      <div><div class="page-title">Profissionais de Manutenção</div><div class="page-sub" id="prof-count"></div></div>
-      <button class="btn btn-primary" onclick="abrirModalNovoProf()">+ Novo Profissional</button>
-    </div>
-    <div class="busca-wrap">
-      <input class="busca-input" id="prof-busca" placeholder="Buscar por nome, cargo, especialidade, turno..." oninput="renderProfissionais()"/>
-      <select class="busca-select" id="prof-filtro-status" onchange="renderProfissionais()">
-        <option value="">Todos os status</option>
-        <option value="ativo">Ativos</option>
-        <option value="inativo">Inativos</option>
-      </select>
-      <select class="busca-select" id="prof-filtro-turno" onchange="renderProfissionais()">
-        <option value="">Todos os turnos</option>
-        <option>Manhã</option><option>Tarde</option><option>Noite</option><option>Integral</option>
-      </select>
-    </div>
-    <div class="prof-grid" id="prof-grid"></div>
-  </div>
-
 </div>
+
+<!-- ══════════════════════════════════════════
+     SISTEMA PRINCIPAL
+══════════════════════════════════════════ -->
+<div id="app-sistema">
+  <div id="sidebar">
+    <div class="logo-area">
+      <div class="logo-icon">🔩</div>
+      <div><div class="logo-name">ManutençãoOS</div><div class="logo-sub">by ALVURI</div></div>
+    </div>
+    <nav>
+      <div class="nav-section">Menu</div>
+      <button class="nav-btn ativo" onclick="irPara('dashboard')" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</button>
+      <button class="nav-btn" onclick="irPara('os')" id="nav-os"><span class="nav-icon">🔧</span> Ordens de Serviço<span class="badge-urgente" id="badge-urgente" style="display:none">0</span></button>
+      <button class="nav-btn" onclick="irPara('equip')" id="nav-equip"><span class="nav-icon">⚙️</span> Equipamentos</button>
+      <button class="nav-btn" onclick="irPara('planos')" id="nav-planos"><span class="nav-icon">📅</span> Planos de Manutenção</button>
+      <button class="nav-btn" onclick="irPara('profissionais')" id="nav-profissionais"><span class="nav-icon">👷</span> Profissionais</button>
+    </nav>
+    <div class="user-area">
+      <div class="user-row">
+        <div class="user-avatar" id="sidebar-avatar">?</div>
+        <div>
+          <div class="user-name" id="sidebar-nome">—</div>
+          <div class="user-role" id="sidebar-perfil">—</div>
+          <div class="user-empresa" id="sidebar-empresa">—</div>
+        </div>
+      </div>
+      <button class="btn-sair" onclick="fazerLogout()">🚪 Sair do sistema</button>
+    </div>
+  </div>
+
+  <div id="conteudo">
+
+    <!-- DASHBOARD -->
+    <div id="tela-dashboard" class="tela ativa">
+      <div style="margin-bottom:22px">
+        <div style="font-size:18px;font-weight:700;color:var(--txt);margin-bottom:3px;">Visão Geral</div>
+        <div style="color:var(--sub);font-size:12px;font-family:'IBM Plex Mono',monospace;" id="dash-subtitulo">—</div>
+      </div>
+      <div id="perfil-banner" class="perfil-banner" style="display:none">
+        <span class="perfil-banner-icon" id="pb-icon"></span>
+        <div><div class="perfil-banner-txt" id="pb-txt"></div><div class="perfil-banner-sub" id="pb-sub"></div></div>
+      </div>
+      <div class="grid-stats" id="dash-stats"></div>
+      <div class="card" style="margin-bottom:12px"><div class="section-title">Ordens de Serviço Recentes</div><div id="dash-os-recentes"></div></div>
+      <div class="dash-grid2">
+        <div class="card"><div class="section-title">Equipamentos</div><div id="dash-equip"></div></div>
+        <div class="card"><div class="section-title">Próximas Manutenções</div><div id="dash-planos"></div></div>
+      </div>
+    </div>
+
+    <!-- OS -->
+    <div id="tela-os" class="tela">
+      <div class="page-header">
+        <div><div class="page-title">Ordens de Serviço</div><div class="page-sub" id="os-count"></div></div>
+        <button class="btn btn-primary" id="btn-nova-os" onclick="abrirModalNovaOS()">+ Nova OS</button>
+      </div>
+      <div id="print-header"><div style="font-size:18px;font-weight:700;color:#0e2a47;margin-bottom:3px;">ManutençãoOS — Relatório de Ordens de Serviço</div><div style="font-size:11px;color:#5a7a9a;">by ALVURI · Sistema de Gestão de Manutenção</div></div>
+      <div id="print-info"><span id="print-data"></span><span id="print-filtros-label"></span><span id="print-total"></span></div>
+      <div class="busca-wrap">
+        <input class="busca-input" id="os-busca" placeholder="Buscar por número, equipamento, técnico, tipo, peças..." oninput="renderOS()" style="min-width:240px;"/>
+        <select class="busca-select" id="os-filtro-tecnico" onchange="renderOS()"><option value="">Todos os técnicos</option></select>
+        <select class="busca-select" id="os-filtro-tipo" onchange="renderOS()">
+          <option value="">Todos os tipos</option>
+          <option>Preventiva</option><option>Corretiva</option><option>Preditiva</option><option>Emergencial</option>
+        </select>
+        <select class="busca-select" id="os-filtro-progresso" onchange="renderOS()">
+          <option value="">Todos os progressos</option>
+          <option value="aberta">Aberta</option>
+          <option value="andamento">Em Andamento</option>
+          <option value="aguardando">Aguard. Peça</option>
+          <option value="concluida">Concluída</option>
+          <option value="cancelada">Cancelada</option>
+        </select>
+        <select class="busca-select" id="os-filtro-prio" onchange="renderOS()">
+          <option value="">Todas as prioridades</option>
+          <option value="baixa">Baixa</option><option value="media">Média</option>
+          <option value="alta">Alta</option><option value="urgente">Urgente</option>
+        </select>
+      </div>
+      <div id="os-barra-acoes">
+        <span style="font-size:12px;font-weight:600;color:var(--sub);">Exportar / Imprimir:</span>
+        <div class="export-sep"></div>
+        <button class="btn-export btn-imprimir" onclick="imprimirOS()">🖨️ Imprimir</button>
+        <button class="btn-export btn-pdf" onclick="exportarPDF()">📄 Salvar PDF</button>
+        <div class="export-sep"></div>
+        <button class="btn-export btn-imprimir" onclick="exportarCSV()">📊 Exportar CSV</button>
+        <span class="os-count-print" id="os-count-print"></span>
+      </div>
+      <div class="filtro-abas" id="os-filtros"></div>
+      <div class="os-list" id="os-lista"></div>
+    </div>
+
+    <!-- EQUIPAMENTOS -->
+    <div id="tela-equip" class="tela">
+      <div class="page-header">
+        <div><div class="page-title">Equipamentos</div><div class="page-sub" id="equip-count"></div></div>
+        <button class="btn btn-primary" id="btn-novo-equip" onclick="abrirModalNovoEquip()">+ Novo Equipamento</button>
+      </div>
+      <input class="busca-input" id="equip-busca" placeholder="Buscar equipamento, setor, marca, modelo..." oninput="renderEquip()" style="margin-bottom:16px;width:100%"/>
+      <div class="equip-grid" id="equip-grid"></div>
+    </div>
+
+    <!-- PLANOS -->
+    <div id="tela-planos" class="tela">
+      <div class="page-header">
+        <div><div class="page-title">Planos de Manutenção</div><div class="page-sub" id="planos-count"></div></div>
+        <button class="btn btn-primary" id="btn-novo-plano" onclick="abrirModalNovoPlano()">+ Novo Plano</button>
+      </div>
+      <div id="planos-alerta" class="alerta-bar" style="display:none"></div>
+      <div class="planos-grid" id="planos-grid"></div>
+    </div>
+
+    <!-- PROFISSIONAIS -->
+    <div id="tela-profissionais" class="tela">
+      <div class="page-header">
+        <div><div class="page-title">Profissionais de Manutenção</div><div class="page-sub" id="prof-count"></div></div>
+        <button class="btn btn-primary" id="btn-novo-prof" onclick="abrirModalNovoProf()">+ Novo Profissional</button>
+      </div>
+      <div class="busca-wrap">
+        <input class="busca-input" id="prof-busca" placeholder="Buscar por nome, cargo, especialidade, turno..." oninput="renderProfissionais()"/>
+        <select class="busca-select" id="prof-filtro-status" onchange="renderProfissionais()">
+          <option value="">Todos os status</option><option value="ativo">Ativos</option><option value="inativo">Inativos</option>
+        </select>
+        <select class="busca-select" id="prof-filtro-turno" onchange="renderProfissionais()">
+          <option value="">Todos os turnos</option><option>Manhã</option><option>Tarde</option><option>Noite</option><option>Integral</option>
+        </select>
+      </div>
+      <div class="prof-grid" id="prof-grid"></div>
+    </div>
+
+  </div><!-- /conteudo -->
+</div><!-- /app-sistema -->
+
+<!-- ══ MODAIS SISTEMA ═══════════════════════════════════════════ -->
 
 <!-- MODAL NOVA OS -->
 <div class="modal-overlay" id="modal-nova-os">
   <div class="modal-box">
-    <div class="modal-header"><div class="modal-title">🔧 Nova Ordem de Serviço</div><button class="modal-close" onclick="fecharModal('modal-nova-os')">✕</button></div>
+    <div class="modal-header"><div class="modal-title" id="modal-os-titulo">🔧 Nova Ordem de Serviço</div><button class="modal-close" onclick="fecharModal('modal-nova-os')">✕</button></div>
     <div class="field"><label>Equipamento *</label><select id="nos-equip"></select></div>
     <div class="grid2">
       <div class="field"><label>Tipo</label><select id="nos-tipo"><option>Preventiva</option><option>Corretiva</option><option>Preditiva</option><option>Emergencial</option></select></div>
       <div class="field"><label>Prioridade</label><select id="nos-prio"><option value="baixa">Baixa</option><option value="media" selected>Média</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></div>
     </div>
     <div class="field"><label>Técnico Responsável</label><select id="nos-tecnico"></select></div>
-    <div class="field"><label>Descrição do Serviço *</label><textarea id="nos-desc" rows="3" placeholder="Descreva o problema ou serviço..."></textarea></div>
+    <div class="field"><label>Descrição do Problema *</label><textarea id="nos-desc" rows="3" placeholder="Descreva o problema ou serviço..."></textarea></div>
     <div class="field"><label>Peças / Materiais</label><input id="nos-pecas" placeholder="Ex: Filtro AR-200, Óleo 5L"/></div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="fecharModal('modal-nova-os')">Cancelar</button><button id="btn-salvar-os" class="btn btn-primary" onclick="salvarOS()">Abrir OS</button></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal('modal-nova-os')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-salvar-os" onclick="salvarOS()">Abrir OS</button>
+    </div>
   </div>
 </div>
 
@@ -443,10 +596,10 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
       <div class="progress-track" id="det-progress-track"></div>
       <div class="progress-labels" id="det-progress-labels"></div>
     </div>
-    <button class="btn btn-primary btn-full" id="det-avancar-btn" onclick="avancarStatusAtual()" style="margin-top:8px">Avançar Status ▶</button>
-    <button class="btn btn-ghost btn-full" onclick="editarOSAtual()" style="margin-top:6px">
-  ✏️ Editar OS
-</button>
+    <div id="det-acoes" style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn btn-ghost" id="det-editar-btn" onclick="editarOSAtual()" style="flex:1">✏️ Editar</button>
+      <button class="btn btn-primary" id="det-avancar-btn" onclick="avancarStatusAtual()" style="flex:1">Avançar Status ▶</button>
+    </div>
     <div id="det-concluida-msg" style="display:none;text-align:center;padding:10px;font-weight:700;font-size:13px"></div>
   </div>
 </div>
@@ -493,56 +646,29 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <!-- MODAL NOVO PROFISSIONAL -->
 <div class="modal-overlay" id="modal-novo-prof">
   <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-prof-titulo">👷 Novo Profissional</div>
-      <button class="modal-close" onclick="fecharModal('modal-novo-prof')">✕</button>
-    </div>
+    <div class="modal-header"><div class="modal-title" id="modal-prof-titulo">👷 Novo Profissional</div><button class="modal-close" onclick="fecharModal('modal-novo-prof')">✕</button></div>
+    <div class="field" style="grid-column:1/-1"><label>Nome Completo *</label><input id="np2-nome" placeholder="Ex: Carlos Lima"/></div>
     <div class="grid2">
-      <div class="field" style="grid-column:1/-1"><label>Nome Completo *</label><input id="np2-nome" placeholder="Ex: Carlos Lima"/></div>
-    </div>
-    <div class="grid2">
-      <div class="field"><label>Cargo *</label><select id="np2-cargo">
-        <option>Técnico de Manutenção</option>
-        <option>Mecânico Industrial</option>
-        <option>Eletricista Industrial</option>
-        <option>Instrumentista</option>
-        <option>Lubrificador</option>
-        <option>Soldador</option>
-        <option>Supervisor de Manutenção</option>
-        <option>Engenheiro de Manutenção</option>
-        <option>Auxiliar de Manutenção</option>
-      </select></div>
+      <div class="field"><label>Cargo *</label><select id="np2-cargo"><option>Técnico de Manutenção</option><option>Mecânico Industrial</option><option>Eletricista Industrial</option><option>Instrumentista</option><option>Lubrificador</option><option>Soldador</option><option>Supervisor de Manutenção</option><option>Engenheiro de Manutenção</option><option>Auxiliar de Manutenção</option></select></div>
       <div class="field"><label>Matrícula</label><input id="np2-matricula" placeholder="Ex: MAT-0042"/></div>
     </div>
     <div class="grid2">
-      <div class="field"><label>Turno</label><select id="np2-turno">
-        <option>Manhã</option><option>Tarde</option><option>Noite</option><option>Integral</option>
-      </select></div>
-      <div class="field"><label>Status</label><select id="np2-status">
-        <option value="ativo">Ativo</option><option value="inativo">Inativo</option>
-      </select></div>
+      <div class="field"><label>Turno</label><select id="np2-turno"><option>Manhã</option><option>Tarde</option><option>Noite</option><option>Integral</option></select></div>
+      <div class="field"><label>Status</label><select id="np2-status"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></div>
     </div>
     <div class="field"><label>Telefone / Contato</label><input id="np2-tel" placeholder="Ex: (11) 99999-8888"/></div>
-    <div class="field"><label>Especialidades (separadas por vírgula)</label>
-      <input id="np2-esp" placeholder="Ex: Hidráulica, Pneumática, CNC"/>
-    </div>
+    <div class="field"><label>Especialidades (separadas por vírgula)</label><input id="np2-esp" placeholder="Ex: Hidráulica, Pneumática, CNC"/></div>
     <div class="field"><label>Observações</label><textarea id="np2-obs" rows="2" placeholder="Informações adicionais..."></textarea></div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="fecharModal('modal-novo-prof')">Cancelar</button>
-      <button class="btn btn-primary" id="btn-salvar-prof" onclick="salvarProf()">Salvar</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="fecharModal('modal-novo-prof')">Cancelar</button><button class="btn btn-primary" id="btn-salvar-prof" onclick="salvarProf()">Salvar</button></div>
   </div>
 </div>
 
 <!-- MODAL DETALHE PROFISSIONAL -->
 <div class="modal-overlay" id="modal-detalhe-prof">
   <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title" id="dp-titulo"></div>
-      <button class="modal-close" onclick="fecharModal('modal-detalhe-prof')">✕</button>
-    </div>
+    <div class="modal-header"><div class="modal-title" id="dp-titulo"></div><button class="modal-close" onclick="fecharModal('modal-detalhe-prof')">✕</button></div>
     <div id="dp-content"></div>
-    <div style="display:flex;gap:8px;margin-top:16px">
+    <div style="display:flex;gap:8px;margin-top:16px" id="dp-btns-admin">
       <button class="btn btn-ghost" style="flex:1" onclick="editarProfAtual()">✏️ Editar</button>
       <button class="btn btn-danger" style="flex:1" onclick="confirmarExclusaoProf()">🗑 Excluir</button>
     </div>
@@ -557,14 +683,240 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 </div>
 
 <script>
-// ── DADOS ──────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════
+// USUÁRIOS E PERFIS
+// ════════════════════════════════════════════
+const USUARIOS = [
+  {
+    cpf:"111.111.111-11", senha:"admin123",
+    perfil:"admin", nome:"Roberto Souza", icon:"👑", perfilLabel:"Administrador",
+    empresa:"ALVURI — Sistema",
+    // admin vê tudo e pode criar/editar/excluir tudo
+    acesso:["dashboard","os","equip","planos","profissionais"],
+    somentePropriaOS: false, podeEditar: true, podeCadastrar: true
+  },
+  {
+    cpf:"222.222.222-22", senha:"gerente123",
+    perfil:"gerente", nome:"Fernanda Lima", icon:"📊", perfilLabel:"Gerente",
+    empresa:"Metalúrgica Souza Ltda",
+    acesso:["dashboard","os","equip","planos","profissionais"],
+    somentePropriaOS: false, podeEditar: false, podeCadastrar: false
+  },
+  {
+    cpf:"333.333.333-33", senha:"admin456",
+    perfil:"admin_enc", nome:"Carlos Mendes", icon:"📋", perfilLabel:"Administrativo / Encarregado",
+    empresa:"Metalúrgica Souza Ltda",
+    acesso:["dashboard","os","equip","planos","profissionais"],
+    somentePropriaOS: false, podeEditar: true, podeCadastrar: true
+  },
+  {
+    cpf:"444.444.444-44", senha:"tec123",
+    perfil:"tecnico", nome:"Ana Costa", icon:"🔧", perfilLabel:"Técnico de Manutenção",
+    empresa:"Metalúrgica Souza Ltda",
+    // técnico vê só as suas OS
+    acesso:["os"],
+    somentePropriaOS: true, podeEditar: false, podeCadastrar: false
+  },
+];
+
+// Usuário logado (preenchido após login)
+let usuarioLogado = null;
+
+// ════════════════════════════════════════════
+// LOGIN
+// ════════════════════════════════════════════
+function formatarCPF(input){
+  let v=input.value.replace(/\D/g,"").substring(0,11);
+  if(v.length>9) v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,"$1.$2.$3-$4");
+  else if(v.length>6) v=v.replace(/(\d{3})(\d{3})(\d{0,3})/,"$1.$2.$3");
+  else if(v.length>3) v=v.replace(/(\d{3})(\d{0,3})/,"$1.$2");
+  input.value=v;
+}
+
+function detectarPerfil(){
+  const cpf=document.getElementById("input-cpf").value.trim();
+  const el=document.getElementById("perfil-detectado");
+  const u=USUARIOS.find(u=>u.cpf===cpf);
+  if(u){
+    document.getElementById("pd-icon").textContent=u.icon;
+    document.getElementById("pd-nome").textContent=u.perfilLabel+" · "+u.nome;
+    document.getElementById("pd-desc").textContent=u.empresa;
+    el.classList.add("visivel");
+  } else {
+    el.classList.remove("visivel");
+  }
+}
+
+let senhaVisivel=false;
+function toggleSenha(){
+  senhaVisivel=!senhaVisivel;
+  document.getElementById("input-senha").type=senhaVisivel?"text":"password";
+  document.getElementById("btn-toggle-senha").textContent=senhaVisivel?"🙈":"👁";
+}
+
+function preencherDemo(tipo){
+  const map={admin:USUARIOS[0],gerente:USUARIOS[1],admin_enc:USUARIOS[2],tecnico:USUARIOS[3]};
+  const u=map[tipo];if(!u)return;
+  document.getElementById("input-cpf").value=u.cpf;
+  document.getElementById("input-senha").value=u.senha;
+  document.getElementById("msg-erro").classList.remove("visivel");
+  detectarPerfil();
+}
+
+function fazerLogin(){
+  const cpf=document.getElementById("input-cpf").value.trim();
+  const senha=document.getElementById("input-senha").value;
+  const btn=document.getElementById("btn-entrar");
+  const spn=document.getElementById("spinner");
+  const txt=document.getElementById("btn-entrar-txt");
+
+  if(!cpf||cpf.length<14){ mostrarErroLogin("Informe um CPF válido no formato 000.000.000-00."); document.getElementById("input-cpf").focus(); return; }
+  if(!senha){ mostrarErroLogin("Informe sua senha."); document.getElementById("input-senha").focus(); return; }
+
+  btn.disabled=true; spn.style.display="block"; txt.textContent="Verificando...";
+  document.getElementById("msg-erro").classList.remove("visivel");
+
+  setTimeout(()=>{
+    const u=USUARIOS.find(u=>u.cpf===cpf&&u.senha===senha);
+    if(!u){
+      btn.disabled=false; spn.style.display="none"; txt.textContent="Entrar no sistema";
+      mostrarErroLogin("CPF ou senha inválidos. Verifique e tente novamente.");
+      document.getElementById("input-senha").value="";
+      document.getElementById("input-senha").focus();
+      return;
+    }
+    if(document.getElementById("lembrar").checked) localStorage.setItem("cpf-salvo",cpf);
+    else localStorage.removeItem("cpf-salvo");
+    entrarNoSistema(u);
+  },900);
+}
+
+function mostrarErroLogin(msg){
+  const el=document.getElementById("msg-erro");
+  document.getElementById("msg-erro-txt").textContent=msg;
+  el.classList.add("visivel");
+}
+
+function entrarNoSistema(usuario){
+  usuarioLogado=usuario;
+  // Mostra loading
+  const ld=document.getElementById("app-loading");
+  ld.style.display="flex";
+  document.getElementById("app-login").style.display="none";
+  document.getElementById("ld-usuario").textContent=usuario.icon+" "+usuario.nome+" · "+usuario.perfilLabel;
+  document.getElementById("ld-sub-txt").textContent="Carregando "+usuario.empresa+"...";
+
+  // Anima barra
+  let p=0;
+  const bar=document.getElementById("ld-bar");
+  const iv=setInterval(()=>{
+    p+=Math.random()*24;
+    if(p>=100){p=100;clearInterval(iv);}
+    bar.style.width=p+"%";
+  },150);
+
+  setTimeout(()=>{
+    ld.style.display="none";
+    iniciarSistema(usuario);
+  },1600);
+}
+
+function iniciarSistema(u){
+  // Configura sidebar com dados do usuário
+  const ini=u.nome.split(" ").slice(0,2).map(p=>p[0]).join("").toUpperCase();
+  document.getElementById("sidebar-avatar").textContent=ini;
+  document.getElementById("sidebar-nome").textContent=u.nome;
+  document.getElementById("sidebar-perfil").textContent=u.icon+" "+u.perfilLabel;
+  document.getElementById("sidebar-empresa").textContent=u.empresa;
+
+  // Aplica visibilidade dos itens do menu conforme perfil
+  const todosNavs=["dashboard","os","equip","planos","profissionais"];
+  todosNavs.forEach(id=>{
+    const btn=document.getElementById("nav-"+id);
+    if(!btn)return;
+    if(u.acesso.includes(id)){
+      btn.classList.remove("bloqueado");
+      btn.onclick=()=>irPara(id);
+    } else {
+      btn.classList.add("bloqueado");
+      btn.onclick=null;
+    }
+  });
+
+  // Banner de perfil no dashboard
+  document.getElementById("perfil-banner").style.display="flex";
+  document.getElementById("pb-icon").textContent=u.icon;
+  document.getElementById("pb-txt").textContent=u.nome+" · "+u.perfilLabel;
+  document.getElementById("pb-sub").textContent=u.empresa;
+  document.getElementById("dash-subtitulo").textContent="Acompanhe o status da operação";
+
+  // Controle de botões criar/editar conforme perfil
+  const podeC=u.podeCadastrar;
+  const btnIds=["btn-nova-os","btn-novo-equip","btn-novo-plano","btn-novo-prof"];
+  btnIds.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=podeC?"":"none";
+  });
+
+  // Mostra o sistema
+  document.getElementById("app-sistema").style.display="block";
+
+  // Vai para a primeira tela permitida
+  const primeira=u.acesso[0]||"os";
+  irPara(primeira);
+  renderDashboard();
+  atualizarBadgeUrgente();
+}
+
+function fazerLogout(){
+  if(!confirm("Deseja sair do sistema?"))return;
+  usuarioLogado=null;
+  // Reset
+  document.getElementById("app-sistema").style.display="none";
+  document.getElementById("app-login").style.display="flex";
+  document.getElementById("input-senha").value="";
+  document.getElementById("perfil-detectado").classList.remove("visivel");
+  document.getElementById("msg-erro").classList.remove("visivel");
+  document.getElementById("btn-entrar").disabled=false;
+  document.getElementById("spinner").style.display="none";
+  document.getElementById("btn-entrar-txt").textContent="Entrar no sistema";
+  document.getElementById("ld-bar").style.width="0%";
+  filtroOS="todos";
+  // Restaura CPF salvo se houver
+  const cpfSalvo=localStorage.getItem("cpf-salvo");
+  if(cpfSalvo){ document.getElementById("input-cpf").value=cpfSalvo; document.getElementById("lembrar").checked=true; detectarPerfil(); }
+  else document.getElementById("input-cpf").value="";
+}
+
+// Modal login (esqueci senha)
+function abrirModalEsqueci(){
+  document.getElementById("rec-msg").style.display="none";
+  document.getElementById("rec-cpf").value=document.getElementById("input-cpf").value;
+  document.getElementById("modal-esqueci").classList.add("aberto");
+}
+function fecharModalLogin(id){ document.getElementById(id).classList.remove("aberto"); }
+function enviarRecuperacao(){
+  const cpf=document.getElementById("rec-cpf").value.trim();
+  if(!cpf||cpf.length<14){alert("Informe um CPF válido.");return;}
+  document.getElementById("rec-msg").style.display="block";
+  setTimeout(()=>fecharModalLogin("modal-esqueci"),2000);
+}
+
+// Restaurar CPF no load
+window.addEventListener("load",()=>{
+  const cpfSalvo=localStorage.getItem("cpf-salvo");
+  if(cpfSalvo){ document.getElementById("input-cpf").value=cpfSalvo; document.getElementById("lembrar").checked=true; detectarPerfil(); }
+});
+
+// ════════════════════════════════════════════
+// DADOS DO SISTEMA
+// ════════════════════════════════════════════
 let profissionais=[
-  {id:1,nome:"Carlos Lima",cargo:"Técnico de Manutenção",matricula:"MAT-0001",turno:"Manhã",status:"ativo",tel:"(11) 98800-1234",especialidades:["Hidráulica","Pneumática","Elétrica"],obs:"Responsável pela linha de produção A."},
-  {id:2,nome:"Ana Costa",cargo:"Instrumentista",matricula:"MAT-0002",turno:"Tarde",status:"ativo",tel:"(11) 98800-5678",especialidades:["CNC","Instrumentação","PLC"],obs:"Certificação NR-12."},
+  {id:1,nome:"Ana Costa",cargo:"Instrumentista",matricula:"MAT-0002",turno:"Tarde",status:"ativo",tel:"(11) 98800-5678",especialidades:["CNC","Instrumentação","PLC"],obs:"Certificação NR-12."},
+  {id:2,nome:"Carlos Lima",cargo:"Técnico de Manutenção",matricula:"MAT-0001",turno:"Manhã",status:"ativo",tel:"(11) 98800-1234",especialidades:["Hidráulica","Pneumática","Elétrica"],obs:"Responsável pela linha de produção A."},
   {id:3,nome:"João Melo",cargo:"Mecânico Industrial",matricula:"MAT-0003",turno:"Manhã",status:"ativo",tel:"(11) 98800-9012",especialidades:["Mecânica","Soldagem","Tornaria"],obs:""},
   {id:4,nome:"Paula Ramos",cargo:"Eletricista Industrial",matricula:"MAT-0004",turno:"Integral",status:"ativo",tel:"(11) 98800-3456",especialidades:["Alta tensão","Painéis elétricos","SDAI"],obs:"NR-10 e NR-35 em dia."},
 ];
-
 let equipamentos=[
   {id:1,nome:"Compressor AR-200",marca:"Atlas Copco",modelo:"GA 15",serie:"SN-44521",setor:"Produção",status:"ativo",ultima:"2024-03-03",proxima:"2024-06-03"},
   {id:2,nome:"Torno CNC T500",marca:"Romi",modelo:"T500",serie:"SN-77832",setor:"Usinagem",status:"alerta",ultima:"2024-02-10",proxima:"2024-05-10"},
@@ -586,7 +938,9 @@ let planos=[
   {id:4,nome:"Revisão Anual — Prensas",equipId:4,equip:"Prensa HP-80",freq:"Anual",proxima:"2024-10-01",tipo:"Preventiva",status:"ativo",tecnico:"Carlos Lima"},
 ];
 
-// ── CONSTANTES ─────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════
+// CONSTANTES E HELPERS
+// ════════════════════════════════════════════
 const STATUS_OS={
   aberta:    {label:"Aberta",       bg:"var(--s-aberta-bg)",    txt:"var(--s-aberta-txt)",    bd:"var(--s-aberta-bd)"},
   andamento: {label:"Em Andamento", bg:"var(--s-andamento-bg)", txt:"var(--s-andamento-txt)", bd:"var(--s-andamento-bd)"},
@@ -595,10 +949,10 @@ const STATUS_OS={
   cancelada: {label:"Cancelada",    bg:"var(--s-cancelada-bg)", txt:"var(--s-cancelada-txt)", bd:"var(--s-cancelada-bd)"},
 };
 const PRIO_OS={
-  baixa:  {label:"Baixa",  bg:"var(--p-baixa-bg)",   txt:"var(--p-baixa-txt)",   bd:"var(--p-baixa-bd)"},
-  media:  {label:"Média",  bg:"var(--p-media-bg)",   txt:"var(--p-media-txt)",   bd:"var(--p-media-bd)"},
-  alta:   {label:"Alta",   bg:"var(--p-alta-bg)",    txt:"var(--p-alta-txt)",    bd:"var(--p-alta-bd)"},
-  urgente:{label:"Urgente",bg:"var(--p-urgente-bg)", txt:"var(--p-urgente-txt)", bd:"var(--p-urgente-bd)"},
+  baixa:  {label:"Baixa",  bg:"var(--p-baixa-bg)",  txt:"var(--p-baixa-txt)",  bd:"var(--p-baixa-bd)"},
+  media:  {label:"Média",  bg:"var(--p-media-bg)",  txt:"var(--p-media-txt)",  bd:"var(--p-media-bd)"},
+  alta:   {label:"Alta",   bg:"var(--p-alta-bg)",   txt:"var(--p-alta-txt)",   bd:"var(--p-alta-bd)"},
+  urgente:{label:"Urgente",bg:"var(--p-urgente-bg)",txt:"var(--p-urgente-txt)",bd:"var(--p-urgente-bd)"},
 };
 const STATUS_EQ={
   ativo:  {label:"Ativo",  bg:"var(--e-ativo-bg)",  txt:"var(--e-ativo-txt)",  bd:"var(--e-ativo-bd)"},
@@ -613,43 +967,49 @@ const STATUS_PROF={
 const STATUS_SEQ=["aberta","andamento","aguardando","concluida"];
 let filtroOS="todos", osDetalheId=null, profDetalheId=null, profEditandoId=null, osEditandoId=null;
 
-// ── HELPERS ────────────────────────────────────────────────────────────────
 function badge(label,bg,txt,bd){return `<span class="badge" style="background:${bg};color:${txt};border-color:${bd}">${label}</span>`;}
 function badgeTipo(label){return `<span class="badge tipo-badge">${label}</span>`;}
 function hoje(){return new Date().toISOString().split("T")[0];}
 function iniciais(nome){return nome.split(" ").slice(0,2).map(p=>p[0]).join("").toUpperCase();}
 function listarTecnicos(){return profissionais.filter(p=>p.status==="ativo").map(p=>p.nome);}
 
-function popularFiltroTecnico(){
-  const sel=document.getElementById("os-filtro-tecnico");
-  const atual=sel.value;
-  const tecs=[...new Set(ordens.map(o=>o.tecnico))].sort();
-  sel.innerHTML='<option value="">Todos os técnicos</option>'+tecs.map(t=>`<option${t===atual?' selected':''}>${t}</option>`).join('');
+function atualizarBadgeUrgente(){
+  const u=ordens.filter(o=>o.prio==="urgente"&&o.status!=="concluida"&&o.status!=="cancelada").length;
+  const el=document.getElementById("badge-urgente");
+  if(el){el.style.display=u>0?"inline-block":"none";el.textContent=u;}
 }
 
+// ════════════════════════════════════════════
+// NAVEGAÇÃO
+// ════════════════════════════════════════════
 function irPara(tela){
+  if(!usuarioLogado)return;
+  // Verifica acesso
+  if(!usuarioLogado.acesso.includes(tela)){
+    document.querySelectorAll(".tela").forEach(t=>t.classList.remove("ativa"));
+    document.getElementById("tela-"+tela)?.classList.add("ativa");
+    return;
+  }
   document.querySelectorAll(".tela").forEach(t=>t.classList.remove("ativa"));
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("ativo"));
-  document.getElementById("tela-"+tela).classList.add("ativa");
-  document.getElementById("nav-"+tela).classList.add("ativo");
+  document.getElementById("tela-"+tela)?.classList.add("ativa");
+  document.getElementById("nav-"+tela)?.classList.add("ativo");
   if(tela==="dashboard") renderDashboard();
   if(tela==="os"){popularFiltroTecnico();renderOS();}
   if(tela==="equip") renderEquip();
   if(tela==="planos") renderPlanos();
   if(tela==="profissionais") renderProfissionais();
-  atualizarBadgeUrgente();
 }
 
-function atualizarBadgeUrgente(){
-  const u=ordens.filter(o=>o.prio==="urgente"&&o.status!=="concluida"&&o.status!=="cancelada").length;
-  const el=document.getElementById("badge-urgente");
-  el.style.display=u>0?"inline-block":"none"; el.textContent=u;
-}
-
-// ── DASHBOARD ──────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════════
 function renderDashboard(){
-  const abertas=ordens.filter(o=>o.status!=="concluida"&&o.status!=="cancelada").length;
-  const urgentes=ordens.filter(o=>o.prio==="urgente"&&o.status!=="concluida").length;
+  const ordensVisiveis=usuarioLogado?.somentePropriaOS
+    ? ordens.filter(o=>o.tecnico===usuarioLogado.nome)
+    : ordens;
+  const abertas=ordensVisiveis.filter(o=>o.status!=="concluida"&&o.status!=="cancelada").length;
+  const urgentes=ordensVisiveis.filter(o=>o.prio==="urgente"&&o.status!=="concluida").length;
   const criticos=equipamentos.filter(e=>e.status==="critico").length;
   const vencidos=planos.filter(p=>p.status==="vencido").length;
   const stats=[
@@ -666,14 +1026,14 @@ function renderDashboard(){
       <div class="stat-label">${s.label}</div>
       <div class="stat-sub">${s.sub}</div>
     </div>`).join("");
-  document.getElementById("dash-os-recentes").innerHTML=ordens.slice(0,4).map(o=>`
+  document.getElementById("dash-os-recentes").innerHTML=ordensVisiveis.slice(0,4).map(o=>`
     <div class="mini-item">
       <div><div class="mini-nome">${o.id} — ${o.equip}</div><div class="mini-sub">${o.tecnico} · ${o.abertura}</div></div>
       <div style="display:flex;gap:4px">
         ${badge(PRIO_OS[o.prio].label,PRIO_OS[o.prio].bg,PRIO_OS[o.prio].txt,PRIO_OS[o.prio].bd)}
         ${badge(STATUS_OS[o.status].label,STATUS_OS[o.status].bg,STATUS_OS[o.status].txt,STATUS_OS[o.status].bd)}
       </div>
-    </div>`).join("");
+    </div>`).join("") || '<div style="color:var(--muted);font-size:12px;padding:12px 0;">Nenhuma OS encontrada.</div>';
   document.getElementById("dash-equip").innerHTML=equipamentos.slice(0,4).map(e=>{
     const s=STATUS_EQ[e.status]||STATUS_EQ.inativo;
     return `<div class="mini-item"><div><div class="mini-nome">${e.nome}</div><div class="mini-sub">${e.setor}</div></div>${badge(s.label,s.bg,s.txt,s.bd)}</div>`;
@@ -687,51 +1047,95 @@ function renderDashboard(){
     </div>`).join("");
 }
 
-// ── ORDENS DE SERVIÇO ──────────────────────────────────────────────────────
-function renderOS(){
+// ════════════════════════════════════════════
+// ORDENS DE SERVIÇO
+// ════════════════════════════════════════════
+function popularFiltroTecnico(){
+  const sel=document.getElementById("os-filtro-tecnico");
+  const atual=sel.value;
+  const tecs=[...new Set(ordens.map(o=>o.tecnico))].sort();
+  sel.innerHTML='<option value="">Todos os técnicos</option>'+tecs.map(t=>`<option${t===atual?' selected':''}>${t}</option>`).join('');
+  // Se técnico, força filtro para o próprio nome e oculta o select
+  if(usuarioLogado?.somentePropriaOS){
+    sel.value=usuarioLogado.nome;
+    sel.style.display="none";
+  } else {
+    sel.style.display="";
+  }
+}
+
+function getOrdensFiltradas(){
   const busca=(document.getElementById("os-busca")?.value||"").toLowerCase().trim();
   const tecnico=document.getElementById("os-filtro-tecnico")?.value||"";
   const tipo=document.getElementById("os-filtro-tipo")?.value||"";
-  const filtradas=ordens.filter(o=>{
+  const progresso=document.getElementById("os-filtro-progresso")?.value||"";
+  const prio=document.getElementById("os-filtro-prio")?.value||"";
+  // Técnico vê só as suas
+  const base=usuarioLogado?.somentePropriaOS
+    ? ordens.filter(o=>o.tecnico===usuarioLogado.nome)
+    : ordens;
+  return base.filter(o=>{
     const mS=filtroOS==="todos"||o.status===filtroOS;
     const mT=!tecnico||o.tecnico===tecnico;
     const mTipo=!tipo||o.tipo===tipo;
+    const mProg=!progresso||o.status===progresso;
+    const mPrio=!prio||o.prio===prio;
     const mB=!busca||
       o.id.toLowerCase().includes(busca)||o.equip.toLowerCase().includes(busca)||
       o.tecnico.toLowerCase().includes(busca)||o.tipo.toLowerCase().includes(busca)||
       (STATUS_OS[o.status]?.label||"").toLowerCase().includes(busca)||
       (PRIO_OS[o.prio]?.label||"").toLowerCase().includes(busca)||
       o.desc.toLowerCase().includes(busca)||(o.pecas||"").toLowerCase().includes(busca);
-    return mS&&mT&&mTipo&&mB;
+    return mS&&mT&&mTipo&&mProg&&mPrio&&mB;
   });
-  document.getElementById("os-count").textContent=`${ordens.length} ordens · ${filtradas.length} exibidas`;
+}
+
+function renderOS(){
+  const filtradas=getOrdensFiltradas();
+  const base=usuarioLogado?.somentePropriaOS?ordens.filter(o=>o.tecnico===usuarioLogado.nome):ordens;
+  document.getElementById("os-count").textContent=`${base.length} ordens · ${filtradas.length} exibidas`;
+  if(document.getElementById("os-count-print"))
+    document.getElementById("os-count-print").textContent=`${filtradas.length} ordem(ns)`;
+
   const abas=[
     {key:"todos",label:"Todas"},{key:"aberta",label:"Abertas"},
     {key:"andamento",label:"Em Andamento"},{key:"aguardando",label:"Aguardando"},
     {key:"concluida",label:"Concluídas"},
-  ].map(a=>({...a,count:a.key==="todos"?ordens.length:ordens.filter(o=>o.status===a.key).length}));
+  ].map(a=>({...a,count:a.key==="todos"?base.length:base.filter(o=>o.status===a.key).length}));
   document.getElementById("os-filtros").innerHTML=abas.map(a=>
     `<button class="filtro-aba ${filtroOS===a.key?'ativo':''}" onclick="setFiltroOS('${a.key}')">${a.label} (${a.count})</button>`
   ).join("");
+
   if(filtradas.length===0){
     document.getElementById("os-lista").innerHTML=`<div class="empty"><div class="empty-icon">📭</div>Nenhuma OS encontrada para os filtros aplicados</div>`;
     return;
   }
+  const podeAvancar=usuarioLogado?.podeEditar||usuarioLogado?.somentePropriaOS;
+  const pColors={aberta:"var(--blue-400)",andamento:"var(--s-andamento-txt)",aguardando:"var(--s-aguardando-txt)",concluida:"var(--s-concluida-txt)",cancelada:"var(--s-cancelada-txt)"};
   document.getElementById("os-lista").innerHTML=filtradas.map(o=>{
     const s=STATUS_OS[o.status],p=PRIO_OS[o.prio];
+    const idx=STATUS_SEQ.indexOf(o.status);
+    const pct=o.status==="concluida"?100:o.status==="cancelada"?0:Math.round(((idx+1)/STATUS_SEQ.length)*100);
+    const barColor=pColors[o.status]||"var(--blue-400)";
+    const fim=o.status==="concluida"||o.status==="cancelada";
     return `<div class="os-item">
       <div class="os-info">
         <div class="badges-row" style="margin-bottom:6px">
-          <span class="os-id">${o.id}</span>
-          ${badgeTipo(o.tipo)}${badge(p.label,p.bg,p.txt,p.bd)}${badge(s.label,s.bg,s.txt,s.bd)}
+          <span class="os-id">${o.id}</span>${badgeTipo(o.tipo)}${badge(p.label,p.bg,p.txt,p.bd)}${badge(s.label,s.bg,s.txt,s.bd)}
         </div>
         <div class="os-equip">${o.equip}</div>
         <div class="os-desc">${o.desc.substring(0,90)}${o.desc.length>90?"...":""}</div>
         <div class="os-meta">👨‍🔧 ${o.tecnico} &nbsp;·&nbsp; 📅 ${o.abertura}${o.conclusao?` &nbsp;·&nbsp; ✅ ${o.conclusao}`:""}</div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+          <div style="flex:1;height:4px;background:var(--blue-100);position:relative;">
+            <div style="position:absolute;top:0;left:0;height:4px;width:${pct}%;background:${barColor};transition:width .3s;"></div>
+          </div>
+          <span style="font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:${barColor};min-width:30px;">${pct}%</span>
+        </div>
       </div>
       <div class="os-actions">
         <button class="btn btn-ghost btn-sm" onclick="abrirDetalheOS('${o.id}')">Detalhes</button>
-        ${o.status!=="concluida"&&o.status!=="cancelada"?`<button class="btn btn-primary btn-sm" onclick="avancarStatus('${o.id}')">Avançar ▶</button>`:""}
+        ${podeAvancar&&!fim?`<button class="btn btn-primary btn-sm" onclick="avancarStatus('${o.id}')">Avançar ▶</button>`:""}
       </div>
     </div>`;
   }).join("");
@@ -740,80 +1144,60 @@ function renderOS(){
 function setFiltroOS(f){filtroOS=f;renderOS();}
 
 function abrirModalNovaOS(){
-  // 🔧 Reset estado
-  osEditandoId = null;
-  document.getElementById("btn-salvar-os").textContent = "Abrir OS";
-
-  // 🔽 Popular selects
-  document.getElementById("nos-equip").innerHTML =
-    equipamentos.map(e=>`<option value="${e.id}">${e.nome}</option>`).join("");
-
-  const tecnicos = listarTecnicos();
-  document.getElementById("nos-tecnico").innerHTML =
-    tecnicos.map(t=>`<option>${t}</option>`).join("");
-
-  // 🧹 Limpar campos
-  document.getElementById("nos-desc").value = "";
-  document.getElementById("nos-pecas").value = "";
-
-  // 🚀 Abrir modal
+  osEditandoId=null;
+  document.getElementById("modal-os-titulo").textContent="🔧 Nova Ordem de Serviço";
+  document.getElementById("btn-salvar-os").textContent="Abrir OS";
+  document.getElementById("nos-equip").innerHTML=equipamentos.map(e=>`<option value="${e.id}">${e.nome}</option>`).join("");
+  const tecnicos=listarTecnicos();
+  document.getElementById("nos-tecnico").innerHTML=tecnicos.map(t=>`<option>${t}</option>`).join("");
+  // Se técnico, pré-seleciona o próprio nome
+  if(usuarioLogado?.somentePropriaOS){
+    const sel=document.getElementById("nos-tecnico");
+    sel.value=usuarioLogado.nome;
+    sel.disabled=true;
+  } else {
+    document.getElementById("nos-tecnico").disabled=false;
+  }
+  document.getElementById("nos-desc").value="";
+  document.getElementById("nos-pecas").value="";
   abrirModal("modal-nova-os");
 }
 
 function salvarOS(){
-  const desc = document.getElementById("nos-desc").value.trim();
-  if(!desc){ alert("Preencha a descrição!"); return; }
-
-  const equipId = parseInt(document.getElementById("nos-equip").value);
-  const eq = equipamentos.find(e => e.id === equipId) || equipamentos[0];
-
+  const desc=document.getElementById("nos-desc").value.trim();
+  if(!desc){alert("Preencha a descrição!");return;}
+  const equipId=parseInt(document.getElementById("nos-equip").value);
+  const eq=equipamentos.find(e=>e.id===equipId)||equipamentos[0];
   if(osEditandoId){
-    const o = ordens.find(x => x.id === osEditandoId);
+    const o=ordens.find(x=>x.id===osEditandoId);
     if(o){
-      o.equipId = eq.id;
-      o.equip = eq.nome;
-      o.tipo = document.getElementById("nos-tipo").value;
-      o.prio = document.getElementById("nos-prio").value;
-      o.tecnico = document.getElementById("nos-tecnico").value;
-      o.desc = desc;
-      o.pecas = document.getElementById("nos-pecas").value;
-
-      // ✅ controle de edição
-      o.editadoPor = "Admin";
-      o.editadoEm = hoje();
+      o.equipId=eq.id;o.equip=eq.nome;
+      o.tipo=document.getElementById("nos-tipo").value;
+      o.prio=document.getElementById("nos-prio").value;
+      o.tecnico=document.getElementById("nos-tecnico").value;
+      o.desc=desc;o.pecas=document.getElementById("nos-pecas").value;
     }
-
-    osEditandoId = null;
-
+    osEditandoId=null;
   } else {
-    // ✅ criação de nova OS
-    const num = String(ordens.length+1).padStart(3,"0");
+    const num=String(ordens.length+1).padStart(3,"0");
     ordens.unshift({
-      id:`OS-${num}`,
-      equipId:eq.id,
-      equip:eq.nome,
+      id:`OS-${num}`,equipId:eq.id,equip:eq.nome,
       tipo:document.getElementById("nos-tipo").value,
       prio:document.getElementById("nos-prio").value,
-      status:"aberta",
-      tecnico:document.getElementById("nos-tecnico").value,
-      desc,
-      pecas:document.getElementById("nos-pecas").value,
-      abertura:hoje(),
-      conclusao:null
+      status:"aberta",tecnico:document.getElementById("nos-tecnico").value,
+      desc,pecas:document.getElementById("nos-pecas").value,
+      abertura:hoje(),conclusao:null
     });
   }
-
-  fecharModal("modal-nova-os");
-  popularFiltroTecnico();
-  renderOS();
-  atualizarBadgeUrgente();
+  fecharModal("modal-nova-os");popularFiltroTecnico();renderOS();atualizarBadgeUrgente();
 }
 
 function avancarStatus(id){
   const o=ordens.find(x=>x.id===id);if(!o)return;
   const idx=STATUS_SEQ.indexOf(o.status);
   if(idx<STATUS_SEQ.length-1){o.status=STATUS_SEQ[idx+1];if(o.status==="concluida")o.conclusao=hoje();}
-  renderOS();atualizarBadgeUrgente();if(osDetalheId===id)renderDetalheOS(id);
+  renderOS();atualizarBadgeUrgente();
+  if(osDetalheId===id)renderDetalheOS(id);
 }
 
 function abrirDetalheOS(id){osDetalheId=id;renderDetalheOS(id);abrirModal("modal-detalhe-os");}
@@ -833,7 +1217,11 @@ function renderDetalheOS(id){
   document.getElementById("det-progress-labels").innerHTML=STATUS_SEQ.map((st,i)=>
     `<div class="progress-lbl" style="color:${i<=idx?pColors[st]:'#8aaec8'}">${STATUS_OS[st].label}</div>`).join("");
   const fim=o.status==="concluida"||o.status==="cancelada";
-  document.getElementById("det-avancar-btn").style.display=fim?"none":"block";
+  const podeAvancar=usuarioLogado?.podeEditar||usuarioLogado?.somentePropriaOS;
+  const podeEditar=usuarioLogado?.podeEditar;
+  document.getElementById("det-avancar-btn").style.display=(podeAvancar&&!fim)?"block":"none";
+  document.getElementById("det-editar-btn").style.display=podeEditar?"block":"none";
+  document.getElementById("det-acoes").style.display=(podeAvancar&&!fim)||podeEditar?"flex":"none";
   const msg=document.getElementById("det-concluida-msg");
   msg.style.display=fim?"block":"none";
   msg.style.color=o.status==="concluida"?"var(--s-concluida-txt)":"var(--s-cancelada-txt)";
@@ -842,7 +1230,77 @@ function renderDetalheOS(id){
 
 function avancarStatusAtual(){if(osDetalheId)avancarStatus(osDetalheId);}
 
-// ── EQUIPAMENTOS ───────────────────────────────────────────────────────────
+function editarOSAtual(){
+  if(!osDetalheId)return;
+  const o=ordens.find(x=>x.id===osDetalheId);if(!o)return;
+  osEditandoId=o.id;
+  fecharModal("modal-detalhe-os");
+  abrirModalNovaOS();
+  document.getElementById("modal-os-titulo").textContent="✏️ Editar Ordem de Serviço";
+  document.getElementById("btn-salvar-os").textContent="Salvar alterações";
+  document.getElementById("nos-equip").value=o.equipId;
+  document.getElementById("nos-tipo").value=o.tipo;
+  document.getElementById("nos-prio").value=o.prio;
+  document.getElementById("nos-tecnico").value=o.tecnico;
+  document.getElementById("nos-desc").value=o.desc;
+  document.getElementById("nos-pecas").value=o.pecas||"";
+}
+
+// ════════════════════════════════════════════
+// EXPORTAR / IMPRIMIR
+// ════════════════════════════════════════════
+function montarInfosPrint(){
+  const agora=new Date();
+  const dataStr=agora.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric"})+" "+agora.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  const filtros=[];
+  const tecnico=document.getElementById("os-filtro-tecnico")?.value;
+  const tipo=document.getElementById("os-filtro-tipo")?.value;
+  const progresso=document.getElementById("os-filtro-progresso")?.value;
+  const prio=document.getElementById("os-filtro-prio")?.value;
+  const busca=document.getElementById("os-busca")?.value.trim();
+  if(tecnico)filtros.push("Técnico: "+tecnico);
+  if(tipo)filtros.push("Tipo: "+tipo);
+  if(progresso)filtros.push("Progresso: "+(STATUS_OS[progresso]?.label||progresso));
+  if(prio)filtros.push("Prioridade: "+(PRIO_OS[prio]?.label||prio));
+  if(busca)filtros.push('Busca: "'+busca+'"');
+  if(filtroOS!=="todos")filtros.push("Aba: "+(STATUS_OS[filtroOS]?.label||filtroOS));
+  if(usuarioLogado?.somentePropriaOS)filtros.push("Técnico: "+usuarioLogado.nome+" (acesso restrito)");
+  const total=getOrdensFiltradas().length;
+  document.getElementById("print-data").textContent="Gerado em: "+dataStr+" · Usuário: "+usuarioLogado?.nome;
+  document.getElementById("print-filtros-label").textContent=filtros.length>0?"Filtros: "+filtros.join(" · "):"Sem filtros";
+  document.getElementById("print-total").textContent="Total: "+total+" ordem(ns)";
+}
+function imprimirOS(){montarInfosPrint();window.print();}
+function exportarPDF(){
+  montarInfosPrint();
+  const msg=document.createElement("div");
+  msg.style.cssText="position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--blue-800);color:#fff;padding:12px 22px;z-index:9999;font-size:13px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.3);";
+  msg.innerHTML="💡 Na janela de impressão, selecione <strong>Salvar como PDF</strong> como destino.";
+  document.body.appendChild(msg);
+  setTimeout(()=>{document.body.removeChild(msg);},3500);
+  setTimeout(()=>{window.print();},300);
+}
+function exportarCSV(){
+  const dados=getOrdensFiltradas();
+  if(dados.length===0){alert("Nenhuma OS para exportar.");return;}
+  const cab=["Número","Equipamento","Tipo","Prioridade","Status","Técnico","Data Abertura","Data Conclusão","Peças","Descrição"];
+  const linhas=dados.map(o=>[
+    o.id,o.equip,o.tipo,PRIO_OS[o.prio]?.label||o.prio,STATUS_OS[o.status]?.label||o.status,
+    o.tecnico,o.abertura,o.conclusao||"",
+    (o.pecas||"").replace(/,/g,";"),o.desc.replace(/,/g,";").replace(/\n/g," ")
+  ]);
+  const csv="\uFEFF"+[cab,...linhas].map(r=>r.map(c=>`"${c}"`).join(",")).join("\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  const agora=new Date();
+  a.href=url;a.download=`OS_Relatorio_${agora.toLocaleDateString("pt-BR").replace(/\//g,"-")}.csv`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+// ════════════════════════════════════════════
+// EQUIPAMENTOS
+// ════════════════════════════════════════════
 function renderEquip(){
   const busca=(document.getElementById("equip-busca")?.value||"").toLowerCase();
   const filtrados=equipamentos.filter(e=>
@@ -853,7 +1311,7 @@ function renderEquip(){
     const s=STATUS_EQ[e.status]||STATUS_EQ.inativo;
     return `<div class="equip-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-        <div class="equip-icon">⚙️</div>${badge(s.label,s.bg,s.txt,s.bd)}
+        <div style="font-size:20px;opacity:.6;">⚙️</div>${badge(s.label,s.bg,s.txt,s.bd)}
       </div>
       <div class="equip-nome">${e.nome}</div>
       <div class="equip-sub">${e.marca} · ${e.modelo} · ${e.setor}</div>
@@ -887,13 +1345,15 @@ function abrirDetalheEquip(id){
   abrirModal("modal-detalhe-equip");
 }
 
-// ── PLANOS ─────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════
+// PLANOS
+// ════════════════════════════════════════════
 function renderPlanos(){
   document.getElementById("planos-count").textContent=`${planos.length} planos agendados`;
   const venc=planos.filter(p=>p.status==="vencido");
   const al=document.getElementById("planos-alerta");
   al.style.display=venc.length>0?"block":"none";
-  if(venc.length>0)al.textContent=`⚠️  ${venc.length} plano(s) vencido(s) — crie as OS correspondentes.`;
+  if(venc.length>0)al.textContent=`⚠️ ${venc.length} plano(s) vencido(s) — crie as OS correspondentes.`;
   document.getElementById("planos-grid").innerHTML=planos.map(p=>{
     const v=p.status==="vencido";
     return `<div class="plano-card">
@@ -915,8 +1375,7 @@ function renderPlanos(){
 
 function abrirModalNovoPlano(){
   document.getElementById("np-equip").innerHTML=equipamentos.map(e=>`<option value="${e.id}">${e.nome}</option>`).join("");
-  const tecnicos=listarTecnicos();
-  document.getElementById("np-tecnico").innerHTML=tecnicos.map(t=>`<option>${t}</option>`).join("");
+  document.getElementById("np-tecnico").innerHTML=listarTecnicos().map(t=>`<option>${t}</option>`).join("");
   document.getElementById("np-nome").value="";document.getElementById("np-data").value="";
   abrirModal("modal-novo-plano");
 }
@@ -932,7 +1391,9 @@ function salvarPlano(){
   fecharModal("modal-novo-plano");renderPlanos();
 }
 
-// ── PROFISSIONAIS ──────────────────────────────────────────────────────────
+// ════════════════════════════════════════════
+// PROFISSIONAIS
+// ════════════════════════════════════════════
 function renderProfissionais(){
   const busca=(document.getElementById("prof-busca")?.value||"").toLowerCase();
   const filtroStatus=document.getElementById("prof-filtro-status")?.value||"";
@@ -940,30 +1401,24 @@ function renderProfissionais(){
   const filtrados=profissionais.filter(p=>{
     const mS=!filtroStatus||p.status===filtroStatus;
     const mT=!filtroTurno||p.turno===filtroTurno;
-    const mB=!busca||
-      p.nome.toLowerCase().includes(busca)||
-      p.cargo.toLowerCase().includes(busca)||
-      p.matricula.toLowerCase().includes(busca)||
-      p.turno.toLowerCase().includes(busca)||
+    const mB=!busca||p.nome.toLowerCase().includes(busca)||p.cargo.toLowerCase().includes(busca)||
+      p.matricula.toLowerCase().includes(busca)||p.turno.toLowerCase().includes(busca)||
       (p.especialidades||[]).some(e=>e.toLowerCase().includes(busca));
     return mS&&mT&&mB;
   });
   const ativos=profissionais.filter(p=>p.status==="ativo").length;
   document.getElementById("prof-count").textContent=`${profissionais.length} cadastrados · ${ativos} ativos`;
   if(filtrados.length===0){
-    document.getElementById("prof-grid").innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👷</div>Nenhum profissional encontrado</div>`;
-    return;
+    document.getElementById("prof-grid").innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👷</div>Nenhum profissional encontrado</div>`;return;
   }
+  const podeEditar=usuarioLogado?.podeEditar;
   document.getElementById("prof-grid").innerHTML=filtrados.map(p=>{
     const s=STATUS_PROF[p.status]||STATUS_PROF.ativo;
     const osAtivas=ordens.filter(o=>o.tecnico===p.nome&&o.status!=="concluida"&&o.status!=="cancelada").length;
     return `<div class="prof-card">
       <div class="prof-avatar-area">
         <div class="prof-avatar">${iniciais(p.nome)}</div>
-        <div>
-          <div class="prof-nome">${p.nome}</div>
-          <div class="prof-cargo">${p.cargo}</div>
-        </div>
+        <div><div class="prof-nome">${p.nome}</div><div class="prof-cargo">${p.cargo}</div></div>
       </div>
       ${badge(s.label,s.bg,s.txt,s.bd)}
       <div style="margin-top:10px">
@@ -972,10 +1427,10 @@ function renderProfissionais(){
         <div class="prof-info">📞 Contato: <span>${p.tel||"—"}</span></div>
         <div class="prof-info">🔧 OS ativas: <span>${osAtivas}</span></div>
       </div>
-      ${p.especialidades&&p.especialidades.length>0?`<div style="margin-top:10px">${p.especialidades.map(e=>`<span class="esp-tag">${e}</span>`).join("")}</div>`:""}
+      ${p.especialidades?.length>0?`<div style="margin-top:10px">${p.especialidades.map(e=>`<span class="esp-tag">${e}</span>`).join("")}</div>`:""}
       <div class="prof-actions">
         <button class="btn btn-ghost btn-sm" style="flex:1" onclick="abrirDetalheProf(${p.id})">Detalhes</button>
-        <button class="btn btn-primary btn-sm" style="flex:1" onclick="abrirEditarProf(${p.id})">Editar</button>
+        ${podeEditar?`<button class="btn btn-primary btn-sm" style="flex:1" onclick="abrirEditarProf(${p.id})">Editar</button>`:""}
       </div>
     </div>`;
   }).join("");
@@ -991,7 +1446,6 @@ function abrirModalNovoProf(){
   document.getElementById("np2-status").value="ativo";
   abrirModal("modal-novo-prof");
 }
-
 function abrirEditarProf(id){
   const p=profissionais.find(x=>x.id===id);if(!p)return;
   profEditandoId=id;
@@ -1007,20 +1461,17 @@ function abrirEditarProf(id){
   document.getElementById("np2-obs").value=p.obs||"";
   abrirModal("modal-novo-prof");
 }
-
 function salvarProf(){
   const nome=document.getElementById("np2-nome").value.trim();
   if(!nome){alert("Preencha o nome!");return;}
   const espRaw=document.getElementById("np2-esp").value.trim();
   const especialidades=espRaw?espRaw.split(",").map(s=>s.trim()).filter(Boolean):[];
-  const dados={
-    nome,cargo:document.getElementById("np2-cargo").value,
+  const dados={nome,cargo:document.getElementById("np2-cargo").value,
     matricula:document.getElementById("np2-matricula").value.trim(),
     turno:document.getElementById("np2-turno").value,
     status:document.getElementById("np2-status").value,
     tel:document.getElementById("np2-tel").value.trim(),
-    especialidades,obs:document.getElementById("np2-obs").value.trim(),
-  };
+    especialidades,obs:document.getElementById("np2-obs").value.trim()};
   if(profEditandoId){
     const idx=profissionais.findIndex(x=>x.id===profEditandoId);
     if(idx>=0)profissionais[idx]={...profissionais[idx],...dados};
@@ -1029,7 +1480,6 @@ function salvarProf(){
   }
   fecharModal("modal-novo-prof");renderProfissionais();profEditandoId=null;
 }
-
 function abrirDetalheProf(id){
   profDetalheId=id;
   const p=profissionais.find(x=>x.id===id);if(!p)return;
@@ -1038,63 +1488,32 @@ function abrirDetalheProf(id){
   const s=STATUS_PROF[p.status]||STATUS_PROF.ativo;
   const osAtivas=ordens.filter(o=>o.tecnico===p.nome&&o.status!=="concluida"&&o.status!=="cancelada");
   const osTotal=ordens.filter(o=>o.tecnico===p.nome).length;
-  const rows=[
-    ["Cargo",p.cargo],["Matrícula",p.matricula||"—"],["Turno",p.turno],
-    ["Telefone",p.tel||"—"],["OS Ativas",osAtivas.length],["Total de OS",osTotal],
-  ];
+  const rows=[["Cargo",p.cargo],["Matrícula",p.matricula||"—"],["Turno",p.turno],["Telefone",p.tel||"—"],["OS Ativas",osAtivas.length],["Total de OS",osTotal]];
   document.getElementById("dp-content").innerHTML=
     `<div style="margin-bottom:12px">${badge(s.label,s.bg,s.txt,s.bd)}</div>`+
     rows.map(([k,v])=>`<div class="detalhe-row"><span class="detalhe-key">${k}</span><span class="detalhe-val">${v}</span></div>`).join("")+
-    (p.especialidades&&p.especialidades.length>0?`<div style="margin-top:12px"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Especialidades</div>${p.especialidades.map(e=>`<span class="esp-tag">${e}</span>`).join("")}</div>`:"")+
+    (p.especialidades?.length>0?`<div style="margin-top:12px"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Especialidades</div>${p.especialidades.map(e=>`<span class="esp-tag">${e}</span>`).join("")}</div>`:"")+
     (p.obs?`<div style="margin-top:12px"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Observações</div><div class="detalhe-desc">${p.obs}</div></div>`:"")+
     (osAtivas.length>0?`<div style="margin-top:12px"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">OS em aberto</div>`+osAtivas.map(o=>`<div class="mini-item"><div><div class="mini-nome">${o.id} — ${o.equip}</div><div class="mini-sub">${o.abertura}</div></div>${badge(PRIO_OS[o.prio].label,PRIO_OS[o.prio].bg,PRIO_OS[o.prio].txt,PRIO_OS[o.prio].bd)}</div>`).join("")+"</div>":"");
+  // Botões admin
+  document.getElementById("dp-btns-admin").style.display=usuarioLogado?.podeEditar?"flex":"none";
   abrirModal("modal-detalhe-prof");
 }
+function editarProfAtual(){fecharModal("modal-detalhe-prof");setTimeout(()=>abrirEditarProf(profDetalheId),120);}
+function confirmarExclusaoProf(){document.getElementById("dp-confirm-del").style.display="block";}
+function excluirProfAtual(){profissionais=profissionais.filter(x=>x.id!==profDetalheId);fecharModal("modal-detalhe-prof");renderProfissionais();}
 
-function editarProfAtual(){
-  fecharModal("modal-detalhe-prof");
-  setTimeout(()=>abrirEditarProf(profDetalheId),120);
-}
-
-function confirmarExclusaoProf(){
-  document.getElementById("dp-confirm-del").style.display="block";
-}
-
-function excluirProfAtual(){
-  profissionais=profissionais.filter(x=>x.id!==profDetalheId);
-  fecharModal("modal-detalhe-prof");renderProfissionais();
-}
-
-// ── MODAIS ─────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════
+// MODAIS
+// ════════════════════════════════════════════
 function abrirModal(id){document.getElementById(id).classList.add("aberto");}
 function fecharModal(id){document.getElementById(id).classList.remove("aberto");}
 document.querySelectorAll(".modal-overlay").forEach(m=>{
   m.addEventListener("click",function(e){if(e.target===this)this.classList.remove("aberto");});
 });
-
-// ── INIT ───────────────────────────────────────────────────────────────────
-renderDashboard();
-atualizarBadgeUrgente();
-  function editarOSAtual(){
-  if(!osDetalheId) return;
-
-  const o = ordens.find(x => x.id === osDetalheId);
-  if(!o) return;
-
-  osEditandoId = o.id;
-
-  abrirModalNovaOS();
-
-  document.getElementById("nos-equip").value = o.equipId;
-  document.getElementById("nos-tipo").value = o.tipo;
-  document.getElementById("nos-prio").value = o.prio;
-  document.getElementById("nos-tecnico").value = o.tecnico;
-  document.getElementById("nos-desc").value = o.desc;
-  document.getElementById("nos-pecas").value = o.pecas || "";
-  document.getElementById("btn-salvar-os").textContent = "Salvar alterações";
-
-  fecharModal("modal-detalhe-os");
-}
+document.querySelectorAll(".modal-login").forEach(m=>{
+  m.addEventListener("click",function(e){if(e.target===this)this.classList.remove("aberto");});
+});
 </script>
 </body>
 </html>
