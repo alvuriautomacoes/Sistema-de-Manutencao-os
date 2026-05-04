@@ -792,34 +792,86 @@ function preencherDemo(tipo){
   detectarPerfil();
 }
 
-function fazerLogin(){
-  const cpf=document.getElementById("input-cpf").value.trim();
-  const senha=document.getElementById("input-senha").value;
-  const btn=document.getElementById("btn-entrar");
-  const spn=document.getElementById("spinner");
-  const txt=document.getElementById("btn-entrar-txt");
+async function fazerLogin(){
+  const cpf = document.getElementById("input-cpf").value.trim();
+  const senha = document.getElementById("input-senha").value;
+  const btn = document.getElementById("btn-entrar");
+  const spn = document.getElementById("spinner");
+  const txt = document.getElementById("btn-entrar-txt");
 
-  if(!cpf||cpf.length<14){ mostrarErroLogin("Informe um CPF válido no formato 000.000.000-00."); document.getElementById("input-cpf").focus(); return; }
-  if(!senha){ mostrarErroLogin("Informe sua senha."); document.getElementById("input-senha").focus(); return; }
+  if(!cpf || cpf.length < 14){ mostrarErroLogin("Informe um CPF válido no formato 000.000.000-00."); return; }
+  if(!senha){ mostrarErroLogin("Informe sua senha."); return; }
 
-  btn.disabled=true; spn.style.display="block"; txt.textContent="Verificando...";
+  btn.disabled = true; spn.style.display = "block"; txt.textContent = "Verificando...";
   document.getElementById("msg-erro").classList.remove("visivel");
 
-  setTimeout(()=>{
-    const u=USUARIOS.find(u=>u.cpf===cpf&&u.senha===senha);
-    if(!u){
-      btn.disabled=false; spn.style.display="none"; txt.textContent="Entrar no sistema";
-      mostrarErroLogin("CPF ou senha inválidos. Verifique e tente novamente.");
-      document.getElementById("input-senha").value="";
-      document.getElementById("input-senha").focus();
-      return;
-    }
-    if(document.getElementById("lembrar").checked) localStorage.setItem("cpf-salvo",cpf);
-    else localStorage.removeItem("cpf-salvo");
-    entrarNoSistema(u);
-  },900);
-}
+  // Busca usuário no Supabase
+  const { data, error } = await supabaseClient
+    .from("usuarios")
+    .select("*, empresas(nome)")
+    .eq("cpf", cpf)
+    .eq("senha", senha)
+    .eq("ativo", true)
+    .single();
 
+  btn.disabled = false; spn.style.display = "none"; txt.textContent = "Entrar no sistema";
+
+  if(error || !data){
+    mostrarErroLogin("CPF ou senha inválidos. Verifique e tente novamente.");
+    document.getElementById("input-senha").value = "";
+    document.getElementById("input-senha").focus();
+    return;
+  }
+
+  // Permissões por perfil
+  const PERFIS = {
+    admin_senior: {
+      icon:"👑", perfilLabel:"Administrador Sênior",
+      acesso:["empresas","dashboard","os","equip","planos","profissionais"],
+      somentePropriaOS:false, podeEditar:true, podeCadastrar:true, podeExcluir:true,
+      podeCriarEmpresas:true, podeCriarUsuarios:false, verDashboard:true, acessoTodasEmpresas:true
+    },
+    gerente: {
+      icon:"📊", perfilLabel:"Gerente",
+      acesso:["dashboard","os","equip","planos","profissionais"],
+      somentePropriaOS:false, podeEditar:true, podeCadastrar:true, podeExcluir:true,
+      podeCriarEmpresas:false, podeCriarUsuarios:true, verDashboard:true, acessoTodasEmpresas:false
+    },
+    admin_enc: {
+      icon:"📋", perfilLabel:"Administrativo / Encarregado",
+      acesso:["os","equip","planos","profissionais"],
+      somentePropriaOS:false, podeEditar:true, podeCadastrar:true, podeExcluir:true,
+      podeCriarEmpresas:false, podeCriarUsuarios:false, verDashboard:false, acessoTodasEmpresas:false
+    },
+    tecnico: {
+      icon:"🔧", perfilLabel:"Técnico de Manutenção",
+      acesso:["os"],
+      somentePropriaOS:true, podeEditar:true, podeCadastrar:false, podeExcluir:false,
+      podeCriarEmpresas:false, podeCriarUsuarios:false, verDashboard:false, acessoTodasEmpresas:false
+    },
+  };
+
+  const perfil = PERFIS[data.perfil];
+  if(!perfil){ mostrarErroLogin("Perfil de usuário inválido."); return; }
+
+  const usuario = {
+    id: data.id,
+    nome: data.nome,
+    cpf: data.cpf,
+    perfil: data.perfil,
+    empresa: data.empresas?.nome || null,
+    empresa_id: data.empresa_id || null,
+    ...perfil
+  };
+
+  if(document.getElementById("lembrar").checked)
+    localStorage.setItem("cpf-salvo", cpf);
+  else
+    localStorage.removeItem("cpf-salvo");
+
+  entrarNoSistema(usuario);
+}
+  
 function mostrarErroLogin(msg){
   const el=document.getElementById("msg-erro");
   document.getElementById("msg-erro-txt").textContent=msg;
