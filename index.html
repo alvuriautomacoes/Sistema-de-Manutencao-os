@@ -479,6 +479,18 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
         <div class="card"><div class="section-title">Próximas Manutenções</div><div id="dash-planos"></div></div>
       </div>
     </div>
+    
+    <!-- EMPRESAS -->
+<div id="tela-empresas" class="tela">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Empresas</div>
+      <div class="page-sub">Selecione uma empresa</div>
+    </div>
+  </div>
+
+  <div id="lista-empresas"></div>
+</div>
 
     <!-- OS -->
     <div id="tela-os" class="tela">
@@ -688,13 +700,12 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 // ════════════════════════════════════════════
 const USUARIOS = [
   {
-    cpf:"111.111.111-11", senha:"admin123",
-    perfil:"admin", nome:"Roberto Souza", icon:"👑", perfilLabel:"Administrador",
-    empresa:"ALVURI — Sistema",
-    // admin vê tudo e pode criar/editar/excluir tudo
-    acesso:["dashboard","os","equip","planos","profissionais"],
-    somentePropriaOS: false, podeEditar: true, podeCadastrar: true
-  },
+  cpf:"111.111.111-11", senha:"admin123",
+  perfil:"admin", nome:"Roberto Souza", icon:"👑", perfilLabel:"Administrador",
+  empresa:null,
+  acesso:["dashboard","os","equip","planos","profissionais"],
+  somentePropriaOS: false, podeEditar: true, podeCadastrar: true
+},
   {
     cpf:"222.222.222-22", senha:"gerente123",
     perfil:"gerente", nome:"Fernanda Lima", icon:"📊", perfilLabel:"Gerente",
@@ -721,6 +732,12 @@ const USUARIOS = [
 
 // Usuário logado (preenchido após login)
 let usuarioLogado = null;
+
+  let empresas = [
+  { nome: "Metalúrgica Souza Ltda" },
+  { nome: "Indústria Alpha" },
+  { nome: "Grupo Beta" }
+];
 
 // ════════════════════════════════════════════
 // LOGIN
@@ -822,6 +839,11 @@ function entrarNoSistema(usuario){
 }
 
 function iniciarSistema(u){
+  if(u.perfil === "admin"){
+  u.empresaSelecionada = null;
+} else {
+  u.empresaSelecionada = u.empresa;
+}
   // Configura sidebar com dados do usuário
   const ini=u.nome.split(" ").slice(0,2).map(p=>p[0]).join("").toUpperCase();
   document.getElementById("sidebar-avatar").textContent=ini;
@@ -1070,29 +1092,44 @@ function getOrdensFiltradas(){
   const tipo=document.getElementById("os-filtro-tipo")?.value||"";
   const progresso=document.getElementById("os-filtro-progresso")?.value||"";
   const prio=document.getElementById("os-filtro-prio")?.value||"";
-  // Técnico vê só as suas
-  const base=usuarioLogado?.somentePropriaOS
-    ? ordens.filter(o=>o.tecnico===usuarioLogado.nome)
+
+  // 🔧 BASE: técnico + empresa
+  let base = usuarioLogado?.somentePropriaOS
+    ? ordens.filter(o => o.tecnico === usuarioLogado.nome)
     : ordens;
+
+  // 🔥 FILTRO POR EMPRESA (FALTAVA ISSO)
+  if(usuarioLogado.empresaSelecionada){
+    base = base.filter(o => o.empresa === usuarioLogado.empresaSelecionada);
+  }
+
   return base.filter(o=>{
     const mS=filtroOS==="todos"||o.status===filtroOS;
     const mT=!tecnico||o.tecnico===tecnico;
     const mTipo=!tipo||o.tipo===tipo;
     const mProg=!progresso||o.status===progresso;
     const mPrio=!prio||o.prio===prio;
+
     const mB=!busca||
-      o.id.toLowerCase().includes(busca)||o.equip.toLowerCase().includes(busca)||
-      o.tecnico.toLowerCase().includes(busca)||o.tipo.toLowerCase().includes(busca)||
+      o.id.toLowerCase().includes(busca)||
+      o.equip.toLowerCase().includes(busca)||
+      o.tecnico.toLowerCase().includes(busca)||
+      o.tipo.toLowerCase().includes(busca)||
       (STATUS_OS[o.status]?.label||"").toLowerCase().includes(busca)||
       (PRIO_OS[o.prio]?.label||"").toLowerCase().includes(busca)||
-      o.desc.toLowerCase().includes(busca)||(o.pecas||"").toLowerCase().includes(busca);
-    return mS&&mT&&mTipo&&mProg&&mPrio&&mB;
+      o.desc.toLowerCase().includes(busca)||
+      (o.pecas||"").toLowerCase().includes(busca);
+
+    return mS && mT && mTipo && mProg && mPrio && mB;
   });
 }
 
 function renderOS(){
   const filtradas=getOrdensFiltradas();
-  const base=usuarioLogado?.somentePropriaOS?ordens.filter(o=>o.tecnico===usuarioLogado.nome):ordens;
+  let base=usuarioLogado?.somentePropriaOS?ordens.filter(o=>o.tecnico===usuarioLogado.nome):ordens;
+  if(usuarioLogado.empresaSelecionada){
+  base = base.filter(o => o.empresa === usuarioLogado.empresaSelecionada);
+}
   document.getElementById("os-count").textContent=`${base.length} ordens · ${filtradas.length} exibidas`;
   if(document.getElementById("os-count-print"))
     document.getElementById("os-count-print").textContent=`${filtradas.length} ordem(ns)`;
@@ -1187,6 +1224,8 @@ function salvarOS(){
       status:"aberta",tecnico:document.getElementById("nos-tecnico").value,
       desc,pecas:document.getElementById("nos-pecas").value,
       abertura:hoje(),conclusao:null
+        
+      empresa: usuarioLogado.empresaSelecionada,
     });
   }
   fecharModal("modal-nova-os");popularFiltroTecnico();renderOS();atualizarBadgeUrgente();
