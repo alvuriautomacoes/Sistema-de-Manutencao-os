@@ -883,11 +883,21 @@ function iniciarSistema(u){
   // Mostra o sistema
   document.getElementById("app-sistema").style.display="block";
 
-  // Vai para a primeira tela permitida
-  const primeira=u.acesso[0]||"os";
+  // Mostra o sistema
+document.getElementById("app-sistema").style.display="block";
+
+// Vai para a primeira tela conforme perfil
+if(u.perfil === "admin"){
+  irPara("empresas");
+  renderEmpresas();
+} else {
+  const primeira = u.acesso[0] || "os";
   irPara(primeira);
-  renderDashboard();
-  atualizarBadgeUrgente();
+  renderDashboard(); // só roda para usuários normais
+}
+
+// Atualizações gerais
+atualizarBadgeUrgente();
 }
 
 function fazerLogout(){
@@ -1553,6 +1563,26 @@ document.querySelectorAll(".modal-overlay").forEach(m=>{
 document.querySelectorAll(".modal-login").forEach(m=>{
   m.addEventListener("click",function(e){if(e.target===this)this.classList.remove("aberto");});
 });
+
+  function renderEmpresas(){
+  const container = document.getElementById("lista-empresas");
+
+  container.innerHTML = empresas.map(e => `
+    <div class="equip-card" onclick="entrarEmpresa('${e.nome}')">
+      <div class="equip-nome">${e.nome}</div>
+      <div class="equip-sub">Clique para acessar</div>
+    </div>
+  `).join("");
+}
+
+  function entrarEmpresa(nome){
+  usuarioLogado.empresaSelecionada = nome;
+
+  irPara("dashboard");
+  renderDashboard();
+  renderOS();
+}
+  
 </script>
 </body>
 </html>
