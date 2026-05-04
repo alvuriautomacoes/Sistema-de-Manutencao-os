@@ -1563,23 +1563,47 @@ function abrirDetalheProf(id){
 function editarProfAtual(){fecharModal("modal-detalhe-prof");setTimeout(()=>abrirEditarProf(profDetalheId),120);}
 function confirmarExclusaoProf(){document.getElementById("dp-confirm-del").style.display="block";}
 function excluirProfAtual(){profissionais=profissionais.filter(x=>x.id!==profDetalheId);fecharModal("modal-detalhe-prof");renderProfissionais();}
+  
+function excluirProfAtual(){
+  profissionais=profissionais.filter(x=>x.id!==profDetalheId);
+  fecharModal("modal-detalhe-prof");
+  renderProfissionais();
+}
+</script> <!-- ✅ FECHA O SCRIPT PRINCIPAL -->
+  
 
-// ════════════════════════════════════════════
-// MODAIS
-// ════════════════════════════════════════════
-function abrirModal(id){document.getElementById(id).classList.add("aberto");}
-function fecharModal(id){document.getElementById(id).classList.remove("aberto");}
-document.querySelectorAll(".modal-overlay").forEach(m=>{
-  m.addEventListener("click",function(e){if(e.target===this)this.classList.remove("aberto");});
-});
-document.querySelectorAll(".modal-login").forEach(m=>{
-  m.addEventListener("click",function(e){if(e.target===this)this.classList.remove("aberto");});
-});
+<!-- 🔥 SUPABASE LIB -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  function renderEmpresas(){
+<script>
+// 🔗 CONEXÃO SUPABASE
+const supabaseClient = supabase.createClient(
+  "https://dbopqmnxpzifbeqobyhl.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRib3BxbW54cHppZmJlcW9ieWhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4ODc4MzQsImV4cCI6MjA5MzQ2MzgzNH0.JNID7q8mnmRsssTG5sG_-Y8t__i-CPaHWJU-_ZNLJhU"
+);
+
+// 📦 LISTAR EMPRESAS
+async function renderEmpresas(){
   const container = document.getElementById("lista-empresas");
 
-  container.innerHTML = empresas.map(e => `
+  container.innerHTML = "Carregando empresas...";
+
+  const { data, error } = await supabaseClient
+    .from("empresas")
+    .select("*");
+
+  if(error){
+    console.error(error);
+    container.innerHTML = "Erro ao carregar empresas";
+    return;
+  }
+
+  if(!data || data.length === 0){
+    container.innerHTML = "Nenhuma empresa cadastrada";
+    return;
+  }
+
+  container.innerHTML = data.map(e => `
     <div class="equip-card" onclick="entrarEmpresa('${e.nome}')">
       <div class="equip-nome">${e.nome}</div>
       <div class="equip-sub">Clique para acessar</div>
@@ -1587,14 +1611,15 @@ document.querySelectorAll(".modal-login").forEach(m=>{
   `).join("");
 }
 
-  function entrarEmpresa(nome){
+// 🚀 ENTRAR NA EMPRESA
+function entrarEmpresa(nome){
   usuarioLogado.empresaSelecionada = nome;
 
   irPara("dashboard");
   renderDashboard();
   renderOS();
 }
-  
 </script>
+
 </body>
 </html>
