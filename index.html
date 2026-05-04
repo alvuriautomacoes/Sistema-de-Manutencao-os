@@ -1603,18 +1603,25 @@ async function renderEmpresas(){
     container.innerHTML = "Nenhuma empresa cadastrada";
     return;
   }
+  window.empresasData = data;
 
   container.innerHTML = data.map(e => `
-    <div class="equip-card" onclick="entrarEmpresa('${e.nome}')">
+    <div class="equip-card" onclick="entrarEmpresa(${e.id})">
       <div class="equip-nome">${e.nome}</div>
       <div class="equip-sub">Clique para acessar</div>
     </div>
   `).join("");
 }
 
-// 🚀 ENTRAR NA EMPRESA
-function entrarEmpresa(nome){
-  usuarioLogado.empresaSelecionada = nome;
+function entrarEmpresa(id){
+  const empresa = window.empresasData.find(e => String(e.id) === String(id));
+
+  if(!empresa){
+    console.error("Empresa não encontrada");
+    return;
+  }
+
+  usuarioLogado.empresaSelecionada = empresa.nome;
 
   irPara("dashboard");
   renderDashboard();
