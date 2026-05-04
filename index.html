@@ -1591,6 +1591,7 @@ async function renderEmpresas(){
   const { data, error } = await supabaseClient
     .from("empresas")
     .select("*");
+  console.log("RETORNO SUPABASE:", data, error);
 
   if(error){
     console.error(error);
