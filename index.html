@@ -1591,6 +1591,7 @@ async function renderEmpresas(){
   const { data, error } = await supabaseClient
     .from("empresas")
     .select("*");
+
   console.log("RETORNO SUPABASE:", data, error);
 
   if(error){
@@ -1603,36 +1604,28 @@ async function renderEmpresas(){
     container.innerHTML = "Nenhuma empresa cadastrada";
     return;
   }
+
+  // salva global
   window.empresasData = data;
 
+  // renderiza
   container.innerHTML = data.map(e => `
-  <div class="equip-card" data-id="${e.id}">
-    <div class="equip-nome">${e.nome}</div>
-    <div class="equip-sub">Clique para acessar</div>
-  </div>
-`).join("");
+    <div class="equip-card" data-id="${e.id}">
+      <div class="equip-nome">${e.nome}</div>
+      <div class="equip-sub">Clique para acessar</div>
+    </div>
+  `).join("");
 
-// 🔥 adiciona o clique depois (forma correta)
-document.querySelectorAll(".equip-card").forEach(card => {
-  card.addEventListener("click", () => {
-    const id = card.getAttribute("data-id");
-    entrarEmpresa(id);
+  // adiciona clique (FORMA CORRETA)
+  document.querySelectorAll(".equip-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const id = card.getAttribute("data-id");
+      entrarEmpresa(id);
+    });
   });
-});container.innerHTML = data.map(e => `
-  <div class="equip-card" data-id="${e.id}">
-    <div class="equip-nome">${e.nome}</div>
-    <div class="equip-sub">Clique para acessar</div>
-  </div>
-`).join("");
+}
 
-// 🔥 adiciona o clique depois (forma correta)
-document.querySelectorAll(".equip-card").forEach(card => {
-  card.addEventListener("click", () => {
-    const id = card.getAttribute("data-id");
-    entrarEmpresa(id);
-  });
-});
-
+// 🚀 ENTRAR NA EMPRESA (FORA DA FUNÇÃO!)
 function entrarEmpresa(id){
   const empresa = window.empresasData.find(e => String(e.id) === String(id));
 
