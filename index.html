@@ -1492,7 +1492,8 @@ async function salvarEquip(){
       modelo: document.getElementById("ne-modelo").value.trim(),
       serie: document.getElementById("ne-serie").value.trim(),
       setor: document.getElementById("ne-setor").value,
-      status: "ativo"
+      status: "ativo",
+      dados_tecnicos: document.getElementById("ne-dados-tecnicos").value.trim()
     }]);
 
   if(error){
@@ -1504,6 +1505,7 @@ async function salvarEquip(){
   document.getElementById("modal-novo-equip").classList.remove("aberto");
   renderEquip();
 }
+  
   function abrirDetalheEquip(id){
   const e = window.equipamentosData?.find(x => String(x.id) === String(id));
   if(!e) return;
@@ -1528,6 +1530,11 @@ async function salvarEquip(){
         <span class="detalhe-val">${v}</span>
       </div>`
     ).join("") +
+    (e.dados_tecnicos ? `
+      <div style="margin-top:14px">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Dados Técnicos</div>
+        <div class="detalhe-desc">${e.dados_tecnicos}</div>
+      </div>` : "") +
     `<div style="margin-top:14px">${badge(s.label,s.bg,s.txt,s.bd)}</div>`;
 
   document.getElementById("modal-detalhe-equip").classList.add("aberto");
