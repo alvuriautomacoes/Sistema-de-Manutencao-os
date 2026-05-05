@@ -991,6 +991,9 @@ function fazerLogout(){
   if(!confirm("Deseja sair do sistema?"))return;
   usuarioLogado=null;
   localStorage.removeItem("sessao_usuario");
+  localStorage.removeItem("tela_atual");
+  localStorage.removeItem("empresa_selecionada_id");
+  localStorage.removeItem("empresa_selecionada_nome");
   // Reset
   document.getElementById("app-sistema").style.display="none";
   document.getElementById("app-login").style.display="flex";
@@ -1043,18 +1046,36 @@ window.addEventListener("load",()=>{
       },80);
       setTimeout(()=>{
         ld.style.display="none";
+
+        // Restaura empresa selecionada se existir
+        const empresaId   = localStorage.getItem("empresa_selecionada_id");
+        const empresaNome = localStorage.getItem("empresa_selecionada_nome");
+        if(empresaId && empresaNome){
+          usuario.empresa_id        = empresaId;
+          usuario.empresaSelecionada = empresaNome;
+        }
+
         iniciarSistema(usuario);
+
+        // Após iniciar, vai para a tela que o usuário estava
+        const telaAnterior = localStorage.getItem("tela_atual");
+        if(telaAnterior && telaAnterior !== "empresas"){
+          setTimeout(()=> irPara(telaAnterior), 100);
+        }
+
       }, 700);
       return;
     } catch(e){
       localStorage.removeItem("sessao_usuario");
+      localStorage.removeItem("tela_atual");
+      localStorage.removeItem("empresa_selecionada_id");
+      localStorage.removeItem("empresa_selecionada_nome");
     }
   }
   // Sem sessão — restaura só o CPF salvo
   const cpfSalvo=localStorage.getItem("cpf-salvo");
   if(cpfSalvo){ document.getElementById("input-cpf").value=cpfSalvo; document.getElementById("lembrar").checked=true; detectarPerfil(); }
 });
-
 // ════════════════════════════════════════════
 // DADOS DO SISTEMA
 // ════════════════════════════════════════════
@@ -1141,6 +1162,10 @@ function irPara(tela){
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("ativo"));
   document.getElementById("tela-"+tela)?.classList.add("ativa");
   document.getElementById("nav-"+tela)?.classList.add("ativo");
+
+  // Salva tela atual no localStorage
+  localStorage.setItem("tela_atual", tela);
+
   if(tela==="dashboard") renderDashboard();
   if(tela==="os"){popularFiltroTecnico();renderOS();}
   if(tela==="equip") renderEquip();
@@ -2023,30 +2048,33 @@ function entrarEmpresa(id){
     console.error("Empresa não encontrada:", id);
     return;
   }
-
   // Salva empresa selecionada no usuário logado
   usuarioLogado.empresaSelecionada = empresa.nome;
   usuarioLogado.empresa_id = empresa.id;
 
+  // Atualiza sessão salva com empresa_id e empresa selecionada
+  localStorage.setItem("sessao_usuario", JSON.stringify(usuarioLogado));
+  localStorage.setItem("tela_atual", "dashboard");
+  localStorage.setItem("empresa_selecionada_id", String(empresa.id));
+  localStorage.setItem("empresa_selecionada_nome", empresa.nome);
+
   // Atualiza sidebar
   document.getElementById("sidebar-empresa").textContent = empresa.nome;
-
   // Reexibe itens do menu ao entrar numa empresa
   ["dashboard","os","equip","planos","profissionais"].forEach(id => {
     const btn = document.getElementById("nav-"+id);
     if(btn) btn.style.display = "";
   });
-
   // Mostra botão "Trocar empresa" para admin_senior
   if(usuarioLogado.perfil === "admin_senior"){
     document.getElementById("btn-voltar-empresas").style.display = "block";
   }
-
   // Navega para o dashboard da empresa
   irPara("dashboard");
   renderDashboard();
   renderOS();
 }
+  
 // ← VOLTAR PARA TELA DE EMPRESAS
 function voltarEmpresas(){
   usuarioLogado.empresaSelecionada = null;
