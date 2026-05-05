@@ -1307,7 +1307,14 @@ async function irPara(tela){
   if(tela==="equip") renderEquip();
   if(tela==="planos") renderPlanos();
   if(tela==="profissionais") renderProfissionais();
-  if(tela==="usuarios") renderUsuarios();
+  if(tela==="usuarios"){
+  renderUsuarios();
+  // Garante botão voltar para admin_senior
+  if(usuarioLogado?.perfil === "admin_senior"){
+    const btnVoltar = document.getElementById("btn-voltar-empresas");
+    if(btnVoltar) btnVoltar.style.display = "block";
+  }
+}
 }
   
 // ════════════════════════════════════════════
