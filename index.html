@@ -1590,43 +1590,66 @@ function salvarPlano(){
 // ════════════════════════════════════════════
 // PROFISSIONAIS
 // ════════════════════════════════════════════
-function renderProfissionais(){
-  const busca=(document.getElementById("prof-busca")?.value||"").toLowerCase();
-  const filtroStatus=document.getElementById("prof-filtro-status")?.value||"";
-  const filtroTurno=document.getElementById("prof-filtro-turno")?.value||"";
-  const filtrados=profissionais.filter(p=>{
-    const mS=!filtroStatus||p.status===filtroStatus;
-    const mT=!filtroTurno||p.turno===filtroTurno;
-    const mB=!busca||p.nome.toLowerCase().includes(busca)||p.cargo.toLowerCase().includes(busca)||
-      p.matricula.toLowerCase().includes(busca)||p.turno.toLowerCase().includes(busca)||
-      (p.especialidades||[]).some(e=>e.toLowerCase().includes(busca));
-    return mS&&mT&&mB;
-  });
-  const ativos=profissionais.filter(p=>p.status==="ativo").length;
-  document.getElementById("prof-count").textContent=`${profissionais.length} cadastrados · ${ativos} ativos`;
-  if(filtrados.length===0){
-    document.getElementById("prof-grid").innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👷</div>Nenhum profissional encontrado</div>`;return;
+async function renderProfissionais(){
+  const empresa_id = usuarioLogado?.empresa_id;
+  if(!empresa_id){ document.getElementById("prof-grid").innerHTML = ""; return; }
+
+  const { data, error } = await supabaseClient
+    .from("profissionais")
+    .select("*")
+    .eq("empresa_id", empresa_id)
+    .order("nome");
+
+  if(error){
+    console.error("Erro ao carregar profissionais:", error);
+    return;
   }
-  const podeEditar=usuarioLogado?.podeEditar;
-  document.getElementById("prof-grid").innerHTML=filtrados.map(p=>{
-    const s=STATUS_PROF[p.status]||STATUS_PROF.ativo;
-    const osAtivas=ordens.filter(o=>o.tecnico===p.nome&&o.status!=="concluida"&&o.status!=="cancelada").length;
+
+  window.profissionaisData = data || [];
+
+  const busca = (document.getElementById("prof-busca")?.value || "").toLowerCase();
+  const filtroStatus = document.getElementById("prof-filtro-status")?.value || "";
+  const filtroTurno = document.getElementById("prof-filtro-turno")?.value || "";
+
+  const filtrados = window.profissionaisData.filter(p => {
+    const mS = !filtroStatus || p.status === filtroStatus;
+    const mT = !filtroTurno || p.turno === filtroTurno;
+    const mB = !busca ||
+      p.nome.toLowerCase().includes(busca) ||
+      (p.cargo||"").toLowerCase().includes(busca) ||
+      (p.matricula||"").toLowerCase().includes(busca) ||
+      (p.turno||"").toLowerCase().includes(busca) ||
+      (p.especialidades||[]).some(e => e.toLowerCase().includes(busca));
+    return mS && mT && mB;
+  });
+
+  const ativos = window.profissionaisData.filter(p => p.status === "ativo").length;
+  document.getElementById("prof-count").textContent = `${window.profissionaisData.length} cadastrados · ${ativos} ativos`;
+
+  if(filtrados.length === 0){
+    document.getElementById("prof-grid").innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👷</div>Nenhum profissional encontrado</div>`;
+    return;
+  }
+
+  const podeEditar = usuarioLogado?.podeEditar;
+
+  document.getElementById("prof-grid").innerHTML = filtrados.map(p => {
+    const s = STATUS_PROF[p.status] || STATUS_PROF.ativo;
     return `<div class="prof-card">
       <div class="prof-avatar-area">
         <div class="prof-avatar">${iniciais(p.nome)}</div>
-        <div><div class="prof-nome">${p.nome}</div><div class="prof-cargo">${p.cargo}</div></div>
+        <div><div class="prof-nome">${p.nome}</div><div class="prof-cargo">${p.cargo||"—"}</div></div>
       </div>
       ${badge(s.label,s.bg,s.txt,s.bd)}
       <div style="margin-top:10px">
         <div class="prof-info">📋 Matrícula: <span>${p.matricula||"—"}</span></div>
-        <div class="prof-info">🕐 Turno: <span>${p.turno}</span></div>
-        <div class="prof-info">📞 Contato: <span>${p.tel||"—"}</span></div>
-        <div class="prof-info">🔧 OS ativas: <span>${osAtivas}</span></div>
+        <div class="prof-info">🕐 Turno: <span>${p.turno||"—"}</span></div>
+        <div class="prof-info">📞 Contato: <span>${p.telefone||"—"}</span></div>
       </div>
-      ${p.especialidades?.length>0?`<div style="margin-top:10px">${p.especialidades.map(e=>`<span class="esp-tag">${e}</span>`).join("")}</div>`:""}
+      ${(p.especialidades||[]).length>0?`<div style="margin-top:10px">${p.especialidades.map(e=>`<span class="esp-tag">${e}</span>`).join("")}</div>`:""}
       <div class="prof-actions">
-        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="abrirDetalheProf(${p.id})">Detalhes</button>
-        ${podeEditar?`<button class="btn btn-primary btn-sm" style="flex:1" onclick="abrirEditarProf(${p.id})">Editar</button>`:""}
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="abrirDetalheProf('${p.id}')">Detalhes</button>
+        ${podeEditar?`<button class="btn btn-primary btn-sm" style="flex:1" onclick="abrirEditarProf('${p.id}')">Editar</button>`:""}
       </div>
     </div>`;
   }).join("");
@@ -1657,53 +1680,109 @@ function abrirEditarProf(id){
   document.getElementById("np2-obs").value=p.obs||"";
   abrirModal("modal-novo-prof");
 }
-function salvarProf(){
-  const nome=document.getElementById("np2-nome").value.trim();
-  if(!nome){alert("Preencha o nome!");return;}
-  const espRaw=document.getElementById("np2-esp").value.trim();
-  const especialidades=espRaw?espRaw.split(",").map(s=>s.trim()).filter(Boolean):[];
-  const dados={nome,cargo:document.getElementById("np2-cargo").value,
-    matricula:document.getElementById("np2-matricula").value.trim(),
-    turno:document.getElementById("np2-turno").value,
-    status:document.getElementById("np2-status").value,
-    tel:document.getElementById("np2-tel").value.trim(),
-    especialidades,obs:document.getElementById("np2-obs").value.trim()};
+
+  async function salvarProf(){
+  const nome = document.getElementById("np2-nome").value.trim();
+  if(!nome){ alert("Preencha o nome!"); return; }
+
+  const empresa_id = usuarioLogado?.empresa_id;
+  if(!empresa_id){ alert("Nenhuma empresa selecionada."); return; }
+
+  const espRaw = document.getElementById("np2-esp").value.trim();
+  const especialidades = espRaw ? espRaw.split(",").map(s => s.trim()).filter(Boolean) : [];
+
+  const dados = {
+    empresa_id,
+    nome,
+    cargo: document.getElementById("np2-cargo").value,
+    matricula: document.getElementById("np2-matricula").value.trim(),
+    turno: document.getElementById("np2-turno").value,
+    status: document.getElementById("np2-status").value,
+    telefone: document.getElementById("np2-tel").value.trim(),
+    especialidades,
+    observacoes: document.getElementById("np2-obs").value.trim()
+  };
+
   if(profEditandoId){
-    const idx=profissionais.findIndex(x=>x.id===profEditandoId);
-    if(idx>=0)profissionais[idx]={...profissionais[idx],...dados};
+    const { error } = await supabaseClient
+      .from("profissionais")
+      .update(dados)
+      .eq("id", profEditandoId);
+
+    if(error){
+      console.error("Erro ao editar profissional:", error);
+      alert("Erro ao salvar profissional.");
+      return;
+    }
   } else {
-    profissionais.unshift({id:Date.now(),...dados});
+    const { error } = await supabaseClient
+      .from("profissionais")
+      .insert([dados]);
+
+    if(error){
+      console.error("Erro ao cadastrar profissional:", error);
+      alert("Erro ao salvar profissional.");
+      return;
+    }
   }
-  fecharModal("modal-novo-prof");renderProfissionais();profEditandoId=null;
+
+  document.getElementById("modal-novo-prof").classList.remove("aberto");
+  renderProfissionais();
+  profEditandoId = null;
 }
-function abrirDetalheProf(id){
-  profDetalheId=id;
-  const p=profissionais.find(x=>x.id===id);if(!p)return;
-  document.getElementById("dp-titulo").textContent=`👷 ${p.nome}`;
-  document.getElementById("dp-confirm-del").style.display="none";
-  const s=STATUS_PROF[p.status]||STATUS_PROF.ativo;
-  const osAtivas=ordens.filter(o=>o.tecnico===p.nome&&o.status!=="concluida"&&o.status!=="cancelada");
-  const osTotal=ordens.filter(o=>o.tecnico===p.nome).length;
-  const rows=[["Cargo",p.cargo],["Matrícula",p.matricula||"—"],["Turno",p.turno],["Telefone",p.tel||"—"],["OS Ativas",osAtivas.length],["Total de OS",osTotal]];
-  document.getElementById("dp-content").innerHTML=
-    `<div style="margin-bottom:12px">${badge(s.label,s.bg,s.txt,s.bd)}</div>`+
-    rows.map(([k,v])=>`<div class="detalhe-row"><span class="detalhe-key">${k}</span><span class="detalhe-val">${v}</span></div>`).join("")+
-    (p.especialidades?.length>0?`<div style="margin-top:12px"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Especialidades</div>${p.especialidades.map(e=>`<span class="esp-tag">${e}</span>`).join("")}</div>`:"")+
-    (p.obs?`<div style="margin-top:12px"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Observações</div><div class="detalhe-desc">${p.obs}</div></div>`:"")+
-    (osAtivas.length>0?`<div style="margin-top:12px"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">OS em aberto</div>`+osAtivas.map(o=>`<div class="mini-item"><div><div class="mini-nome">${o.id} — ${o.equip}</div><div class="mini-sub">${o.abertura}</div></div>${badge(PRIO_OS[o.prio].label,PRIO_OS[o.prio].bg,PRIO_OS[o.prio].txt,PRIO_OS[o.prio].bd)}</div>`).join("")+"</div>":"");
-  // Botões admin
-  document.getElementById("dp-btns-admin").style.display=usuarioLogado?.podeEditar?"flex":"none";
-  abrirModal("modal-detalhe-prof");
+
+  function abrirDetalheProf(id){
+  profDetalheId = id;
+  const p = window.profissionaisData?.find(x => String(x.id) === String(id));
+  if(!p) return;
+
+  document.getElementById("dp-titulo").textContent = `👷 ${p.nome}`;
+  document.getElementById("dp-confirm-del").style.display = "none";
+
+  const s = STATUS_PROF[p.status] || STATUS_PROF.ativo;
+
+  const rows = [
+    ["Cargo", p.cargo||"—"],
+    ["Matrícula", p.matricula||"—"],
+    ["Turno", p.turno||"—"],
+    ["Telefone", p.telefone||"—"]
+  ];
+
+  document.getElementById("dp-content").innerHTML =
+    `<div style="margin-bottom:12px">${badge(s.label,s.bg,s.txt,s.bd)}</div>` +
+    rows.map(([k,v]) => `<div class="detalhe-row"><span class="detalhe-key">${k}</span><span class="detalhe-val">${v}</span></div>`).join("") +
+    ((p.especialidades||[]).length>0 ? `<div style="margin-top:12px"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Especialidades</div>${p.especialidades.map(e=>`<span class="esp-tag">${e}</span>`).join("")}</div>` : "") +
+    (p.observacoes ? `<div style="margin-top:12px"><div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Observações</div><div class="detalhe-desc">${p.observacoes}</div></div>` : "");
+
+  document.getElementById("dp-btns-admin").style.display = usuarioLogado?.podeEditar ? "flex" : "none";
+  document.getElementById("modal-detalhe-prof").classList.add("aberto");
 }
-function editarProfAtual(){fecharModal("modal-detalhe-prof");setTimeout(()=>abrirEditarProf(profDetalheId),120);}
-function confirmarExclusaoProf(){document.getElementById("dp-confirm-del").style.display="block";}
-function excluirProfAtual(){profissionais=profissionais.filter(x=>x.id!==profDetalheId);fecharModal("modal-detalhe-prof");renderProfissionais();}
-  
-function excluirProfAtual(){
-  profissionais=profissionais.filter(x=>x.id!==profDetalheId);
-  fecharModal("modal-detalhe-prof");
+
+function editarProfAtual(){
+  document.getElementById("modal-detalhe-prof").classList.remove("aberto");
+  setTimeout(() => abrirEditarProf(profDetalheId), 120);
+}
+
+function confirmarExclusaoProf(){
+  document.getElementById("dp-confirm-del").style.display = "block";
+}
+
+async function excluirProfAtual(){
+  const { error } = await supabaseClient
+    .from("profissionais")
+    .delete()
+    .eq("id", profDetalheId);
+
+  if(error){
+    console.error("Erro ao excluir profissional:", error);
+    alert("Erro ao excluir profissional.");
+    return;
+  }
+
+  document.getElementById("modal-detalhe-prof").classList.remove("aberto");
   renderProfissionais();
 }
+
 </script> <!-- ✅ FECHA O SCRIPT PRINCIPAL -->
   
 
