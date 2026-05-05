@@ -2227,24 +2227,19 @@ async function salvarPlano(){
 async function renderProfissionais(){
   const empresa_id = usuarioLogado?.empresa_id;
   if(!empresa_id){ document.getElementById("prof-grid").innerHTML = ""; return; }
-
   const { data, error } = await supabaseClient
     .from("profissionais")
     .select("*")
     .eq("empresa_id", empresa_id)
     .order("nome");
-
   if(error){
     console.error("Erro ao carregar profissionais:", error);
     return;
   }
-
   window.profissionaisData = data || [];
-
   const busca = (document.getElementById("prof-busca")?.value || "").toLowerCase();
   const filtroStatus = document.getElementById("prof-filtro-status")?.value || "";
   const filtroTurno = document.getElementById("prof-filtro-turno")?.value || "";
-
   const filtrados = window.profissionaisData.filter(p => {
     const mS = !filtroStatus || p.status === filtroStatus;
     const mT = !filtroTurno || p.turno === filtroTurno;
@@ -2256,17 +2251,12 @@ async function renderProfissionais(){
       (p.especialidades||[]).some(e => e.toLowerCase().includes(busca));
     return mS && mT && mB;
   });
-
   const ativos = window.profissionaisData.filter(p => p.status === "ativo").length;
   document.getElementById("prof-count").textContent = `${window.profissionaisData.length} cadastrados · ${ativos} ativos`;
-
   if(filtrados.length === 0){
     document.getElementById("prof-grid").innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👷</div>Nenhum profissional encontrado</div>`;
     return;
   }
-
-  const podeEditar = usuarioLogado?.podeEditar;
-
   document.getElementById("prof-grid").innerHTML = filtrados.map(p => {
     const s = STATUS_PROF[p.status] || STATUS_PROF.ativo;
     return `<div class="prof-card">
@@ -2283,7 +2273,6 @@ async function renderProfissionais(){
       ${(p.especialidades||[]).length>0?`<div style="margin-top:10px">${p.especialidades.map(e=>`<span class="esp-tag">${e}</span>`).join("")}</div>`:""}
       <div class="prof-actions">
         <button class="btn btn-ghost btn-sm" style="flex:1" onclick="abrirDetalheProf('${p.id}')">Detalhes</button>
-        ${podeEditar?`<button class="btn btn-primary btn-sm" style="flex:1" onclick="abrirEditarProf('${p.id}')">Editar</button>`:""}
       </div>
     </div>`;
   }).join("");
