@@ -550,25 +550,15 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
           <option value="concluida">Concluída</option>
           <option value="cancelada">Cancelada</option>
         </select>
-        <select class="busca-select" id="os-filtro-prio" onchange="renderOS()">
+       <select class="busca-select" id="os-filtro-prio" onchange="renderOS()">
           <option value="">Todas as prioridades</option>
           <option value="baixa">Baixa</option><option value="media">Média</option>
           <option value="alta">Alta</option><option value="urgente">Urgente</option>
         </select>
       </div>
-      <div id="os-barra-acoes">
-        <span style="font-size:12px;font-weight:600;color:var(--sub);">Exportar / Imprimir:</span>
-        <div class="export-sep"></div>
-        <button class="btn-export btn-imprimir" onclick="imprimirOS()">🖨️ Imprimir</button>
-        <button class="btn-export btn-pdf" onclick="exportarPDF()">📄 Salvar PDF</button>
-        <div class="export-sep"></div>
-        <button class="btn-export btn-imprimir" onclick="exportarCSV()">📊 Exportar CSV</button>
-        <span class="os-count-print" id="os-count-print"></span>
-      </div>
       <div class="filtro-abas" id="os-filtros"></div>
       <div class="os-list" id="os-lista"></div>
     </div>
-
     <!-- EQUIPAMENTOS -->
     <div id="tela-equip" class="tela">
       <div class="page-header">
@@ -1283,32 +1273,23 @@ function getOrdensFiltradas(){
 async function renderOS(){
   const empresa_id = usuarioLogado?.empresa_id;
   if(!empresa_id){ document.getElementById("os-lista").innerHTML = ""; return; }
-
   let query = supabaseClient
     .from("ordens_servico")
     .select("*")
     .eq("empresa_id", empresa_id)
     .order("created_at", { ascending: false });
-
   if(usuarioLogado?.somentePropriaOS){
     query = query.eq("tecnico_nome", usuarioLogado.nome);
   }
-
   const { data, error } = await query;
-
   if(error){
     console.error("Erro ao carregar OS:", error);
     return;
   }
-
   window.ordensData = data || [];
-
   const filtradas = getOrdensFiltradas();
   const base = window.ordensData;
-
   document.getElementById("os-count").textContent = `${base.length} ordens · ${filtradas.length} exibidas`;
-  if(document.getElementById("os-count-print"))
-    document.getElementById("os-count-print").textContent = `${filtradas.length} ordem(ns)`;
 
   const abas = [
     {key:"todos", label:"Todas"},
@@ -1317,7 +1298,6 @@ async function renderOS(){
     {key:"aguardando", label:"Aguardando"},
     {key:"concluida", label:"Concluídas"},
   ].map(a => ({...a, count: a.key==="todos" ? base.length : base.filter(o=>o.status===a.key).length}));
-
   document.getElementById("os-filtros").innerHTML = abas.map(a =>
     `<button class="filtro-aba ${filtroOS===a.key?'ativo':''}" onclick="setFiltroOS('${a.key}')">${a.label} (${a.count})</button>`
   ).join("");
@@ -1328,6 +1308,7 @@ async function renderOS(){
   }
 
   const podeAvancar = usuarioLogado?.podeEditar || usuarioLogado?.somentePropriaOS;
+  const podeExcluir = usuarioLogado?.podeExcluir;
   const pColors = {aberta:"var(--blue-400)",andamento:"var(--s-andamento-txt)",aguardando:"var(--s-aguardando-txt)",concluida:"var(--s-concluida-txt)",cancelada:"var(--s-cancelada-txt)"};
 
   document.getElementById("os-lista").innerHTML = filtradas.map(o => {
@@ -1337,7 +1318,7 @@ async function renderOS(){
     const barColor = pColors[o.status] || "var(--blue-400)";
     const fim = o.status==="concluida" || o.status==="cancelada";
     const desc = o.descricao || "";
-    return `<div class="os-item">
+    return `<div class="os-item" id="os-card-${o.id}">
       <div class="os-info">
         <div class="badges-row" style="margin-bottom:6px">
           <span class="os-id">${o.numero}</span>${badgeTipo(o.tipo)}${badge(p.label,p.bg,p.txt,p.bd)}${badge(s.label,s.bg,s.txt,s.bd)}
@@ -1355,9 +1336,108 @@ async function renderOS(){
       <div class="os-actions">
         <button class="btn btn-ghost btn-sm" onclick="abrirDetalheOS('${o.id}')">Detalhes</button>
         ${podeAvancar&&!fim?`<button class="btn btn-primary btn-sm" onclick="avancarStatus('${o.id}')">Avançar ▶</button>`:""}
+        <button class="btn btn-ghost btn-sm" onclick="imprimirOSIndividual('${o.id}')" title="Imprimir / Salvar PDF">🖨️ Imprimir</button>
+        ${podeExcluir?`<button class="btn btn-danger btn-sm" onclick="excluirOS('${o.id}','${o.numero}')">🗑 Excluir</button>`:""}
       </div>
     </div>`;
   }).join("");
+}
+
+// ── IMPRIMIR OS INDIVIDUAL ────────────────────────────────────
+function imprimirOSIndividual(id){
+  const o = (window.ordensData||[]).find(x => String(x.id) === String(id));
+  if(!o) return;
+
+  const s = STATUS_OS[o.status];
+  const p = PRIO_OS[o.prioridade];
+
+  const janela = window.open("","_blank","width=800,height=700");
+  janela.document.write(`
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8"/>
+      <title>OS ${o.numero} — ManutençãoOS</title>
+      <style>
+        *{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:'Segoe UI',sans-serif;font-size:13px;color:#0e2a47;padding:32px 40px;}
+        .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1e4d82;padding-bottom:14px;margin-bottom:20px;}
+        .logo{font-size:18px;font-weight:700;color:#1e4d82;}
+        .logo-sub{font-size:10px;color:#5a7a9a;margin-top:2px;}
+        .os-numero{font-size:22px;font-weight:800;color:#1e4d82;font-family:monospace;}
+        .badge{display:inline-block;padding:3px 10px;border-radius:3px;font-size:11px;font-weight:700;border:1px solid;}
+        .section{margin-bottom:18px;}
+        .section-title{font-size:10px;font-weight:700;color:#8aaec8;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;border-bottom:1px solid #d5e4f0;padding-bottom:5px;}
+        .row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eef3f9;font-size:12.5px;}
+        .row-key{color:#5a7a9a;}
+        .row-val{font-weight:600;color:#1e4270;font-family:monospace;}
+        .desc-box{background:#f5f8fc;border:1px solid #c8daea;border-left:3px solid #3d7ab8;padding:12px;font-size:13px;line-height:1.65;color:#1e4270;margin-top:8px;}
+        .footer{margin-top:32px;border-top:1px solid #d5e4f0;padding-top:12px;font-size:10px;color:#8aaec8;display:flex;justify-content:space-between;}
+        .assinatura{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:40px;}
+        .assin-box{border-top:1px solid #0e2a47;padding-top:8px;font-size:11px;color:#5a7a9a;text-align:center;}
+        @media print{body{padding:16px 20px;}}
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div>
+          <div class="logo">🔩 ManutençãoOS</div>
+          <div class="logo-sub">by ALVURI · Sistema de Gestão de Manutenção</div>
+        </div>
+        <div style="text-align:right">
+          <div class="os-numero">${o.numero}</div>
+          <div style="margin-top:6px;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;">
+            <span class="badge" style="background:#eff6ff;color:#2d62a0;border-color:#b8d1eb">${o.tipo}</span>
+            <span class="badge" style="background:${p.bg};color:${p.txt};border-color:${p.bd}">${p.label}</span>
+            <span class="badge" style="background:${s.bg};color:${s.txt};border-color:${s.bd}">${s.label}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Informações da Ordem de Serviço</div>
+        <div class="row"><span class="row-key">Equipamento</span><span class="row-val">${o.equipamento_nome||"—"}</span></div>
+        <div class="row"><span class="row-key">Técnico Responsável</span><span class="row-val">${o.tecnico_nome||"—"}</span></div>
+        <div class="row"><span class="row-key">Data de Abertura</span><span class="row-val">${o.data_abertura||"—"}</span></div>
+        <div class="row"><span class="row-key">Data de Conclusão</span><span class="row-val">${o.data_conclusao||"—"}</span></div>
+        <div class="row"><span class="row-key">Peças / Materiais</span><span class="row-val">${o.pecas_materiais||"—"}</span></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Descrição do Serviço</div>
+        <div class="desc-box">${o.descricao||"—"}</div>
+      </div>
+
+      <div class="assinatura">
+        <div class="assin-box">Técnico Responsável<br><br>${o.tecnico_nome||""}</div>
+        <div class="assin-box">Aprovação / Visto<br><br>&nbsp;</div>
+      </div>
+
+      <div class="footer">
+        <span>ManutençãoOS by ALVURI</span>
+        <span>Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</span>
+      </div>
+      <script>window.onload=()=>window.print();<\/script>
+    </body>
+    </html>
+  `);
+  janela.document.close();
+}
+
+// ── EXCLUIR OS ────────────────────────────────────────────────
+async function excluirOS(id, numero){
+  if(!confirm(`Deseja excluir a ${numero}? Esta ação é irreversível.`)) return;
+  const { error } = await supabaseClient
+    .from("ordens_servico")
+    .delete()
+    .eq("id", id);
+  if(error){
+    console.error("Erro ao excluir OS:", error);
+    alert("Erro ao excluir OS.");
+    return;
+  }
+  renderOS();
+  atualizarBadgeUrgente();
 }
 
 function setFiltroOS(f){filtroOS=f;renderOS();}
