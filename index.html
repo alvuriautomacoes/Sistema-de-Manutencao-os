@@ -928,16 +928,27 @@ function entrarNoSistema(usuario){
 
 function iniciarSistema(u){
   if(u.perfil === "admin"){
-  u.empresaSelecionada = null;
-} else {
-  u.empresaSelecionada = u.empresa;
-}
+    u.empresaSelecionada = null;
+  } else {
+    u.empresaSelecionada = u.empresa;
+  }
+
   // Configura sidebar com dados do usuário
   const ini=u.nome.split(" ").slice(0,2).map(p=>p[0]).join("").toUpperCase();
   document.getElementById("sidebar-avatar").textContent=ini;
   document.getElementById("sidebar-nome").textContent=u.nome;
   document.getElementById("sidebar-perfil").textContent=u.icon+" "+u.perfilLabel;
-  document.getElementById("sidebar-empresa").textContent=u.empresa;
+
+  // Restaura empresa selecionada na sidebar se existir
+  const empresaNomeSalvo = localStorage.getItem("empresa_selecionada_nome");
+  const empresaIdSalvo   = localStorage.getItem("empresa_selecionada_id");
+  if(empresaNomeSalvo && empresaIdSalvo){
+    u.empresa_id          = empresaIdSalvo;
+    u.empresaSelecionada  = empresaNomeSalvo;
+    document.getElementById("sidebar-empresa").textContent = empresaNomeSalvo;
+  } else {
+    document.getElementById("sidebar-empresa").textContent = u.empresa || "—";
+  }
 
   // Aplica visibilidade dos itens do menu conforme perfil
   const todosNavs=["dashboard","os","equip","planos","profissionais"];
@@ -971,22 +982,37 @@ function iniciarSistema(u){
   // Mostra o sistema
   document.getElementById("app-sistema").style.display="block";
 
-  // Mostra o sistema
-document.getElementById("app-sistema").style.display="block";
+  // Verifica se há tela e empresa salvas (restauração de sessão)
+  const telaAnterior  = localStorage.getItem("tela_atual");
+  const temEmpresa    = !!localStorage.getItem("empresa_selecionada_id");
 
-// Vai para a primeira tela conforme perfil
-if(u.perfil === "admin_senior"){
-  irPara("empresas");
-  renderEmpresas();
-} else {
-  const primeira = u.acesso[0] || "os";
-  irPara(primeira);
-  if(u.verDashboard) renderDashboard();
-}
+  if(u.perfil === "admin_senior"){
+    if(temEmpresa && telaAnterior && telaAnterior !== "empresas"){
+      // Estava dentro de uma empresa — mostra botão trocar empresa e vai para a tela
+      document.getElementById("btn-voltar-empresas").style.display = "block";
+      todosNavs.forEach(id=>{
+        const btn=document.getElementById("nav-"+id);
+        if(btn) btn.style.display="";
+      });
+      irPara(telaAnterior);
+    } else {
+      // Sem empresa selecionada — vai para lista de empresas
+      irPara("empresas");
+      renderEmpresas();
+    }
+  } else {
+    // Outros perfis — vai para tela anterior ou primeira do acesso
+    const tela = (telaAnterior && u.acesso.includes(telaAnterior))
+      ? telaAnterior
+      : (u.acesso[0] || "os");
+    irPara(tela);
+    if(u.verDashboard) renderDashboard();
+  }
 
-// Atualizações gerais
-atualizarBadgeUrgente();
+  // Atualizações gerais
+  atualizarBadgeUrgente();
 }
+  
 function fazerLogout(){
   if(!confirm("Deseja sair do sistema?"))return;
   usuarioLogado=null;
