@@ -1483,9 +1483,11 @@ function editarOSAtual(){
   const o = (window.ordensData || []).find(x => String(x.id) === String(osDetalheId));
   if(!o) return;
 
-  osEditandoId = o.id;
   document.getElementById("modal-detalhe-os").classList.remove("aberto");
-  abrirModalNovaOS();
+  abrirModalNovaOS(); // isso reseta osEditandoId para null
+
+  // Define DEPOIS de chamar abrirModalNovaOS
+  osEditandoId = o.id;
 
   document.getElementById("modal-os-titulo").textContent = "✏️ Editar Ordem de Serviço";
   document.getElementById("btn-salvar-os").textContent = "Salvar alterações";
