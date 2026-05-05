@@ -639,7 +639,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <!-- MODAL NOVO EQUIPAMENTO -->
 <div class="modal-overlay" id="modal-novo-equip">
   <div class="modal-box">
-    <div class="modal-header"><div class="modal-title">➕ Novo Equipamento</div><button class="modal-close" onclick="fecharModal('modal-novo-equip')">✕</button></div>
+    <div class="modal-header"><div class="modal-title">➕ Novo Equipamento</div><button class="modal-close" onclick="document.getElementById('modal-novo-equip').classList.remove('aberto')">✕</button></div>
     <div class="field"><label>Nome *</label><input id="ne-nome" placeholder="Ex: Compressor AR-200"/></div>
     <div class="grid2">
       <div class="field"><label>Marca</label><input id="ne-marca" placeholder="Ex: Atlas Copco"/></div>
@@ -647,7 +647,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     </div>
     <div class="field"><label>Número de Série</label><input id="ne-serie" placeholder="Ex: SN-44521"/></div>
     <div class="field"><label>Setor</label><select id="ne-setor"><option>Produção</option><option>Usinagem</option><option>Logística</option><option>Manutenção</option><option>Qualidade</option></select></div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="fecharModal('modal-novo-equip')">Cancelar</button><button class="btn btn-primary" onclick="salvarEquip()">Salvar</button></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="document.getElementById('modal-novo-equip').classList.remove('aberto')">Cancelar</button><button class="btn btn-primary" onclick="salvarEquip()">Salvar</button></div>
   </div>
 </div>
 
