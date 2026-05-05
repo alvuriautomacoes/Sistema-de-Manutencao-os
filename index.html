@@ -2762,44 +2762,48 @@ async function renderEmpresas(){
 }
 
 // 🚀 ENTRAR NA EMPRESA
-function entrarEmpresa(id){
-  const empresa = window.empresasData?.find(e => String(e.id) === String(id));
-  if(!empresa){
-    console.error("Empresa não encontrada:", id);
+async function irPara(tela){
+  if(!usuarioLogado)return;
+  // Verifica acesso
+  if(!usuarioLogado.acesso.includes(tela)){
+    document.querySelectorAll(".tela").forEach(t=>t.classList.remove("ativa"));
+    document.getElementById("tela-"+tela)?.classList.add("ativa");
     return;
   }
-
-  // 🔥 Limpa dados antigos ANTES de tudo
-  window.ordensData    = [];
-  window.usuariosData  = [];
-  window.equipData     = [];
-  window.planosData    = [];
-  window.profData      = [];
-
-  // 🔥 Limpa telas visualmente
-  const limpar = ['os-lista','dash-os-recentes','dash-stats','dash-equip','dash-planos','usuarios-grid'];
-  limpar.forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.innerHTML = '';
-  });
-
-  usuarioLogado.empresaSelecionada = empresa.nome;
-  usuarioLogado.empresa_id = empresa.id;
-  localStorage.setItem("sessao_usuario", JSON.stringify(usuarioLogado));
-  localStorage.setItem("tela_atual", "dashboard");
-  localStorage.setItem("empresa_selecionada_id", String(empresa.id));
-  localStorage.setItem("empresa_selecionada_nome", empresa.nome);
-  document.getElementById("sidebar-empresa").textContent = empresa.nome;
-
-  mostrarMenuNav();
-
-  if(usuarioLogado.perfil === "admin_senior"){
-    document.getElementById("btn-voltar-empresas").style.display = "block";
+  document.querySelectorAll(".tela").forEach(t=>t.classList.remove("ativa"));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("ativo"));
+  document.getElementById("tela-"+tela)?.classList.add("ativa");
+  document.getElementById("nav-"+tela)?.classList.add("ativo");
+  // Salva tela atual no localStorage
+  localStorage.setItem("tela_atual", tela);
+  if(tela==="dashboard") renderDashboard();
+  if(tela==="os"){
+    if(!window.profissionaisData || window.profissionaisData.length === 0){
+      const empresa_id = usuarioLogado?.empresa_id;
+      if(empresa_id){
+        const { data } = await supabaseClient
+          .from("profissionais")
+          .select("*")
+          .eq("empresa_id", empresa_id)
+          .eq("status", "ativo")
+          .order("nome");
+        window.profissionaisData = data || [];
+      }
+    }
+    popularFiltroTecnico();
+    renderOS();
   }
-
-  irPara("dashboard");
-  renderDashboard();
-  renderOS();
+  if(tela==="equip") renderEquip();
+  if(tela==="planos") renderPlanos();
+  if(tela==="profissionais") renderProfissionais();
+  if(tela==="usuarios"){
+  renderUsuarios();
+  // Garante botão voltar para admin_senior
+  if(usuarioLogado?.perfil === "admin_senior"){
+    const btnVoltar = document.getElementById("btn-voltar-empresas");
+    if(btnVoltar) btnVoltar.style.display = "block";
+  }
+}
 }
 
 // ← VOLTAR PARA TELA DE EMPRESAS
