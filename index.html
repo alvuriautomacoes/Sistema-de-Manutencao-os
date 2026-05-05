@@ -1501,11 +1501,10 @@ async function salvarEquip(){
     return;
   }
 
-  fecharModal("modal-novo-equip");
+  document.getElementById("modal-novo-equip").classList.remove("aberto");
   renderEquip();
 }
-  
-function abrirDetalheEquip(id){
+  function abrirDetalheEquip(id){
   const e = window.equipamentosData?.find(x => String(x.id) === String(id));
   if(!e) return;
 
