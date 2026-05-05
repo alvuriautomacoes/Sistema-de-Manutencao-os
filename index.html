@@ -504,7 +504,22 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
       <div class="modal-title">🏢 Nova Empresa</div>
       <button class="modal-close" onclick="document.getElementById('modal-nova-empresa').classList.remove('aberto')">✕</button>
     </div>
+
     <div class="field"><label>Nome da Empresa *</label><input id="ne-empresa-nome" placeholder="Ex: Metalúrgica Souza Ltda"/></div>
+    <div class="grid2">
+      <div class="field"><label>CNPJ</label><input id="ne-empresa-cnpj" placeholder="Ex: 00.000.000/0001-00"/></div>
+      <div class="field"><label>Telefone</label><input id="ne-empresa-tel" placeholder="Ex: (11) 3333-4444"/></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>E-mail</label><input id="ne-empresa-email" placeholder="Ex: contato@empresa.com.br"/></div>
+      <div class="field"><label>Cidade / Estado</label><input id="ne-empresa-cidade" placeholder="Ex: São Paulo / SP"/></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Responsável</label><input id="ne-empresa-responsavel" placeholder="Ex: João Silva"/></div>
+      <div class="field"><label>Telefone do Responsável</label><input id="ne-empresa-resp-tel" placeholder="Ex: (11) 99999-8888"/></div>
+    </div>
+    <div class="field"><label>Observações</label><textarea id="ne-empresa-obs" rows="2" placeholder="Informações adicionais..."></textarea></div>
+
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="document.getElementById('modal-nova-empresa').classList.remove('aberto')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarEmpresa()">Cadastrar</button>
@@ -2030,7 +2045,16 @@ async function salvarEmpresa(){
 
   const { data, error } = await supabaseClient
     .from("empresas")
-    .insert([{ nome }])
+    .insert([{
+      nome,
+      cnpj: document.getElementById("ne-empresa-cnpj").value.trim(),
+      telefone: document.getElementById("ne-empresa-tel").value.trim(),
+      email: document.getElementById("ne-empresa-email").value.trim(),
+      cidade: document.getElementById("ne-empresa-cidade").value.trim(),
+      responsavel: document.getElementById("ne-empresa-responsavel").value.trim(),
+      responsavel_telefone: document.getElementById("ne-empresa-resp-tel").value.trim(),
+      observacoes: document.getElementById("ne-empresa-obs").value.trim()
+    }])
     .select()
     .single();
 
