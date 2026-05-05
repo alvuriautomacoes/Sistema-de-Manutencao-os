@@ -2778,10 +2778,32 @@ function voltarEmpresas(){
 }
   
 // 🏢 NOVA EMPRESA
-function abrirModalEmpresa(){
-  ["ne-empresa-nome","ne-empresa-cnpj","ne-empresa-tel","ne-empresa-email",
-   "ne-empresa-cidade","ne-empresa-responsavel","ne-empresa-resp-tel","ne-empresa-obs"]
-  .forEach(id => document.getElementById(id).value = "");
+let empresaEditandoId = null;
+
+function abrirModalEmpresa(id = null){
+  empresaEditandoId = id;
+
+  if(id){
+    // EDITAR — preenche campos com dados da empresa
+    const e = window.empresasData?.find(x => String(x.id) === String(id));
+    if(!e) return;
+    document.querySelector("#modal-nova-empresa .modal-title").textContent = "✏️ Editar Empresa";
+    document.getElementById("ne-empresa-nome").value        = e.nome || "";
+    document.getElementById("ne-empresa-cnpj").value        = e.cnpj || "";
+    document.getElementById("ne-empresa-tel").value         = e.telefone || "";
+    document.getElementById("ne-empresa-email").value       = e.email || "";
+    document.getElementById("ne-empresa-cidade").value      = e.cidade || "";
+    document.getElementById("ne-empresa-responsavel").value = e.responsavel || "";
+    document.getElementById("ne-empresa-resp-tel").value    = e.responsavel_telefone || "";
+    document.getElementById("ne-empresa-obs").value         = e.observacoes || "";
+  } else {
+    // NOVO — limpa campos
+    document.querySelector("#modal-nova-empresa .modal-title").textContent = "🏢 Nova Empresa";
+    ["ne-empresa-nome","ne-empresa-cnpj","ne-empresa-tel","ne-empresa-email",
+     "ne-empresa-cidade","ne-empresa-responsavel","ne-empresa-resp-tel","ne-empresa-obs"]
+    .forEach(id => document.getElementById(id).value = "");
+  }
+
   document.getElementById("modal-nova-empresa").classList.add("aberto");
 }
 
@@ -2789,28 +2811,109 @@ async function salvarEmpresa(){
   const nome = document.getElementById("ne-empresa-nome").value.trim();
   if(!nome){ alert("Informe o nome da empresa!"); return; }
 
-  const { data, error } = await supabaseClient
-    .from("empresas")
-    .insert([{
-      nome,
-      cnpj: document.getElementById("ne-empresa-cnpj").value.trim(),
-      telefone: document.getElementById("ne-empresa-tel").value.trim(),
-      email: document.getElementById("ne-empresa-email").value.trim(),
-      cidade: document.getElementById("ne-empresa-cidade").value.trim(),
-      responsavel: document.getElementById("ne-empresa-responsavel").value.trim(),
-      responsavel_telefone: document.getElementById("ne-empresa-resp-tel").value.trim(),
-      observacoes: document.getElementById("ne-empresa-obs").value.trim()
-    }])
-    .select()
-    .single();
+  const dados = {
+    nome,
+    cnpj:                 document.getElementById("ne-empresa-cnpj").value.trim(),
+    telefone:             document.getElementById("ne-empresa-tel").value.trim(),
+    email:                document.getElementById("ne-empresa-email").value.trim(),
+    cidade:               document.getElementById("ne-empresa-cidade").value.trim(),
+    responsavel:          document.getElementById("ne-empresa-responsavel").value.trim(),
+    responsavel_telefone: document.getElementById("ne-empresa-resp-tel").value.trim(),
+    observacoes:          document.getElementById("ne-empresa-obs").value.trim()
+  };
 
-  if(error){
-    console.error(error);
-    alert("Erro ao cadastrar empresa.");
-    return;
+  if(empresaEditandoId){
+    // EDITAR
+    const { error } = await supabaseClient
+      .from("empresas")
+      .update(dados)
+      .eq("id", empresaEditandoId);
+    if(error){ console.error(error); alert("Erro ao editar empresa."); return; }
+    empresaEditandoId = null;
+  } else {
+    // NOVO
+    const { error } = await supabaseClient
+      .from("empresas")
+      .insert([dados]);
+    if(error){ console.error(error); alert("Erro ao cadastrar empresa."); return; }
   }
 
+  document.querySelector("#modal-nova-empresa .modal-title").textContent = "🏢 Nova Empresa";
   document.getElementById("modal-nova-empresa").classList.remove("aberto");
+  renderEmpresas();
+}
+let empresaDetalheId = null;
+  
+function abrirDetalheEmpresa(id){
+  empresaDetalheId = id;
+  const e = window.empresasData?.find(x => String(x.id) === String(id));
+  if(!e) return;
+
+  document.getElementById("demp-titulo").textContent = `🏢 ${e.nome}`;
+  document.getElementById("demp-confirm-del").style.display = "none";
+
+  const rows = [
+    ["CNPJ", e.cnpj||"—"],
+    ["Telefone", e.telefone||"—"],
+    ["E-mail", e.email||"—"],
+    ["Cidade / Estado", e.cidade||"—"],
+    ["Responsável", e.responsavel||"—"],
+    ["Tel. Responsável", e.responsavel_telefone||"—"],
+    ["Observações", e.observacoes||"—"],
+    ["Criada em", new Date(e.created_at).toLocaleDateString('pt-BR')],
+  ];
+
+  document.getElementById("demp-rows").innerHTML =
+    rows.map(([k,v]) => `
+      <div class="detalhe-row">
+        <span class="detalhe-key">${k}</span>
+        <span class="detalhe-val">${v}</span>
+      </div>`
+    ).join("");
+
+  // Ajusta botão de status
+  const btnStatus = document.getElementById("demp-btn-status");
+  if(e.ativo === false){
+    btnStatus.textContent = "▶ Ativar";
+    btnStatus.style.color = "var(--e-ativo-txt)";
+  } else {
+    btnStatus.textContent = "⏸ Inativar";
+    btnStatus.style.color = "var(--e-critico-txt)";
+  }
+
+  document.getElementById("modal-detalhe-empresa").classList.add("aberto");
+}
+
+function editarEmpresaAtual(){
+  document.getElementById("modal-detalhe-empresa").classList.remove("aberto");
+  setTimeout(() => abrirModalEmpresa(empresaDetalheId), 120);
+}
+
+async function toggleStatusEmpresa(){
+  const e = window.empresasData?.find(x => String(x.id) === String(empresaDetalheId));
+  if(!e) return;
+  const novoStatus = e.ativo === false ? true : false;
+  const { error } = await supabaseClient
+    .from("empresas")
+    .update({ ativo: novoStatus })
+    .eq("id", empresaDetalheId);
+  if(error){ console.error(error); alert("Erro ao alterar status."); return; }
+  document.getElementById("modal-detalhe-empresa").classList.remove("aberto");
+  renderEmpresas();
+}
+
+function excluirEmpresaDoModal(){
+  document.getElementById("demp-confirm-del").style.display = "block";
+}
+
+async function confirmarExcluirEmpresa(){
+  const { error } = await supabaseClient
+    .from("empresas")
+    .delete()
+    .eq("id", empresaDetalheId);
+  if(error){ console.error(error); alert("Erro ao excluir empresa."); return; }
+  document.getElementById("modal-detalhe-empresa").classList.remove("aberto");
+  document.getElementById("demp-confirm-del").style.display = "none";
   renderEmpresas();
 }
 </script>
