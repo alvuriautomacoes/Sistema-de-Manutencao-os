@@ -526,6 +526,29 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     </div>
   </div>
 </div>
+
+    <!-- MODAL DETALHE EMPRESA -->
+<div class="modal-overlay" id="modal-detalhe-empresa">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="demp-titulo">🏢 Detalhes da Empresa</div>
+      <button class="modal-close" onclick="document.getElementById('modal-detalhe-empresa').classList.remove('aberto')">✕</button>
+    </div>
+    <div id="demp-rows"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn btn-ghost" style="flex:1" onclick="editarEmpresaAtual()">✏️ Editar</button>
+      <button class="btn btn-ghost" style="flex:1" id="demp-btn-status" onclick="toggleStatusEmpresa()">⏸ Inativar</button>
+      <button class="btn btn-danger" style="flex:1" onclick="excluirEmpresaDoModal()">🗑 Excluir</button>
+    </div>
+    <div id="demp-confirm-del" class="confirm-bar" style="display:none">
+      Tem certeza? Esta ação é irreversível.
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn btn-danger btn-sm" onclick="confirmarExcluirEmpresa()">Confirmar exclusão</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('demp-confirm-del').style.display='none'">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
     
     <!-- OS -->
     <div id="tela-os" class="tela">
