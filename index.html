@@ -1096,12 +1096,22 @@ function ocultarMenuNav(){
 function mostrarMenuNav(){
   document.getElementById("sidebar").style.display = "flex";
   document.getElementById("conteudo").style.marginLeft = "232px";
-  // Botão trocar empresa só para admin_senior
+  const todosNavs = ["dashboard","os","equip","planos","profissionais","usuarios"];
+  todosNavs.forEach(id => {
+    const btn = document.getElementById("nav-"+id);
+    if(!btn) return;
+    btn.style.display = usuarioLogado?.acesso.includes(id) ? "" : "none";
+    if(usuarioLogado?.acesso.includes(id)){
+      btn.classList.remove("bloqueado");
+      btn.onclick = () => irPara(id);
+    }
+  });
   const btnVoltar = document.getElementById("btn-voltar-empresas");
   if(btnVoltar){
     btnVoltar.style.display = usuarioLogado?.perfil === "admin_senior" ? "block" : "none";
   }
-}  
+}
+  
 function fazerLogout(){
   if(!confirm("Deseja sair do sistema?"))return;
   usuarioLogado=null;
