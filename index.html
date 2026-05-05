@@ -496,6 +496,21 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   </div>
   <div id="lista-empresas"></div>
 </div>
+    
+    <!-- MODAL NOVA EMPRESA -->
+<div class="modal-overlay" id="modal-nova-empresa">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">🏢 Nova Empresa</div>
+      <button class="modal-close" onclick="fecharModal('modal-nova-empresa')">✕</button>
+    </div>
+    <div class="field"><label>Nome da Empresa *</label><input id="ne-empresa-nome" placeholder="Ex: Metalúrgica Souza Ltda"/></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal('modal-nova-empresa')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarEmpresa()">Cadastrar</button>
+    </div>
+  </div>
+</div>
 
     <!-- OS -->
     <div id="tela-os" class="tela">
@@ -1714,6 +1729,30 @@ function voltarEmpresas(){
   });
 
   irPara("empresas");
+  renderEmpresas();
+}
+  function abrirModalEmpresa(){
+  document.getElementById("ne-empresa-nome").value = "";
+  abrirModal("modal-nova-empresa");
+}
+
+async function salvarEmpresa(){
+  const nome = document.getElementById("ne-empresa-nome").value.trim();
+  if(!nome){ alert("Informe o nome da empresa!"); return; }
+
+  const { data, error } = await supabaseClient
+    .from("empresas")
+    .insert([{ nome }])
+    .select()
+    .single();
+
+  if(error){
+    console.error(error);
+    alert("Erro ao cadastrar empresa.");
+    return;
+  }
+
+  fecharModal("modal-nova-empresa");
   renderEmpresas();
 }
 </script>
