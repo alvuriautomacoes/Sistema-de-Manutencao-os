@@ -1421,24 +1421,52 @@ function exportarCSV(){
 // ════════════════════════════════════════════
 // EQUIPAMENTOS
 // ════════════════════════════════════════════
-function renderEquip(){
-  const busca=(document.getElementById("equip-busca")?.value||"").toLowerCase();
-  const filtrados=equipamentos.filter(e=>
-    e.nome.toLowerCase().includes(busca)||e.setor.toLowerCase().includes(busca)||
-    e.marca.toLowerCase().includes(busca)||e.modelo.toLowerCase().includes(busca));
-  document.getElementById("equip-count").textContent=`${equipamentos.length} cadastrados`;
-  document.getElementById("equip-grid").innerHTML=filtrados.map(e=>{
-    const s=STATUS_EQ[e.status]||STATUS_EQ.inativo;
+async function renderEquip(){
+  const empresa_id = usuarioLogado?.empresa_id;
+  if(!empresa_id){ document.getElementById("equip-grid").innerHTML = ""; return; }
+
+  const busca = (document.getElementById("equip-busca")?.value || "").toLowerCase();
+
+  const { data, error } = await supabaseClient
+    .from("equipamentos")
+    .select("*")
+    .eq("empresa_id", empresa_id)
+    .order("nome");
+
+  if(error){
+    console.error("Erro ao carregar equipamentos:", error);
+    return;
+  }
+
+  // salva global para uso em outros lugares (modal OS, etc)
+  window.equipamentosData = data || [];
+
+  const filtrados = window.equipamentosData.filter(e =>
+    e.nome.toLowerCase().includes(busca) ||
+    (e.setor||"").toLowerCase().includes(busca) ||
+    (e.marca||"").toLowerCase().includes(busca) ||
+    (e.modelo||"").toLowerCase().includes(busca)
+  );
+
+  document.getElementById("equip-count").textContent = `${window.equipamentosData.length} cadastrados`;
+
+  if(filtrados.length === 0){
+    document.getElementById("equip-grid").innerHTML = '<div class="empty"><div class="empty-icon">⚙️</div>Nenhum equipamento encontrado.</div>';
+    return;
+  }
+
+  document.getElementById("equip-grid").innerHTML = filtrados.map(e => {
+    const s = STATUS_EQ[e.status] || STATUS_EQ.inativo;
     return `<div class="equip-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div style="font-size:20px;opacity:.6;">⚙️</div>${badge(s.label,s.bg,s.txt,s.bd)}
       </div>
       <div class="equip-nome">${e.nome}</div>
-      <div class="equip-sub">${e.marca} · ${e.modelo} · ${e.setor}</div>
-      <div class="equip-info">Série: <span>${e.serie}</span></div>
-      <div class="equip-info">Última manutenção: <span>${e.ultima}</span></div>
-      <div class="equip-info">Próxima: <span style="color:${e.status==='critico'?'var(--e-critico-txt)':'var(--e-ativo-txt)'}">${e.proxima}</span></div>
-      <div style="margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="abrirDetalheEquip(${e.id})">Ver detalhes</button></div>
+      <div class="equip-sub">${e.marca||"—"} · ${e.modelo||"—"} · ${e.setor||"—"}</div>
+      <div class="equip-info">Série: <span>${e.serie||"—"}</span></div>
+      <div class="equip-info">Última manutenção: <span>${e.ultima_manutencao||"—"}</span></div>
+      <div class="equip-info">Próxima: <span style="color:${e.status==='critico'?'var(--e-critico-txt)':'var(--e-ativo-txt)'}">${e.proxima_manutencao||"—"}</span></div>
+      <div style="margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="abrirDetalheEquip('${e.id}')">Ver detalhes</button></div>
     </div>`;
   }).join("");
 }
@@ -1447,22 +1475,62 @@ function abrirModalNovoEquip(){
   ["ne-nome","ne-marca","ne-modelo","ne-serie"].forEach(id=>document.getElementById(id).value="");
   abrirModal("modal-novo-equip");
 }
-function salvarEquip(){
-  const nome=document.getElementById("ne-nome").value.trim();
-  if(!nome){alert("Preencha o nome!");return;}
-  equipamentos.unshift({id:Date.now(),nome,marca:document.getElementById("ne-marca").value,
-    modelo:document.getElementById("ne-modelo").value,serie:document.getElementById("ne-serie").value,
-    setor:document.getElementById("ne-setor").value,status:"ativo",ultima:"—",proxima:"—"});
-  fecharModal("modal-novo-equip");renderEquip();
+async function salvarEquip(){
+  const nome = document.getElementById("ne-nome").value.trim();
+  if(!nome){ alert("Preencha o nome!"); return; }
+
+  const empresa_id = usuarioLogado?.empresa_id;
+  if(!empresa_id){ alert("Nenhuma empresa selecionada."); return; }
+
+  const { error } = await supabaseClient
+    .from("equipamentos")
+    .insert([{
+      empresa_id,
+      nome,
+      marca: document.getElementById("ne-marca").value.trim(),
+      modelo: document.getElementById("ne-modelo").value.trim(),
+      serie: document.getElementById("ne-serie").value.trim(),
+      setor: document.getElementById("ne-setor").value,
+      status: "ativo"
+    }]);
+
+  if(error){
+    console.error("Erro ao salvar equipamento:", error);
+    alert("Erro ao salvar equipamento.");
+    return;
+  }
+
+  fecharModal("modal-novo-equip");
+  renderEquip();
 }
+  
 function abrirDetalheEquip(id){
-  const e=equipamentos.find(x=>x.id===id);if(!e)return;
-  const s=STATUS_EQ[e.status]||STATUS_EQ.inativo;
-  document.getElementById("deq-titulo").textContent=`⚙️ ${e.nome}`;
-  const rows=[["Marca",e.marca],["Modelo",e.modelo],["Série",e.serie],["Setor",e.setor],["Última manutenção",e.ultima],["Próxima manutenção",e.proxima]];
-  document.getElementById("deq-rows").innerHTML=rows.map(([k,v])=>`<div class="detalhe-row"><span class="detalhe-key">${k}</span><span class="detalhe-val">${v}</span></div>`).join("")+
+  const e = window.equipamentosData?.find(x => String(x.id) === String(id));
+  if(!e) return;
+
+  const s = STATUS_EQ[e.status] || STATUS_EQ.inativo;
+
+  document.getElementById("deq-titulo").textContent = `⚙️ ${e.nome}`;
+
+  const rows = [
+    ["Marca", e.marca||"—"],
+    ["Modelo", e.modelo||"—"],
+    ["Série", e.serie||"—"],
+    ["Setor", e.setor||"—"],
+    ["Última manutenção", e.ultima_manutencao||"—"],
+    ["Próxima manutenção", e.proxima_manutencao||"—"]
+  ];
+
+  document.getElementById("deq-rows").innerHTML =
+    rows.map(([k,v]) => `
+      <div class="detalhe-row">
+        <span class="detalhe-key">${k}</span>
+        <span class="detalhe-val">${v}</span>
+      </div>`
+    ).join("") +
     `<div style="margin-top:14px">${badge(s.label,s.bg,s.txt,s.bd)}</div>`;
-  abrirModal("modal-detalhe-equip");
+
+  document.getElementById("modal-detalhe-equip").classList.add("aberto");
 }
 
 // ════════════════════════════════════════════
