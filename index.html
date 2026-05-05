@@ -600,7 +600,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <!-- MODAL NOVA OS -->
 <div class="modal-overlay" id="modal-nova-os">
   <div class="modal-box">
-    <div class="modal-header"><div class="modal-title" id="modal-os-titulo">🔧 Nova Ordem de Serviço</div><button class="modal-close" onclick="fecharModal('modal-nova-os')">✕</button></div>
+    <div class="modal-header"><div class="modal-title" id="modal-os-titulo">🔧 Nova Ordem de Serviço</div><button class="modal-close" onclick="document.getElementById('modal-nova-os').classList.remove('aberto')">✕</button></div>
     <div class="field"><label>Equipamento *</label><select id="nos-equip"></select></div>
     <div class="grid2">
       <div class="field"><label>Tipo</label><select id="nos-tipo"><option>Preventiva</option><option>Corretiva</option><option>Preditiva</option><option>Emergencial</option></select></div>
@@ -610,7 +610,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     <div class="field"><label>Descrição do Problema *</label><textarea id="nos-desc" rows="3" placeholder="Descreva o problema ou serviço..."></textarea></div>
     <div class="field"><label>Peças / Materiais</label><input id="nos-pecas" placeholder="Ex: Filtro AR-200, Óleo 5L"/></div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="fecharModal('modal-nova-os')">Cancelar</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-nova-os').classList.remove('aberto')">Cancelar</button>
       <button class="btn btn-primary" id="btn-salvar-os" onclick="salvarOS()">Abrir OS</button>
     </div>
   </div>
@@ -619,7 +619,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <!-- MODAL DETALHE OS -->
 <div class="modal-overlay" id="modal-detalhe-os">
   <div class="modal-box">
-    <div class="modal-header"><div class="modal-title" id="det-titulo"></div><button class="modal-close" onclick="fecharModal('modal-detalhe-os')">✕</button></div>
+    <div class="modal-header"><div class="modal-title" id="det-titulo"></div><button class="modal-close" onclick="document.getElementById('modal-detalhe-os').classList.remove('aberto')">✕</button></div>
     <div id="det-badges" class="badges-row" style="margin-bottom:13px"></div>
     <div id="det-rows"></div>
     <div style="margin-top:13px"><div style="color:var(--sub);font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">Descrição</div><div class="detalhe-desc" id="det-desc"></div></div>
@@ -635,7 +635,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     <div id="det-concluida-msg" style="display:none;text-align:center;padding:10px;font-weight:700;font-size:13px"></div>
   </div>
 </div>
-
+  
 <!-- MODAL NOVO EQUIPAMENTO -->
 <div class="modal-overlay" id="modal-novo-equip">
   <div class="modal-box">
@@ -1169,82 +1169,103 @@ function popularFiltroTecnico(){
 }
 
 function getOrdensFiltradas(){
-  const busca=(document.getElementById("os-busca")?.value||"").toLowerCase().trim();
-  const tecnico=document.getElementById("os-filtro-tecnico")?.value||"";
-  const tipo=document.getElementById("os-filtro-tipo")?.value||"";
-  const progresso=document.getElementById("os-filtro-progresso")?.value||"";
-  const prio=document.getElementById("os-filtro-prio")?.value||"";
+  const busca = (document.getElementById("os-busca")?.value || "").toLowerCase().trim();
+  const tecnico = document.getElementById("os-filtro-tecnico")?.value || "";
+  const tipo = document.getElementById("os-filtro-tipo")?.value || "";
+  const progresso = document.getElementById("os-filtro-progresso")?.value || "";
+  const prio = document.getElementById("os-filtro-prio")?.value || "";
 
-  // 🔧 BASE: técnico + empresa
-  let base = usuarioLogado?.somentePropriaOS
-    ? ordens.filter(o => o.tecnico === usuarioLogado.nome)
-    : ordens;
+  let base = window.ordensData || [];
 
-  // 🔥 FILTRO POR EMPRESA (FALTAVA ISSO)
-  if(usuarioLogado.empresaSelecionada){
-    base = base.filter(o => o.empresa === usuarioLogado.empresaSelecionada);
+  // Filtro por técnico (perfil técnico só vê as suas)
+  if(usuarioLogado?.somentePropriaOS){
+    base = base.filter(o => o.tecnico_nome === usuarioLogado.nome);
   }
 
-  return base.filter(o=>{
-    const mS=filtroOS==="todos"||o.status===filtroOS;
-    const mT=!tecnico||o.tecnico===tecnico;
-    const mTipo=!tipo||o.tipo===tipo;
-    const mProg=!progresso||o.status===progresso;
-    const mPrio=!prio||o.prio===prio;
-
-    const mB=!busca||
-      o.id.toLowerCase().includes(busca)||
-      o.equip.toLowerCase().includes(busca)||
-      o.tecnico.toLowerCase().includes(busca)||
-      o.tipo.toLowerCase().includes(busca)||
-      (STATUS_OS[o.status]?.label||"").toLowerCase().includes(busca)||
-      (PRIO_OS[o.prio]?.label||"").toLowerCase().includes(busca)||
-      o.desc.toLowerCase().includes(busca)||
-      (o.pecas||"").toLowerCase().includes(busca);
-
+  return base.filter(o => {
+    const mS = filtroOS === "todos" || o.status === filtroOS;
+    const mT = !tecnico || o.tecnico_nome === tecnico;
+    const mTipo = !tipo || o.tipo === tipo;
+    const mProg = !progresso || o.status === progresso;
+    const mPrio = !prio || o.prioridade === prio;
+    const mB = !busca ||
+      (o.numero||"").toLowerCase().includes(busca) ||
+      (o.equipamento_nome||"").toLowerCase().includes(busca) ||
+      (o.tecnico_nome||"").toLowerCase().includes(busca) ||
+      (o.tipo||"").toLowerCase().includes(busca) ||
+      (STATUS_OS[o.status]?.label||"").toLowerCase().includes(busca) ||
+      (PRIO_OS[o.prioridade]?.label||"").toLowerCase().includes(busca) ||
+      (o.descricao||"").toLowerCase().includes(busca) ||
+      (o.pecas_materiais||"").toLowerCase().includes(busca);
     return mS && mT && mTipo && mProg && mPrio && mB;
   });
 }
 
-function renderOS(){
-  const filtradas=getOrdensFiltradas();
-  let base=usuarioLogado?.somentePropriaOS?ordens.filter(o=>o.tecnico===usuarioLogado.nome):ordens;
-  if(usuarioLogado.empresaSelecionada){
-  base = base.filter(o => o.empresa === usuarioLogado.empresaSelecionada);
-}
-  document.getElementById("os-count").textContent=`${base.length} ordens · ${filtradas.length} exibidas`;
-  if(document.getElementById("os-count-print"))
-    document.getElementById("os-count-print").textContent=`${filtradas.length} ordem(ns)`;
+async function renderOS(){
+  const empresa_id = usuarioLogado?.empresa_id;
+  if(!empresa_id){ document.getElementById("os-lista").innerHTML = ""; return; }
 
-  const abas=[
-    {key:"todos",label:"Todas"},{key:"aberta",label:"Abertas"},
-    {key:"andamento",label:"Em Andamento"},{key:"aguardando",label:"Aguardando"},
-    {key:"concluida",label:"Concluídas"},
-  ].map(a=>({...a,count:a.key==="todos"?base.length:base.filter(o=>o.status===a.key).length}));
-  document.getElementById("os-filtros").innerHTML=abas.map(a=>
+  let query = supabaseClient
+    .from("ordens_servico")
+    .select("*")
+    .eq("empresa_id", empresa_id)
+    .order("created_at", { ascending: false });
+
+  if(usuarioLogado?.somentePropriaOS){
+    query = query.eq("tecnico_nome", usuarioLogado.nome);
+  }
+
+  const { data, error } = await query;
+
+  if(error){
+    console.error("Erro ao carregar OS:", error);
+    return;
+  }
+
+  window.ordensData = data || [];
+
+  const filtradas = getOrdensFiltradas();
+  const base = window.ordensData;
+
+  document.getElementById("os-count").textContent = `${base.length} ordens · ${filtradas.length} exibidas`;
+  if(document.getElementById("os-count-print"))
+    document.getElementById("os-count-print").textContent = `${filtradas.length} ordem(ns)`;
+
+  const abas = [
+    {key:"todos", label:"Todas"},
+    {key:"aberta", label:"Abertas"},
+    {key:"andamento", label:"Em Andamento"},
+    {key:"aguardando", label:"Aguardando"},
+    {key:"concluida", label:"Concluídas"},
+  ].map(a => ({...a, count: a.key==="todos" ? base.length : base.filter(o=>o.status===a.key).length}));
+
+  document.getElementById("os-filtros").innerHTML = abas.map(a =>
     `<button class="filtro-aba ${filtroOS===a.key?'ativo':''}" onclick="setFiltroOS('${a.key}')">${a.label} (${a.count})</button>`
   ).join("");
 
-  if(filtradas.length===0){
-    document.getElementById("os-lista").innerHTML=`<div class="empty"><div class="empty-icon">📭</div>Nenhuma OS encontrada para os filtros aplicados</div>`;
+  if(filtradas.length === 0){
+    document.getElementById("os-lista").innerHTML = `<div class="empty"><div class="empty-icon">📭</div>Nenhuma OS encontrada para os filtros aplicados</div>`;
     return;
   }
-  const podeAvancar=usuarioLogado?.podeEditar||usuarioLogado?.somentePropriaOS;
-  const pColors={aberta:"var(--blue-400)",andamento:"var(--s-andamento-txt)",aguardando:"var(--s-aguardando-txt)",concluida:"var(--s-concluida-txt)",cancelada:"var(--s-cancelada-txt)"};
-  document.getElementById("os-lista").innerHTML=filtradas.map(o=>{
-    const s=STATUS_OS[o.status],p=PRIO_OS[o.prio];
-    const idx=STATUS_SEQ.indexOf(o.status);
-    const pct=o.status==="concluida"?100:o.status==="cancelada"?0:Math.round(((idx+1)/STATUS_SEQ.length)*100);
-    const barColor=pColors[o.status]||"var(--blue-400)";
-    const fim=o.status==="concluida"||o.status==="cancelada";
+
+  const podeAvancar = usuarioLogado?.podeEditar || usuarioLogado?.somentePropriaOS;
+  const pColors = {aberta:"var(--blue-400)",andamento:"var(--s-andamento-txt)",aguardando:"var(--s-aguardando-txt)",concluida:"var(--s-concluida-txt)",cancelada:"var(--s-cancelada-txt)"};
+
+  document.getElementById("os-lista").innerHTML = filtradas.map(o => {
+    const s = STATUS_OS[o.status], p = PRIO_OS[o.prioridade];
+    const idx = STATUS_SEQ.indexOf(o.status);
+    const pct = o.status==="concluida"?100:o.status==="cancelada"?0:Math.round(((idx+1)/STATUS_SEQ.length)*100);
+    const barColor = pColors[o.status] || "var(--blue-400)";
+    const fim = o.status==="concluida" || o.status==="cancelada";
+    const desc = o.descricao || "";
     return `<div class="os-item">
       <div class="os-info">
         <div class="badges-row" style="margin-bottom:6px">
-          <span class="os-id">${o.id}</span>${badgeTipo(o.tipo)}${badge(p.label,p.bg,p.txt,p.bd)}${badge(s.label,s.bg,s.txt,s.bd)}
+          <span class="os-id">${o.numero}</span>${badgeTipo(o.tipo)}${badge(p.label,p.bg,p.txt,p.bd)}${badge(s.label,s.bg,s.txt,s.bd)}
         </div>
-        <div class="os-equip">${o.equip}</div>
-        <div class="os-desc">${o.desc.substring(0,90)}${o.desc.length>90?"...":""}</div>
-        <div class="os-meta">👨‍🔧 ${o.tecnico} &nbsp;·&nbsp; 📅 ${o.abertura}${o.conclusao?` &nbsp;·&nbsp; ✅ ${o.conclusao}`:""}</div>
+        <div class="os-equip">${o.equipamento_nome||"—"}</div>
+        <div class="os-desc">${desc.substring(0,90)}${desc.length>90?"...":""}</div>
+        <div class="os-meta">👨‍🔧 ${o.tecnico_nome||"—"} &nbsp;·&nbsp; 📅 ${o.data_abertura||""}${o.data_conclusao?` &nbsp;·&nbsp; ✅ ${o.data_conclusao}`:""}</div>
         <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
           <div style="flex:1;height:4px;background:var(--blue-100);position:relative;">
             <div style="position:absolute;top:0;left:0;height:4px;width:${pct}%;background:${barColor};transition:width .3s;"></div>
@@ -1263,108 +1284,217 @@ function renderOS(){
 function setFiltroOS(f){filtroOS=f;renderOS();}
 
 function abrirModalNovaOS(){
-  osEditandoId=null;
-  document.getElementById("modal-os-titulo").textContent="🔧 Nova Ordem de Serviço";
-  document.getElementById("btn-salvar-os").textContent="Abrir OS";
-  document.getElementById("nos-equip").innerHTML=equipamentos.map(e=>`<option value="${e.id}">${e.nome}</option>`).join("");
-  const tecnicos=listarTecnicos();
-  document.getElementById("nos-tecnico").innerHTML=tecnicos.map(t=>`<option>${t}</option>`).join("");
+  osEditandoId = null;
+  document.getElementById("modal-os-titulo").textContent = "🔧 Nova Ordem de Serviço";
+  document.getElementById("btn-salvar-os").textContent = "Abrir OS";
+
+  // Popula equipamentos do Supabase
+  const equips = window.equipamentosData || [];
+  document.getElementById("nos-equip").innerHTML = equips.map(e =>
+    `<option value="${e.id}">${e.nome}</option>`
+  ).join("");
+
+  // Popula técnicos do Supabase
+  const tecnicos = (window.profissionaisData || [])
+    .filter(p => p.status === "ativo")
+    .map(p => p.nome);
+  document.getElementById("nos-tecnico").innerHTML = tecnicos.map(t =>
+    `<option>${t}</option>`
+  ).join("");
+
   // Se técnico, pré-seleciona o próprio nome
   if(usuarioLogado?.somentePropriaOS){
-    const sel=document.getElementById("nos-tecnico");
-    sel.value=usuarioLogado.nome;
-    sel.disabled=true;
+    const sel = document.getElementById("nos-tecnico");
+    sel.value = usuarioLogado.nome;
+    sel.disabled = true;
   } else {
-    document.getElementById("nos-tecnico").disabled=false;
+    document.getElementById("nos-tecnico").disabled = false;
   }
-  document.getElementById("nos-desc").value="";
-  document.getElementById("nos-pecas").value="";
-  abrirModal("modal-nova-os");
-}
 
-function salvarOS(){
-  const desc=document.getElementById("nos-desc").value.trim();
-  if(!desc){alert("Preencha a descrição!");return;}
-  const equipId=parseInt(document.getElementById("nos-equip").value);
-  const eq=equipamentos.find(e=>e.id===equipId)||equipamentos[0];
+  document.getElementById("nos-desc").value = "";
+  document.getElementById("nos-pecas").value = "";
+  document.getElementById("modal-nova-os").classList.add("aberto");
+}
+  
+async function salvarOS(){
+  const desc = document.getElementById("nos-desc").value.trim();
+  if(!desc){ alert("Preencha a descrição!"); return; }
+
+  const empresa_id = usuarioLogado?.empresa_id;
+  if(!empresa_id){ alert("Nenhuma empresa selecionada."); return; }
+
+  const equipId = document.getElementById("nos-equip").value;
+  const eq = (window.equipamentosData || []).find(e => String(e.id) === String(equipId));
+
+  const tecnicoNome = document.getElementById("nos-tecnico").value;
+  const tecnico = (window.profissionaisData || []).find(p => p.nome === tecnicoNome);
+
   if(osEditandoId){
-    const o=ordens.find(x=>x.id===osEditandoId);
-    if(o){
-      o.equipId=eq.id;o.equip=eq.nome;
-      o.tipo=document.getElementById("nos-tipo").value;
-      o.prio=document.getElementById("nos-prio").value;
-      o.tecnico=document.getElementById("nos-tecnico").value;
-      o.desc=desc;o.pecas=document.getElementById("nos-pecas").value;
+    const { error } = await supabaseClient
+      .from("ordens_servico")
+      .update({
+        equipamento_id: eq?.id || null,
+        equipamento_nome: eq?.nome || "",
+        tipo: document.getElementById("nos-tipo").value,
+        prioridade: document.getElementById("nos-prio").value,
+        tecnico_id: tecnico?.id || null,
+        tecnico_nome: tecnicoNome,
+        descricao: desc,
+        pecas_materiais: document.getElementById("nos-pecas").value
+      })
+      .eq("id", osEditandoId);
+
+    if(error){
+      console.error("Erro ao editar OS:", error);
+      alert("Erro ao salvar OS.");
+      return;
     }
-    osEditandoId=null;
+    osEditandoId = null;
+
   } else {
-    const num=String(ordens.length+1).padStart(3,"0");
-    ordens.unshift({
-      id:`OS-${num}`,equipId:eq.id,equip:eq.nome,
-      tipo:document.getElementById("nos-tipo").value,
-      prio:document.getElementById("nos-prio").value,
-      status:"aberta",tecnico:document.getElementById("nos-tecnico").value,
-      desc,pecas:document.getElementById("nos-pecas").value,
-      abertura:hoje(),conclusao:null,
-        
-      empresa: usuarioLogado.empresaSelecionada,
-    });
+    // Gera número da OS
+    const total = (window.ordensData || []).length;
+    const numero = `OS-${String(total + 1).padStart(3, "0")}`;
+
+    const { error } = await supabaseClient
+      .from("ordens_servico")
+      .insert([{
+        empresa_id,
+        numero,
+        equipamento_id: eq?.id || null,
+        equipamento_nome: eq?.nome || "",
+        tipo: document.getElementById("nos-tipo").value,
+        prioridade: document.getElementById("nos-prio").value,
+        status: "aberta",
+        tecnico_id: tecnico?.id || null,
+        tecnico_nome: tecnicoNome,
+        descricao: desc,
+        pecas_materiais: document.getElementById("nos-pecas").value,
+        data_abertura: hoje()
+      }]);
+
+    if(error){
+      console.error("Erro ao criar OS:", error);
+      alert("Erro ao salvar OS.");
+      return;
+    }
   }
-  fecharModal("modal-nova-os");popularFiltroTecnico();renderOS();atualizarBadgeUrgente();
+
+  document.getElementById("modal-nova-os").classList.remove("aberto");
+  popularFiltroTecnico();
+  renderOS();
+  atualizarBadgeUrgente();
+}
+  
+async function avancarStatus(id){
+  const o = (window.ordensData || []).find(x => String(x.id) === String(id));
+  if(!o) return;
+
+  const idx = STATUS_SEQ.indexOf(o.status);
+  if(idx >= STATUS_SEQ.length - 1) return;
+
+  const novoStatus = STATUS_SEQ[idx + 1];
+  const conclusao = novoStatus === "concluida" ? hoje() : null;
+
+  const { error } = await supabaseClient
+    .from("ordens_servico")
+    .update({
+      status: novoStatus,
+      ...(conclusao ? { data_conclusao: conclusao } : {})
+    })
+    .eq("id", id);
+
+  if(error){
+    console.error("Erro ao avançar status:", error);
+    alert("Erro ao avançar status.");
+    return;
+  }
+
+  await renderOS();
+  atualizarBadgeUrgente();
+  if(osDetalheId === id) renderDetalheOS(id);
 }
 
-function avancarStatus(id){
-  const o=ordens.find(x=>x.id===id);if(!o)return;
-  const idx=STATUS_SEQ.indexOf(o.status);
-  if(idx<STATUS_SEQ.length-1){o.status=STATUS_SEQ[idx+1];if(o.status==="concluida")o.conclusao=hoje();}
-  renderOS();atualizarBadgeUrgente();
-  if(osDetalheId===id)renderDetalheOS(id);
+function abrirDetalheOS(id){
+  osDetalheId = id;
+  renderDetalheOS(id);
+  document.getElementById("modal-detalhe-os").classList.add("aberto");
 }
-
-function abrirDetalheOS(id){osDetalheId=id;renderDetalheOS(id);abrirModal("modal-detalhe-os");}
-
+  
 function renderDetalheOS(id){
-  const o=ordens.find(x=>x.id===id);if(!o)return;
-  const s=STATUS_OS[o.status],p=PRIO_OS[o.prio];
-  document.getElementById("det-titulo").textContent=`${o.id} — ${o.equip}`;
-  document.getElementById("det-badges").innerHTML=badgeTipo(o.tipo)+" "+badge(p.label,p.bg,p.txt,p.bd)+" "+badge(s.label,s.bg,s.txt,s.bd);
-  const rows=[["Técnico",o.tecnico],["Abertura",o.abertura],["Conclusão",o.conclusao||"—"],["Peças / Materiais",o.pecas||"—"]];
-  document.getElementById("det-rows").innerHTML=rows.map(([k,v])=>`<div class="detalhe-row"><span class="detalhe-key">${k}</span><span class="detalhe-val">${v}</span></div>`).join("");
-  document.getElementById("det-desc").textContent=o.desc;
-  const idx=STATUS_SEQ.indexOf(o.status);
-  const pColors={aberta:"var(--blue-500)",andamento:"var(--s-andamento-txt)",aguardando:"var(--s-aguardando-txt)",concluida:"var(--s-concluida-txt)"};
-  document.getElementById("det-progress-track").innerHTML=STATUS_SEQ.map((st,i)=>
-    `<div class="progress-seg" style="background:${i<=idx?pColors[st]:'#d5e4f0'}"></div>`).join("");
-  document.getElementById("det-progress-labels").innerHTML=STATUS_SEQ.map((st,i)=>
-    `<div class="progress-lbl" style="color:${i<=idx?pColors[st]:'#8aaec8'}">${STATUS_OS[st].label}</div>`).join("");
-  const fim=o.status==="concluida"||o.status==="cancelada";
-  const podeAvancar=usuarioLogado?.podeEditar||usuarioLogado?.somentePropriaOS;
-  const podeEditar=usuarioLogado?.podeEditar;
-  document.getElementById("det-avancar-btn").style.display=(podeAvancar&&!fim)?"block":"none";
-  document.getElementById("det-editar-btn").style.display=podeEditar?"block":"none";
-  document.getElementById("det-acoes").style.display=(podeAvancar&&!fim)||podeEditar?"flex":"none";
-  const msg=document.getElementById("det-concluida-msg");
-  msg.style.display=fim?"block":"none";
-  msg.style.color=o.status==="concluida"?"var(--s-concluida-txt)":"var(--s-cancelada-txt)";
-  msg.textContent=o.status==="concluida"?"✅ Ordem de Serviço Concluída":"❌ OS Cancelada";
+  const o = (window.ordensData || []).find(x => String(x.id) === String(id));
+  if(!o) return;
+
+  const s = STATUS_OS[o.status];
+  const p = PRIO_OS[o.prioridade];
+
+  document.getElementById("det-titulo").textContent = `${o.numero} — ${o.equipamento_nome||"—"}`;
+  document.getElementById("det-badges").innerHTML = badgeTipo(o.tipo) + " " + badge(p.label,p.bg,p.txt,p.bd) + " " + badge(s.label,s.bg,s.txt,s.bd);
+
+  const rows = [
+    ["Técnico", o.tecnico_nome||"—"],
+    ["Abertura", o.data_abertura||"—"],
+    ["Conclusão", o.data_conclusao||"—"],
+    ["Peças / Materiais", o.pecas_materiais||"—"]
+  ];
+
+  document.getElementById("det-rows").innerHTML = rows.map(([k,v]) =>
+    `<div class="detalhe-row"><span class="detalhe-key">${k}</span><span class="detalhe-val">${v}</span></div>`
+  ).join("");
+
+  document.getElementById("det-desc").textContent = o.descricao || "";
+
+  const idx = STATUS_SEQ.indexOf(o.status);
+  const pColors = {
+    aberta:"var(--blue-500)",
+    andamento:"var(--s-andamento-txt)",
+    aguardando:"var(--s-aguardando-txt)",
+    concluida:"var(--s-concluida-txt)"
+  };
+
+  document.getElementById("det-progress-track").innerHTML = STATUS_SEQ.map((st,i) =>
+    `<div class="progress-seg" style="background:${i<=idx?pColors[st]:'#d5e4f0'}"></div>`
+  ).join("");
+
+  document.getElementById("det-progress-labels").innerHTML = STATUS_SEQ.map((st,i) =>
+    `<div class="progress-lbl" style="color:${i<=idx?pColors[st]:'#8aaec8'}">${STATUS_OS[st].label}</div>`
+  ).join("");
+
+  const fim = o.status === "concluida" || o.status === "cancelada";
+  const podeAvancar = usuarioLogado?.podeEditar || usuarioLogado?.somentePropriaOS;
+  const podeEditar = usuarioLogado?.podeEditar;
+
+  document.getElementById("det-avancar-btn").style.display = (podeAvancar&&!fim) ? "block" : "none";
+  document.getElementById("det-editar-btn").style.display = podeEditar ? "block" : "none";
+  document.getElementById("det-acoes").style.display = (podeAvancar&&!fim)||podeEditar ? "flex" : "none";
+
+  const msg = document.getElementById("det-concluida-msg");
+  msg.style.display = fim ? "block" : "none";
+  msg.style.color = o.status === "concluida" ? "var(--s-concluida-txt)" : "var(--s-cancelada-txt)";
+  msg.textContent = o.status === "concluida" ? "✅ Ordem de Serviço Concluída" : "❌ OS Cancelada";
 }
 
-function avancarStatusAtual(){if(osDetalheId)avancarStatus(osDetalheId);}
+function avancarStatusAtual(){
+  if(osDetalheId) avancarStatus(osDetalheId);
+}
 
 function editarOSAtual(){
-  if(!osDetalheId)return;
-  const o=ordens.find(x=>x.id===osDetalheId);if(!o)return;
-  osEditandoId=o.id;
-  fecharModal("modal-detalhe-os");
+  if(!osDetalheId) return;
+  const o = (window.ordensData || []).find(x => String(x.id) === String(osDetalheId));
+  if(!o) return;
+
+  osEditandoId = o.id;
+  document.getElementById("modal-detalhe-os").classList.remove("aberto");
   abrirModalNovaOS();
-  document.getElementById("modal-os-titulo").textContent="✏️ Editar Ordem de Serviço";
-  document.getElementById("btn-salvar-os").textContent="Salvar alterações";
-  document.getElementById("nos-equip").value=o.equipId;
-  document.getElementById("nos-tipo").value=o.tipo;
-  document.getElementById("nos-prio").value=o.prio;
-  document.getElementById("nos-tecnico").value=o.tecnico;
-  document.getElementById("nos-desc").value=o.desc;
-  document.getElementById("nos-pecas").value=o.pecas||"";
+
+  document.getElementById("modal-os-titulo").textContent = "✏️ Editar Ordem de Serviço";
+  document.getElementById("btn-salvar-os").textContent = "Salvar alterações";
+  document.getElementById("nos-equip").value = o.equipamento_id || "";
+  document.getElementById("nos-tipo").value = o.tipo || "";
+  document.getElementById("nos-prio").value = o.prioridade || "";
+  document.getElementById("nos-tecnico").value = o.tecnico_nome || "";
+  document.getElementById("nos-desc").value = o.descricao || "";
+  document.getElementById("nos-pecas").value = o.pecas_materiais || "";
 }
 
 // ════════════════════════════════════════════
