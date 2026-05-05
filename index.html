@@ -2773,6 +2773,21 @@ function entrarEmpresa(id){
     console.error("Empresa não encontrada:", id);
     return;
   }
+
+  // 🔥 Limpa dados antigos ANTES de tudo
+  window.ordensData    = [];
+  window.usuariosData  = [];
+  window.equipData     = [];
+  window.planosData    = [];
+  window.profData      = [];
+
+  // 🔥 Limpa telas visualmente
+  const limpar = ['os-lista','dash-os-recentes','dash-stats','dash-equip','dash-planos','usuarios-grid'];
+  limpar.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = '';
+  });
+
   usuarioLogado.empresaSelecionada = empresa.nome;
   usuarioLogado.empresa_id = empresa.id;
   localStorage.setItem("sessao_usuario", JSON.stringify(usuarioLogado));
@@ -2780,12 +2795,13 @@ function entrarEmpresa(id){
   localStorage.setItem("empresa_selecionada_id", String(empresa.id));
   localStorage.setItem("empresa_selecionada_nome", empresa.nome);
   document.getElementById("sidebar-empresa").textContent = empresa.nome;
-  // Mostra sidebar ao entrar numa empresa
+
   mostrarMenuNav();
-  // Mostra botão "Trocar empresa" para admin_senior
+
   if(usuarioLogado.perfil === "admin_senior"){
     document.getElementById("btn-voltar-empresas").style.display = "block";
   }
+
   irPara("dashboard");
   renderDashboard();
   renderOS();
