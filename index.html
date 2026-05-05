@@ -1015,19 +1015,19 @@ function iniciarSistema(u){
   const temEmpresa   = !!localStorage.getItem("empresa_selecionada_id");
   if(u.perfil === "admin_senior"){
     if(temEmpresa && telaAnterior && telaAnterior !== "empresas"){
+      // Tem empresa salva — mostra sidebar e vai para tela anterior
+      mostrarMenuNav();
       document.getElementById("btn-voltar-empresas").style.display = "block";
-      todosNavs.forEach(id=>{
-        const btn=document.getElementById("nav-"+id);
-        if(btn) btn.style.display="";
-      });
       irPara(telaAnterior);
     } else {
-      // Esconde menu na tela de empresas
+      // Sem empresa — esconde sidebar e vai para tela de empresas
       ocultarMenuNav();
       irPara("empresas");
       renderEmpresas();
     }
   } else {
+    // Outros perfis sempre mostram sidebar
+    mostrarMenuNav();
     const tela = (telaAnterior && u.acesso.includes(telaAnterior))
       ? telaAnterior
       : (u.acesso[0] || "os");
@@ -1039,21 +1039,14 @@ function iniciarSistema(u){
 
 // Esconde itens de navegação
 function ocultarMenuNav(){
-  const todosNavs = ["dashboard","os","equip","planos","profissionais"];
-  todosNavs.forEach(id => {
-    const btn = document.getElementById("nav-"+id);
-    if(btn) btn.style.display = "none";
-  });
-  document.getElementById("btn-voltar-empresas").style.display = "none";
+  document.getElementById("sidebar").style.display = "none";
+  document.getElementById("conteudo").style.marginLeft = "0";
 }
 
 // Mostra itens de navegação
 function mostrarMenuNav(){
-  const todosNavs = ["dashboard","os","equip","planos","profissionais"];
-  todosNavs.forEach(id => {
-    const btn = document.getElementById("nav-"+id);
-    if(btn) btn.style.display = "";
-  });
+  document.getElementById("sidebar").style.display = "flex";
+  document.getElementById("conteudo").style.marginLeft = "232px";
 }
   
 function fazerLogout(){
@@ -2493,36 +2486,31 @@ function entrarEmpresa(id){
     console.error("Empresa não encontrada:", id);
     return;
   }
-  // Salva empresa selecionada no usuário logado
   usuarioLogado.empresaSelecionada = empresa.nome;
   usuarioLogado.empresa_id = empresa.id;
-  // Atualiza sessão salva com empresa_id e empresa selecionada
   localStorage.setItem("sessao_usuario", JSON.stringify(usuarioLogado));
   localStorage.setItem("tela_atual", "dashboard");
   localStorage.setItem("empresa_selecionada_id", String(empresa.id));
   localStorage.setItem("empresa_selecionada_nome", empresa.nome);
-  // Atualiza sidebar
   document.getElementById("sidebar-empresa").textContent = empresa.nome;
-  // Mostra menu ao entrar numa empresa
+  // Mostra sidebar ao entrar numa empresa
   mostrarMenuNav();
   // Mostra botão "Trocar empresa" para admin_senior
   if(usuarioLogado.perfil === "admin_senior"){
     document.getElementById("btn-voltar-empresas").style.display = "block";
   }
-  // Navega para o dashboard da empresa
   irPara("dashboard");
   renderDashboard();
   renderOS();
 }
-  
+
 // ← VOLTAR PARA TELA DE EMPRESAS
 function voltarEmpresas(){
   usuarioLogado.empresaSelecionada = null;
   usuarioLogado.empresa_id = null;
   localStorage.removeItem("empresa_selecionada_id");
   localStorage.removeItem("empresa_selecionada_nome");
-  document.getElementById("sidebar-empresa").textContent = "Todas as empresas";
-  // Esconde menu ao voltar para tela de empresas
+  // Esconde sidebar ao voltar para tela de empresas
   ocultarMenuNav();
   irPara("empresas");
   renderEmpresas();
