@@ -317,6 +317,8 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   #print-info{display:flex!important;gap:24px;font-size:10px;color:#555;margin-bottom:14px;font-family:monospace;flex-wrap:wrap;}
 }
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -445,14 +447,14 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
       </button>
     </div>
     <nav>
-      <div class="nav-section">Menu</div>
-      <button class="nav-btn ativo" onclick="irPara('dashboard')" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</button>
-      <button class="nav-btn" onclick="irPara('os')" id="nav-os"><span class="nav-icon">🔧</span> Ordens de Serviço<span class="badge-urgente" id="badge-urgente" style="display:none">0</span></button>
-      <button class="nav-btn" onclick="irPara('equip')" id="nav-equip"><span class="nav-icon">⚙️</span> Equipamentos</button>
-      <button class="nav-btn" onclick="irPara('planos')" id="nav-planos"><span class="nav-icon">📅</span> Planos de Manutenção</button>
-      <button class="nav-btn" onclick="irPara('profissionais')" id="nav-profissionais"><span class="nav-icon">👷</span> Profissionais</button>
-      <button class="nav-btn" onclick="irPara('usuarios')" id="nav-usuarios"><span class="nav-icon">🔑</span> Usuários</button>
-    </nav>
+     <div class="nav-section">Menu</div>
+<button class="nav-btn ativo" onclick="irPara('dashboard')" id="nav-dashboard"><span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span> Dashboard</button>
+<button class="nav-btn" onclick="irPara('os')" id="nav-os"><span class="nav-icon"><i class="fa-solid fa-screwdriver-wrench"></i></span> Ordens de Serviço<span class="badge-urgente" id="badge-urgente" style="display:none">0</span></button>
+<button class="nav-btn" onclick="irPara('equip')" id="nav-equip"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span> Equipamentos</button>
+<button class="nav-btn" onclick="irPara('planos')" id="nav-planos"><span class="nav-icon"><i class="fa-solid fa-calendar-check"></i></span> Planos de Manutenção</button>
+<button class="nav-btn" onclick="irPara('profissionais')" id="nav-profissionais"><span class="nav-icon"><i class="fa-solid fa-helmet-safety"></i></span> Profissionais</button>
+<button class="nav-btn" onclick="irPara('usuarios')" id="nav-usuarios"><span class="nav-icon"><i class="fa-solid fa-users-gear"></i></span> Usuários</button>
+</nav>
     <div class="user-area">
       <div class="user-row">
         <div class="user-avatar" id="sidebar-avatar">?</div>
