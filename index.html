@@ -1022,11 +1022,12 @@ function iniciarSistema(u){
       });
       irPara(telaAnterior);
     } else {
+      // Esconde menu na tela de empresas
+      ocultarMenuNav();
       irPara("empresas");
       renderEmpresas();
     }
   } else {
-    // Vai para tela anterior ou primeira do acesso — SEM chamar renderDashboard extra
     const tela = (telaAnterior && u.acesso.includes(telaAnterior))
       ? telaAnterior
       : (u.acesso[0] || "os");
@@ -1034,6 +1035,25 @@ function iniciarSistema(u){
   }
   // Atualizações gerais
   atualizarBadgeUrgente();
+}
+
+// Esconde itens de navegação
+function ocultarMenuNav(){
+  const todosNavs = ["dashboard","os","equip","planos","profissionais"];
+  todosNavs.forEach(id => {
+    const btn = document.getElementById("nav-"+id);
+    if(btn) btn.style.display = "none";
+  });
+  document.getElementById("btn-voltar-empresas").style.display = "none";
+}
+
+// Mostra itens de navegação
+function mostrarMenuNav(){
+  const todosNavs = ["dashboard","os","equip","planos","profissionais"];
+  todosNavs.forEach(id => {
+    const btn = document.getElementById("nav-"+id);
+    if(btn) btn.style.display = "";
+  });
 }
   
 function fazerLogout(){
@@ -2476,20 +2496,15 @@ function entrarEmpresa(id){
   // Salva empresa selecionada no usuário logado
   usuarioLogado.empresaSelecionada = empresa.nome;
   usuarioLogado.empresa_id = empresa.id;
-
   // Atualiza sessão salva com empresa_id e empresa selecionada
   localStorage.setItem("sessao_usuario", JSON.stringify(usuarioLogado));
   localStorage.setItem("tela_atual", "dashboard");
   localStorage.setItem("empresa_selecionada_id", String(empresa.id));
   localStorage.setItem("empresa_selecionada_nome", empresa.nome);
-
   // Atualiza sidebar
   document.getElementById("sidebar-empresa").textContent = empresa.nome;
-  // Reexibe itens do menu ao entrar numa empresa
-  ["dashboard","os","equip","planos","profissionais"].forEach(id => {
-    const btn = document.getElementById("nav-"+id);
-    if(btn) btn.style.display = "";
-  });
+  // Mostra menu ao entrar numa empresa
+  mostrarMenuNav();
   // Mostra botão "Trocar empresa" para admin_senior
   if(usuarioLogado.perfil === "admin_senior"){
     document.getElementById("btn-voltar-empresas").style.display = "block";
@@ -2504,16 +2519,15 @@ function entrarEmpresa(id){
 function voltarEmpresas(){
   usuarioLogado.empresaSelecionada = null;
   usuarioLogado.empresa_id = null;
+  localStorage.removeItem("empresa_selecionada_id");
+  localStorage.removeItem("empresa_selecionada_nome");
   document.getElementById("sidebar-empresa").textContent = "Todas as empresas";
-  document.getElementById("btn-voltar-empresas").style.display = "none";
-  ["dashboard","os","equip","planos","profissionais"].forEach(id => {
-    const btn = document.getElementById("nav-"+id);
-    if(btn) btn.style.display = "none";
-  });
+  // Esconde menu ao voltar para tela de empresas
+  ocultarMenuNav();
   irPara("empresas");
   renderEmpresas();
 }
-
+  
 // 🏢 NOVA EMPRESA
 function abrirModalEmpresa(){
   ["ne-empresa-nome","ne-empresa-cnpj","ne-empresa-tel","ne-empresa-email",
