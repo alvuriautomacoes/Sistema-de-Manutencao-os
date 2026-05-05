@@ -2035,7 +2035,9 @@ function voltarEmpresas(){
 
 // 🏢 NOVA EMPRESA
 function abrirModalEmpresa(){
-  document.getElementById("ne-empresa-nome").value = "";
+  ["ne-empresa-nome","ne-empresa-cnpj","ne-empresa-tel","ne-empresa-email",
+   "ne-empresa-cidade","ne-empresa-responsavel","ne-empresa-resp-tel","ne-empresa-obs"]
+  .forEach(id => document.getElementById(id).value = "");
   document.getElementById("modal-nova-empresa").classList.add("aberto");
 }
 
