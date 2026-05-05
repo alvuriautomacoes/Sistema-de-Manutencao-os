@@ -2195,14 +2195,17 @@ async function salvarPlano(){
     tecnico_nome:     tecnicoNome,
     status:           "ok"
   };
+
+  console.log("Dados enviados:", dados); // ← loga o que está sendo enviado
+
   if(planoEditandoId){
     const { error } = await supabaseClient
       .from("planos_manutencao")
       .update(dados)
       .eq("id", planoEditandoId);
     if(error){
-      console.error("Erro ao editar plano:", error);
-      alert("Erro ao salvar plano.");
+      console.error("Erro completo ao editar:", JSON.stringify(error));
+      alert(`Erro: ${error.message || error.code || "Verifique o console"}`);
       return;
     }
     planoEditandoId = null;
@@ -2211,8 +2214,8 @@ async function salvarPlano(){
       .from("planos_manutencao")
       .insert([dados]);
     if(error){
-      console.error("Erro ao criar plano:", error);
-      alert("Erro ao salvar plano.");
+      console.error("Erro completo ao criar:", JSON.stringify(error));
+      alert(`Erro: ${error.message || error.code || "Verifique o console"}`);
       return;
     }
   }
