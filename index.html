@@ -2007,7 +2007,7 @@ function abrirModalNovoPlano(){
   document.getElementById("np-freq").value = "Mensal";
   document.getElementById("np-tipo").value = "Preventiva";
 
-  abrirModal("modal-novo-plano");
+  document.getElementById("modal-novo-plano").classList.add("aberto");
 }
   
 let planoEditandoId = null;
