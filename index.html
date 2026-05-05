@@ -703,6 +703,29 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   </div>
 </div>
 
+  <!-- MODAL DETALHE PLANO -->
+<div class="modal-overlay" id="modal-detalhe-plano">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="dpl-titulo"></div>
+      <button class="modal-close" onclick="document.getElementById('modal-detalhe-plano').classList.remove('aberto')">✕</button>
+    </div>
+    <div id="dpl-badges" class="badges-row" style="margin-bottom:13px"></div>
+    <div id="dpl-rows"></div>
+    <div id="dpl-acoes" style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn btn-ghost" id="dpl-editar-btn" onclick="editarPlanoAtual()" style="flex:1">✏️ Editar</button>
+      <button class="btn btn-danger" id="dpl-excluir-btn" onclick="excluirPlanoDoModal()" style="flex:1">🗑 Excluir</button>
+    </div>
+    <div id="dpl-confirm-del" class="confirm-bar" style="display:none">
+      Tem certeza? Esta ação é irreversível.
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn btn-danger btn-sm" onclick="confirmarExcluirPlanoModal()">Confirmar exclusão</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('dpl-confirm-del').style.display='none'">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL NOVO PROFISSIONAL -->
 <div class="modal-overlay" id="modal-novo-prof">
   <div class="modal-box">
@@ -1156,7 +1179,7 @@ const STATUS_PROF={
   inativo:{label:"Inativo",bg:"var(--e-inativo-bg)",txt:"var(--e-inativo-txt)",bd:"var(--e-inativo-bd)"},
 };
 const STATUS_SEQ=["aberta","andamento","aguardando","concluida"];
-let filtroOS="todos", osDetalheId=null, profDetalheId=null, profEditandoId=null, osEditandoId=null, equipDetalheId=null;
+let filtroOS="todos", osDetalheId=null, profDetalheId=null, profEditandoId=null, osEditandoId=null, equipDetalheId=null, planoDetalheId=null;
 
 function badge(label,bg,txt,bd){return `<span class="badge" style="background:${bg};color:${txt};border-color:${bd}">${label}</span>`;}
 function badgeTipo(label){return `<span class="badge tipo-badge">${label}</span>`;}
@@ -1986,8 +2009,6 @@ async function renderPlanos(){
   al.style.display = venc.length > 0 ? "block" : "none";
   if(venc.length > 0) al.textContent = `⚠️ ${venc.length} plano(s) vencido(s) — crie as OS correspondentes.`;
   document.getElementById("planos-count").textContent = `${window.planosData.length} planos agendados`;
-  const podeEditar  = usuarioLogado?.podeEditar;
-  const podeExcluir = usuarioLogado?.podeExcluir;
   if(window.planosData.length === 0){
     document.getElementById("planos-grid").innerHTML = '<div class="empty"><div class="empty-icon">📅</div>Nenhum plano cadastrado.</div>';
     return;
@@ -2012,14 +2033,13 @@ async function renderPlanos(){
         ${p.proxima_execucao||"—"}</span>
       </div>
       ${v?`<div class="plano-vencido">⚠️ Plano vencido — crie uma OS corretiva.</div>`:""}
-      <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
-        ${podeEditar?`<button class="btn btn-primary btn-sm" onclick="abrirEditarPlano('${p.id}')">✏️ Editar</button>`:""}
-        ${podeExcluir?`<button class="btn btn-danger btn-sm" onclick="excluirPlano('${p.id}','${p.nome}')">🗑 Excluir</button>`:""}
+      <div style="margin-top:12px;">
+        <button class="btn btn-ghost btn-sm" onclick="abrirDetalhePlano('${p.id}')">Ver detalhes</button>
       </div>
     </div>`;
   }).join("");
 }
-
+  
 // ── EXCLUIR PLANO ─────────────────────────────────────────────
 async function excluirPlano(id, nome){
   if(!confirm(`Deseja excluir o plano "${nome}"? Esta ação é irreversível.`)) return;
@@ -2032,6 +2052,72 @@ async function excluirPlano(id, nome){
     alert("Erro ao excluir plano.");
     return;
   }
+  renderPlanos();
+}
+  function abrirDetalhePlano(id){
+  planoDetalheId = id;
+  const p = window.planosData?.find(x => String(x.id) === String(id));
+  if(!p) return;
+
+  const v = p.status === "vencido";
+  const ok = p.status === "ok";
+
+  document.getElementById("dpl-titulo").textContent = `📅 ${p.nome}`;
+  document.getElementById("dpl-badges").innerHTML =
+    `<span class="badge tipo-badge">${p.frequencia||"—"}</span> ` +
+    `<span class="badge tipo-badge">${p.tipo||"—"}</span> ` +
+    (v ? badge("Vencido","var(--s-cancelada-bg)","var(--s-cancelada-txt)","var(--s-cancelada-bd)") : "") +
+    (ok ? badge("OK","var(--s-concluida-bg)","var(--s-concluida-txt)","var(--s-concluida-bd)") : "");
+
+  const rows = [
+    ["Equipamento", p.equipamento_nome||"—"],
+    ["Técnico", p.tecnico_nome||"—"],
+    ["Frequência", p.frequencia||"—"],
+    ["Tipo", p.tipo||"—"],
+    ["Próxima execução", p.proxima_execucao||"—"]
+  ];
+
+  document.getElementById("dpl-rows").innerHTML =
+    rows.map(([k,v]) => `
+      <div class="detalhe-row">
+        <span class="detalhe-key">${k}</span>
+        <span class="detalhe-val">${v}</span>
+      </div>`
+    ).join("") +
+    (v ? `<div class="plano-vencido" style="margin-top:14px">⚠️ Plano vencido — crie uma OS corretiva.</div>` : "");
+
+  // Controle de visibilidade conforme perfil
+  const podeEditar  = usuarioLogado?.podeEditar;
+  const podeExcluir = usuarioLogado?.podeExcluir;
+  document.getElementById("dpl-editar-btn").style.display  = podeEditar  ? "" : "none";
+  document.getElementById("dpl-excluir-btn").style.display = podeExcluir ? "" : "none";
+  document.getElementById("dpl-acoes").style.display = (podeEditar || podeExcluir) ? "flex" : "none";
+  document.getElementById("dpl-confirm-del").style.display = "none";
+
+  document.getElementById("modal-detalhe-plano").classList.add("aberto");
+}
+
+function editarPlanoAtual(){
+  document.getElementById("modal-detalhe-plano").classList.remove("aberto");
+  setTimeout(() => abrirEditarPlano(planoDetalheId), 120);
+}
+
+function excluirPlanoDoModal(){
+  document.getElementById("dpl-confirm-del").style.display = "block";
+}
+
+async function confirmarExcluirPlanoModal(){
+  const { error } = await supabaseClient
+    .from("planos_manutencao")
+    .delete()
+    .eq("id", planoDetalheId);
+  if(error){
+    console.error("Erro ao excluir plano:", error);
+    alert("Erro ao excluir plano.");
+    return;
+  }
+  document.getElementById("modal-detalhe-plano").classList.remove("aberto");
+  document.getElementById("dpl-confirm-del").style.display = "none";
   renderPlanos();
 }
 
