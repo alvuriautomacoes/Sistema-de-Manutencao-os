@@ -679,7 +679,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <!-- MODAL NOVO PROFISSIONAL -->
 <div class="modal-overlay" id="modal-novo-prof">
   <div class="modal-box">
-    <div class="modal-header"><div class="modal-title" id="modal-prof-titulo">👷 Novo Profissional</div><button class="modal-close" onclick="fecharModal('modal-novo-prof')">✕</button></div>
+    <div class="modal-header"><div class="modal-title" id="modal-prof-titulo">👷 Novo Profissional</div><button class="modal-close" onclick="document.getElementById('modal-novo-prof').classList.remove('aberto')">✕</button></div>
     <div class="field" style="grid-column:1/-1"><label>Nome Completo *</label><input id="np2-nome" placeholder="Ex: Carlos Lima"/></div>
     <div class="grid2">
       <div class="field"><label>Cargo *</label><select id="np2-cargo"><option>Técnico de Manutenção</option><option>Mecânico Industrial</option><option>Eletricista Industrial</option><option>Instrumentista</option><option>Lubrificador</option><option>Soldador</option><option>Supervisor de Manutenção</option><option>Engenheiro de Manutenção</option><option>Auxiliar de Manutenção</option></select></div>
@@ -692,7 +692,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     <div class="field"><label>Telefone / Contato</label><input id="np2-tel" placeholder="Ex: (11) 99999-8888"/></div>
     <div class="field"><label>Especialidades (separadas por vírgula)</label><input id="np2-esp" placeholder="Ex: Hidráulica, Pneumática, CNC"/></div>
     <div class="field"><label>Observações</label><textarea id="np2-obs" rows="2" placeholder="Informações adicionais..."></textarea></div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="fecharModal('modal-novo-prof')">Cancelar</button><button class="btn btn-primary" id="btn-salvar-prof" onclick="salvarProf()">Salvar</button></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="document.getElementById('modal-novo-prof').classList.remove('aberto')">Cancelar</button><button class="btn btn-primary" id="btn-salvar-prof" onclick="salvarProf()">Salvar</button></div>
   </div>
 </div>
 
