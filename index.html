@@ -2614,13 +2614,21 @@ async function salvarUsuario(){
       .from("usuarios")
       .update(dados)
       .eq("id", usuarioEditandoId);
-    if(error){ console.error(error); alert("Erro ao editar usuário."); return; }
+    if(error){
+      console.error("Erro completo ao editar:", JSON.stringify(error));
+      alert(`Erro: ${error.message}`);
+      return;
+    }
     usuarioEditandoId = null;
   } else {
     const { error } = await supabaseClient
       .from("usuarios")
       .insert([dados]);
-    if(error){ console.error(error); alert("Erro ao cadastrar usuário."); return; }
+    if(error){
+      console.error("Erro completo ao criar:", JSON.stringify(error));
+      alert(`Erro: ${error.message}`);
+      return;
+    }
   }
 
   document.getElementById("modal-novo-usuario").classList.remove("aberto");
