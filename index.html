@@ -1714,26 +1714,24 @@ function entrarEmpresa(id){
   renderDashboard();
   renderOS();
 }
-
 // ← VOLTAR PARA TELA DE EMPRESAS
 function voltarEmpresas(){
   usuarioLogado.empresaSelecionada = null;
   usuarioLogado.empresa_id = null;
   document.getElementById("sidebar-empresa").textContent = "Todas as empresas";
   document.getElementById("btn-voltar-empresas").style.display = "none";
-
-  // Oculta itens do menu enquanto nenhuma empresa está selecionada
   ["dashboard","os","equip","planos","profissionais"].forEach(id => {
     const btn = document.getElementById("nav-"+id);
     if(btn) btn.style.display = "none";
   });
-
   irPara("empresas");
   renderEmpresas();
 }
-  function abrirModalEmpresa(){
+
+// 🏢 NOVA EMPRESA
+function abrirModalEmpresa(){
   document.getElementById("ne-empresa-nome").value = "";
-  abrirModal("modal-nova-empresa");
+  document.getElementById("modal-nova-empresa").classList.add("aberto");
 }
 
 async function salvarEmpresa(){
@@ -1752,10 +1750,9 @@ async function salvarEmpresa(){
     return;
   }
 
-  fecharModal("modal-nova-empresa");
+  document.getElementById("modal-nova-empresa").classList.remove("aberto");
   renderEmpresas();
 }
 </script>
-
 </body>
 </html>
