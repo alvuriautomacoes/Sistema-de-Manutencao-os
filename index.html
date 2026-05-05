@@ -1716,36 +1716,31 @@ function exportarCSV(){
 async function renderEquip(){
   const empresa_id = usuarioLogado?.empresa_id;
   if(!empresa_id){ document.getElementById("equip-grid").innerHTML = ""; return; }
-
   const busca = (document.getElementById("equip-busca")?.value || "").toLowerCase();
-
   const { data, error } = await supabaseClient
     .from("equipamentos")
     .select("*")
     .eq("empresa_id", empresa_id)
     .order("nome");
-
   if(error){
     console.error("Erro ao carregar equipamentos:", error);
     return;
   }
-
-  // salva global para uso em outros lugares (modal OS, etc)
   window.equipamentosData = data || [];
-
   const filtrados = window.equipamentosData.filter(e =>
     e.nome.toLowerCase().includes(busca) ||
     (e.setor||"").toLowerCase().includes(busca) ||
     (e.marca||"").toLowerCase().includes(busca) ||
     (e.modelo||"").toLowerCase().includes(busca)
   );
-
   document.getElementById("equip-count").textContent = `${window.equipamentosData.length} cadastrados`;
-
   if(filtrados.length === 0){
     document.getElementById("equip-grid").innerHTML = '<div class="empty"><div class="empty-icon">⚙️</div>Nenhum equipamento encontrado.</div>';
     return;
   }
+
+  const podeEditar  = usuarioLogado?.podeEditar;
+  const podeExcluir = usuarioLogado?.podeExcluir;
 
   document.getElementById("equip-grid").innerHTML = filtrados.map(e => {
     const s = STATUS_EQ[e.status] || STATUS_EQ.inativo;
@@ -1758,46 +1753,103 @@ async function renderEquip(){
       <div class="equip-info">Série: <span>${e.serie||"—"}</span></div>
       <div class="equip-info">Última manutenção: <span>${e.ultima_manutencao||"—"}</span></div>
       <div class="equip-info">Próxima: <span style="color:${e.status==='critico'?'var(--e-critico-txt)':'var(--e-ativo-txt)'}">${e.proxima_manutencao||"—"}</span></div>
-      <div style="margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="abrirDetalheEquip('${e.id}')">Ver detalhes</button></div>
+      <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn btn-ghost btn-sm" onclick="abrirDetalheEquip('${e.id}')">Ver detalhes</button>
+        ${podeEditar?`<button class="btn btn-primary btn-sm" onclick="abrirEditarEquip('${e.id}')">✏️ Editar</button>`:""}
+        ${podeExcluir?`<button class="btn btn-danger btn-sm" onclick="excluirEquip('${e.id}','${e.nome}')">🗑 Excluir</button>`:""}
+      </div>
     </div>`;
   }).join("");
 }
 
-function abrirModalNovoEquip(){
-  ["ne-nome","ne-marca","ne-modelo","ne-serie"].forEach(id=>document.getElementById(id).value="");
+// ── EDITAR EQUIPAMENTO ────────────────────────────────────────
+function abrirEditarEquip(id){
+  const e = window.equipamentosData?.find(x => String(x.id) === String(id));
+  if(!e) return;
+  document.getElementById("ne-nome").value   = e.nome || "";
+  document.getElementById("ne-marca").value  = e.marca || "";
+  document.getElementById("ne-modelo").value = e.modelo || "";
+  document.getElementById("ne-serie").value  = e.serie || "";
+  document.getElementById("ne-setor").value  = e.setor || "Produção";
+  document.getElementById("ne-dados-tecnicos").value = e.dados_tecnicos || "";
+  equipEditandoId = id;
+  document.querySelector("#modal-novo-equip .modal-title").textContent = "✏️ Editar Equipamento";
   document.getElementById("modal-novo-equip").classList.add("aberto");
 }
-  
-async function salvarEquip(){
-  const nome = document.getElementById("ne-nome").value.trim();
-  if(!nome){ alert("Preencha o nome!"); return; }
 
-  const empresa_id = usuarioLogado?.empresa_id;
-  if(!empresa_id){ alert("Nenhuma empresa selecionada."); return; }
-
+// ── EXCLUIR EQUIPAMENTO ───────────────────────────────────────
+async function excluirEquip(id, nome){
+  if(!confirm(`Deseja excluir o equipamento "${nome}"? Esta ação é irreversível.`)) return;
   const { error } = await supabaseClient
     .from("equipamentos")
-    .insert([{
-      empresa_id,
-      nome,
-      marca: document.getElementById("ne-marca").value.trim(),
-      modelo: document.getElementById("ne-modelo").value.trim(),
-      serie: document.getElementById("ne-serie").value.trim(),
-      setor: document.getElementById("ne-setor").value,
-      status: "ativo",
-      dados_tecnicos: document.getElementById("ne-dados-tecnicos").value.trim()
-    }]);
-
+    .delete()
+    .eq("id", id);
   if(error){
-    console.error("Erro ao salvar equipamento:", error);
-    alert("Erro ao salvar equipamento.");
+    console.error("Erro ao excluir equipamento:", error);
+    alert("Erro ao excluir equipamento.");
     return;
   }
-
-  document.getElementById("modal-novo-equip").classList.remove("aberto");
   renderEquip();
 }
   
+function abrirModalNovoEquip(){
+  equipEditandoId = null;
+  document.querySelector("#modal-novo-equip .modal-title").textContent = "➕ Novo Equipamento";
+  ["ne-nome","ne-marca","ne-modelo","ne-serie"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("ne-dados-tecnicos").value = "";
+  document.getElementById("ne-setor").value = "Produção";
+  document.getElementById("modal-novo-equip").classList.add("aberto");
+}
+  
+// variável de controle — declare junto com as outras no topo do script
+let equipEditandoId = null;
+
+async function salvarEquip(){
+  const nome = document.getElementById("ne-nome").value.trim();
+  if(!nome){ alert("Preencha o nome!"); return; }
+  const empresa_id = usuarioLogado?.empresa_id;
+  if(!empresa_id){ alert("Nenhuma empresa selecionada."); return; }
+
+  const dados = {
+    empresa_id,
+    nome,
+    marca:         document.getElementById("ne-marca").value.trim(),
+    modelo:        document.getElementById("ne-modelo").value.trim(),
+    serie:         document.getElementById("ne-serie").value.trim(),
+    setor:         document.getElementById("ne-setor").value,
+    dados_tecnicos:document.getElementById("ne-dados-tecnicos").value.trim()
+  };
+
+  if(equipEditandoId){
+    // EDITAR
+    const { error } = await supabaseClient
+      .from("equipamentos")
+      .update(dados)
+      .eq("id", equipEditandoId);
+    if(error){
+      console.error("Erro ao editar equipamento:", error);
+      alert("Erro ao salvar equipamento.");
+      return;
+    }
+    equipEditandoId = null;
+  } else {
+    // NOVO
+    dados.status = "ativo";
+    const { error } = await supabaseClient
+      .from("equipamentos")
+      .insert([dados]);
+    if(error){
+      console.error("Erro ao salvar equipamento:", error);
+      alert("Erro ao salvar equipamento.");
+      return;
+    }
+  }
+
+  // Restaura título do modal
+  document.querySelector("#modal-novo-equip .modal-title").textContent = "➕ Novo Equipamento";
+  document.getElementById("modal-novo-equip").classList.remove("aberto");
+  renderEquip();
+}  
   function abrirDetalheEquip(id){
   const e = window.equipamentosData?.find(x => String(x.id) === String(id));
   if(!e) return;
