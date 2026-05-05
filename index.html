@@ -990,6 +990,7 @@ atualizarBadgeUrgente();
 function fazerLogout(){
   if(!confirm("Deseja sair do sistema?"))return;
   usuarioLogado=null;
+  localStorage.removeItem("sessao_usuario");
   // Reset
   document.getElementById("app-sistema").style.display="none";
   document.getElementById("app-login").style.display="flex";
