@@ -1163,7 +1163,7 @@ function atualizarBadgeUrgente(){
 // ════════════════════════════════════════════
 // NAVEGAÇÃO
 // ════════════════════════════════════════════
-function irPara(tela){
+async function irPara(tela){
   if(!usuarioLogado)return;
   // Verifica acesso
   if(!usuarioLogado.acesso.includes(tela)){
@@ -1175,12 +1175,26 @@ function irPara(tela){
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("ativo"));
   document.getElementById("tela-"+tela)?.classList.add("ativa");
   document.getElementById("nav-"+tela)?.classList.add("ativo");
-
   // Salva tela atual no localStorage
   localStorage.setItem("tela_atual", tela);
-
   if(tela==="dashboard") renderDashboard();
-  if(tela==="os"){popularFiltroTecnico();renderOS();}
+  if(tela==="os"){
+    // Garante que profissionais estejam carregados antes de popular o filtro
+    if(!window.profissionaisData || window.profissionaisData.length === 0){
+      const empresa_id = usuarioLogado?.empresa_id;
+      if(empresa_id){
+        const { data } = await supabaseClient
+          .from("profissionais")
+          .select("*")
+          .eq("empresa_id", empresa_id)
+          .eq("status", "ativo")
+          .order("nome");
+        window.profissionaisData = data || [];
+      }
+    }
+    popularFiltroTecnico();
+    renderOS();
+  }
   if(tela==="equip") renderEquip();
   if(tela==="planos") renderPlanos();
   if(tela==="profissionais") renderProfissionais();
@@ -1236,16 +1250,25 @@ function renderDashboard(){
 // ORDENS DE SERVIÇO
 // ════════════════════════════════════════════
 function popularFiltroTecnico(){
-  const sel=document.getElementById("os-filtro-tecnico");
-  const atual=sel.value;
-  const tecs=[...new Set(ordens.map(o=>o.tecnico))].sort();
-  sel.innerHTML='<option value="">Todos os técnicos</option>'+tecs.map(t=>`<option${t===atual?' selected':''}>${t}</option>`).join('');
+  const sel = document.getElementById("os-filtro-tecnico");
+  const atual = sel.value;
+
+  // Puxa técnicos cadastrados no sistema (profissionais ativos da empresa)
+  const tecs = [...new Set(
+    (window.profissionaisData || [])
+      .filter(p => p.status === "ativo")
+      .map(p => p.nome)
+  )].sort();
+
+  sel.innerHTML = '<option value="">Todos os técnicos</option>' +
+    tecs.map(t => `<option${t === atual ? ' selected' : ''}>${t}</option>`).join('');
+
   // Se técnico, força filtro para o próprio nome e oculta o select
   if(usuarioLogado?.somentePropriaOS){
-    sel.value=usuarioLogado.nome;
-    sel.style.display="none";
+    sel.value = usuarioLogado.nome;
+    sel.style.display = "none";
   } else {
-    sel.style.display="";
+    sel.style.display = "";
   }
 }
 
