@@ -1656,15 +1656,16 @@ async function renderProfissionais(){
 }
 
 function abrirModalNovoProf(){
-  profEditandoId=null;
-  document.getElementById("modal-prof-titulo").textContent="👷 Novo Profissional";
-  document.getElementById("btn-salvar-prof").textContent="Salvar";
-  ["np2-nome","np2-matricula","np2-tel","np2-esp","np2-obs"].forEach(id=>document.getElementById(id).value="");
-  document.getElementById("np2-cargo").value="Técnico de Manutenção";
-  document.getElementById("np2-turno").value="Manhã";
-  document.getElementById("np2-status").value="ativo";
-  abrirModal("modal-novo-prof");
+  profEditandoId = null;
+  document.getElementById("modal-prof-titulo").textContent = "👷 Novo Profissional";
+  document.getElementById("btn-salvar-prof").textContent = "Salvar";
+  ["np2-nome","np2-matricula","np2-tel","np2-esp","np2-obs"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("np2-cargo").value = "Técnico de Manutenção";
+  document.getElementById("np2-turno").value = "Manhã";
+  document.getElementById("np2-status").value = "ativo";
+  document.getElementById("modal-novo-prof").classList.add("aberto");
 }
+  
 function abrirEditarProf(id){
   const p=profissionais.find(x=>x.id===id);if(!p)return;
   profEditandoId=id;
