@@ -485,7 +485,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
       </div>
     </div>
     
-    <!-- EMPRESAS -->
+  <!-- EMPRESAS -->
 <div id="tela-empresas" class="tela">
   <div class="page-header">
     <div>
@@ -496,22 +496,22 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   </div>
   <div id="lista-empresas"></div>
 </div>
-    
-    <!-- MODAL NOVA EMPRESA -->
+
+<!-- MODAL NOVA EMPRESA -->
 <div class="modal-overlay" id="modal-nova-empresa">
   <div class="modal-box">
     <div class="modal-header">
       <div class="modal-title">🏢 Nova Empresa</div>
-      <button class="modal-close" onclick="fecharModal('modal-nova-empresa')">✕</button>
+      <button class="modal-close" onclick="document.getElementById('modal-nova-empresa').classList.remove('aberto')">✕</button>
     </div>
     <div class="field"><label>Nome da Empresa *</label><input id="ne-empresa-nome" placeholder="Ex: Metalúrgica Souza Ltda"/></div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="fecharModal('modal-nova-empresa')">Cancelar</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-nova-empresa').classList.remove('aberto')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarEmpresa()">Cadastrar</button>
     </div>
   </div>
 </div>
-
+    
     <!-- OS -->
     <div id="tela-os" class="tela">
       <div class="page-header">
