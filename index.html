@@ -1343,47 +1343,97 @@ function entrarEmpresa(id){
 // ════════════════════════════════════════════
 // DASHBOARD
 // ════════════════════════════════════════════
-function renderDashboard(){
-  const ordensVisiveis=usuarioLogado?.somentePropriaOS
-    ? ordens.filter(o=>o.tecnico===usuarioLogado.nome)
-    : ordens;
-  const abertas=ordensVisiveis.filter(o=>o.status!=="concluida"&&o.status!=="cancelada").length;
-  const urgentes=ordensVisiveis.filter(o=>o.prio==="urgente"&&o.status!=="concluida").length;
-  const criticos=equipamentos.filter(e=>e.status==="critico").length;
-  const vencidos=planos.filter(p=>p.status==="vencido").length;
-  const stats=[
-    {label:"OS em Aberto",val:abertas,icon:"🔧",sub:"ordens ativas",cls:""},
-    {label:"Urgentes",val:urgentes,icon:"🚨",sub:"requerem atenção",cls:urgentes>0?"accent-urgente":"accent-ok"},
-    {label:"Equip. Críticos",val:criticos,icon:"⚠️",sub:"precisam de OS",cls:criticos>0?"accent-alerta":"accent-ok"},
-    {label:"Planos Vencidos",val:vencidos,icon:"📅",sub:"agendamentos",cls:vencidos>0?"accent-urgente":"accent-ok"},
-    {label:"Profissionais",val:profissionais.filter(p=>p.status==="ativo").length,icon:"👷",sub:"ativos",cls:"accent-ok"},
+async function renderDashboard(){
+  const empresa_id = usuarioLogado?.empresa_id;
+  if(!empresa_id){
+    document.getElementById("dash-stats").innerHTML = "";
+    document.getElementById("dash-os-recentes").innerHTML = "";
+    document.getElementById("dash-equip").innerHTML = "";
+    document.getElementById("dash-planos").innerHTML = "";
+    return;
+  }
+
+  // 🔥 Busca tudo do Supabase em paralelo
+  const [resOS, resEquip, resPlanos, resProf] = await Promise.all([
+    supabaseClient.from("ordens_servico").select("*").eq("empresa_id", empresa_id).order("created_at", { ascending: false }),
+    supabaseClient.from("equipamentos").select("*").eq("empresa_id", empresa_id),
+    supabaseClient.from("planos_manutencao").select("*").eq("empresa_id", empresa_id),
+    supabaseClient.from("profissionais").select("*").eq("empresa_id", empresa_id).eq("status", "ativo"),
+  ]);
+
+  const ordensDB  = resOS.data    || [];
+  const equipDB   = resEquip.data || [];
+  const planosDB  = resPlanos.data|| [];
+  const profDB    = resProf.data  || [];
+
+  // Atualiza cache global
+  window.ordensData       = ordensDB;
+  window.equipamentosData = equipDB;
+  window.planosData       = planosDB;
+  window.profissionaisData= profDB;
+
+  // 🔥 KPIs
+  const ordensVisiveis = usuarioLogado?.somentePropriaOS
+    ? ordensDB.filter(o => o.tecnico_nome === usuarioLogado.nome)
+    : ordensDB;
+
+  const abertas   = ordensVisiveis.filter(o => o.status !== "concluida" && o.status !== "cancelada").length;
+  const urgentes  = ordensVisiveis.filter(o => o.prioridade === "urgente" && o.status !== "concluida").length;
+  const criticos  = equipDB.filter(e => e.status === "critico").length;
+  const vencidos  = planosDB.filter(p => p.status === "vencido").length;
+
+  const stats = [
+    { label:"OS em Aberto",     val: abertas,       icon:"🔧", sub:"ordens ativas",      cls:"" },
+    { label:"Urgentes",         val: urgentes,      icon:"🚨", sub:"requerem atenção",   cls: urgentes > 0 ? "accent-urgente" : "accent-ok" },
+    { label:"Equip. Críticos",  val: criticos,      icon:"⚠️", sub:"precisam de OS",     cls: criticos > 0 ? "accent-alerta"  : "accent-ok" },
+    { label:"Planos Vencidos",  val: vencidos,      icon:"📅", sub:"agendamentos",       cls: vencidos > 0 ? "accent-urgente" : "accent-ok" },
+    { label:"Profissionais",    val: profDB.length, icon:"👷", sub:"ativos",             cls:"accent-ok" },
   ];
-  document.getElementById("dash-stats").innerHTML=stats.map(s=>`
+
+  document.getElementById("dash-stats").innerHTML = stats.map(s => `
     <div class="stat-card ${s.cls}">
       <div class="stat-icon">${s.icon}</div>
       <div class="stat-num">${s.val}</div>
       <div class="stat-label">${s.label}</div>
       <div class="stat-sub">${s.sub}</div>
     </div>`).join("");
-  document.getElementById("dash-os-recentes").innerHTML=ordensVisiveis.slice(0,4).map(o=>`
+
+  // 🔥 OS Recentes
+  document.getElementById("dash-os-recentes").innerHTML = ordensVisiveis.slice(0,4).map(o => `
     <div class="mini-item">
-      <div><div class="mini-nome">${o.id} — ${o.equip}</div><div class="mini-sub">${o.tecnico} · ${o.abertura}</div></div>
+      <div>
+        <div class="mini-nome">${o.numero} — ${o.equipamento_nome||"—"}</div>
+        <div class="mini-sub">${o.tecnico_nome||"—"} · ${o.data_abertura||""}</div>
+      </div>
       <div style="display:flex;gap:4px">
-        ${badge(PRIO_OS[o.prio].label,PRIO_OS[o.prio].bg,PRIO_OS[o.prio].txt,PRIO_OS[o.prio].bd)}
-        ${badge(STATUS_OS[o.status].label,STATUS_OS[o.status].bg,STATUS_OS[o.status].txt,STATUS_OS[o.status].bd)}
+        ${badge(PRIO_OS[o.prioridade]?.label||o.prioridade, PRIO_OS[o.prioridade]?.bg||"#eee", PRIO_OS[o.prioridade]?.txt||"#333", PRIO_OS[o.prioridade]?.bd||"#ccc")}
+        ${badge(STATUS_OS[o.status]?.label||o.status, STATUS_OS[o.status]?.bg||"#eee", STATUS_OS[o.status]?.txt||"#333", STATUS_OS[o.status]?.bd||"#ccc")}
       </div>
     </div>`).join("") || '<div style="color:var(--muted);font-size:12px;padding:12px 0;">Nenhuma OS encontrada.</div>';
-  document.getElementById("dash-equip").innerHTML=equipamentos.slice(0,4).map(e=>{
-    const s=STATUS_EQ[e.status]||STATUS_EQ.inativo;
-    return `<div class="mini-item"><div><div class="mini-nome">${e.nome}</div><div class="mini-sub">${e.setor}</div></div>${badge(s.label,s.bg,s.txt,s.bd)}</div>`;
-  }).join("");
-  document.getElementById("dash-planos").innerHTML=planos.map(p=>`
+
+  // 🔥 Equipamentos
+  document.getElementById("dash-equip").innerHTML = equipDB.slice(0,4).map(e => {
+    const s = STATUS_EQ[e.status] || STATUS_EQ.inativo;
+    return `<div class="mini-item">
+      <div>
+        <div class="mini-nome">${e.nome}</div>
+        <div class="mini-sub">${e.setor||"—"}</div>
+      </div>
+      ${badge(s.label, s.bg, s.txt, s.bd)}
+    </div>`;
+  }).join("") || '<div style="color:var(--muted);font-size:12px;padding:12px 0;">Nenhum equipamento.</div>';
+
+  // 🔥 Planos
+  document.getElementById("dash-planos").innerHTML = planosDB.slice(0,4).map(p => `
     <div class="mini-item">
-      <div><div class="mini-nome">${p.equip}</div><div class="mini-sub">${p.freq} · ${p.proxima}</div></div>
-      ${p.status==="vencido"
-        ?badge("Vencido","var(--s-cancelada-bg)","var(--s-cancelada-txt)","var(--s-cancelada-bd)")
-        :badge("OK","var(--s-concluida-bg)","var(--s-concluida-txt)","var(--s-concluida-bd)")}
-    </div>`).join("");
+      <div>
+        <div class="mini-nome">${p.equipamento_nome||"—"}</div>
+        <div class="mini-sub">${p.frequencia||"—"} · ${p.proxima_execucao||"—"}</div>
+      </div>
+      ${p.status === "vencido"
+        ? badge("Vencido","var(--s-cancelada-bg)","var(--s-cancelada-txt)","var(--s-cancelada-bd)")
+        : badge("OK","var(--s-concluida-bg)","var(--s-concluida-txt)","var(--s-concluida-bd)")}
+    </div>`).join("") || '<div style="color:var(--muted);font-size:12px;padding:12px 0;">Nenhum plano.</div>';
 }
 
 // ════════════════════════════════════════════
