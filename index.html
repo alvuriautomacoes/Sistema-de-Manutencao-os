@@ -1667,19 +1667,21 @@ function abrirModalNovoProf(){
 }
   
 function abrirEditarProf(id){
-  const p=profissionais.find(x=>x.id===id);if(!p)return;
-  profEditandoId=id;
-  document.getElementById("modal-prof-titulo").textContent="✏️ Editar Profissional";
-  document.getElementById("btn-salvar-prof").textContent="Salvar alterações";
-  document.getElementById("np2-nome").value=p.nome;
-  document.getElementById("np2-cargo").value=p.cargo;
-  document.getElementById("np2-matricula").value=p.matricula||"";
-  document.getElementById("np2-turno").value=p.turno;
-  document.getElementById("np2-status").value=p.status;
-  document.getElementById("np2-tel").value=p.tel||"";
-  document.getElementById("np2-esp").value=(p.especialidades||[]).join(", ");
-  document.getElementById("np2-obs").value=p.obs||"";
-  abrirModal("modal-novo-prof");
+  const p = window.profissionaisData?.find(x => String(x.id) === String(id));
+  if(!p) return;
+
+  profEditandoId = id;
+  document.getElementById("modal-prof-titulo").textContent = "✏️ Editar Profissional";
+  document.getElementById("btn-salvar-prof").textContent = "Salvar alterações";
+  document.getElementById("np2-nome").value = p.nome;
+  document.getElementById("np2-cargo").value = p.cargo || "";
+  document.getElementById("np2-matricula").value = p.matricula || "";
+  document.getElementById("np2-turno").value = p.turno || "";
+  document.getElementById("np2-status").value = p.status || "ativo";
+  document.getElementById("np2-tel").value = p.telefone || "";
+  document.getElementById("np2-esp").value = (p.especialidades || []).join(", ");
+  document.getElementById("np2-obs").value = p.observacoes || "";
+  document.getElementById("modal-novo-prof").classList.add("aberto");
 }
 
   async function salvarProf(){
