@@ -904,13 +904,14 @@ function mostrarErroLogin(msg){
 
 function entrarNoSistema(usuario){
   usuarioLogado=usuario;
+  // Salva sessão no localStorage
+  localStorage.setItem("sessao_usuario", JSON.stringify(usuario));
   // Mostra loading
   const ld=document.getElementById("app-loading");
   ld.style.display="flex";
   document.getElementById("app-login").style.display="none";
   document.getElementById("ld-usuario").textContent=usuario.icon+" "+usuario.nome+" · "+usuario.perfilLabel;
   document.getElementById("ld-sub-txt").textContent="Carregando "+usuario.empresa+"...";
-
   // Anima barra
   let p=0;
   const bar=document.getElementById("ld-bar");
@@ -919,7 +920,6 @@ function entrarNoSistema(usuario){
     if(p>=100){p=100;clearInterval(iv);}
     bar.style.width=p+"%";
   },150);
-
   setTimeout(()=>{
     ld.style.display="none";
     iniciarSistema(usuario);
