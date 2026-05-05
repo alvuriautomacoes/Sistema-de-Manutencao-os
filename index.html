@@ -1830,8 +1830,8 @@ async function renderEquip(){
       <div class="equip-info">Série: <span>${e.serie||"—"}</span></div>
       <div class="equip-info">Última manutenção: <span>${e.ultima_manutencao||"—"}</span></div>
       <div class="equip-info">Próxima: <span style="color:${e.status==='critico'?'var(--e-critico-txt)':'var(--e-ativo-txt)'}">${e.proxima_manutencao||"—"}</span></div>
-      <div style="margin-top:12px;">
-        <button class="btn btn-ghost btn-sm" onclick="abrirDetalheEquip('${e.id}')">Ver detalhes</button>
+      <div class="prof-actions" style="margin-top:12px;">
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="abrirDetalheEquip('${e.id}')">Ver detalhes</button>
       </div>
     </div>`;
   }).join("");
@@ -2033,8 +2033,8 @@ async function renderPlanos(){
         ${p.proxima_execucao||"—"}</span>
       </div>
       ${v?`<div class="plano-vencido">⚠️ Plano vencido — crie uma OS corretiva.</div>`:""}
-      <div style="margin-top:12px;">
-        <button class="btn btn-ghost btn-sm" onclick="abrirDetalhePlano('${p.id}')">Ver detalhes</button>
+      <div class="prof-actions" style="margin-top:12px;">
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="abrirDetalhePlano('${p.id}')">Ver detalhes</button>
       </div>
     </div>`;
   }).join("");
