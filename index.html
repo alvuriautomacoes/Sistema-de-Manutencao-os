@@ -1987,21 +1987,82 @@ function abrirEditarPlano(id){
   document.getElementById("modal-novo-plano").classList.add("aberto");
 }
 function abrirModalNovoPlano(){
-  document.getElementById("np-equip").innerHTML=equipamentos.map(e=>`<option value="${e.id}">${e.nome}</option>`).join("");
-  document.getElementById("np-tecnico").innerHTML=listarTecnicos().map(t=>`<option>${t}</option>`).join("");
-  document.getElementById("np-nome").value="";document.getElementById("np-data").value="";
+  planoEditandoId = null;
+  document.querySelector("#modal-novo-plano .modal-title").textContent = "📅 Novo Plano de Manutenção";
+
+  // Popula equipamentos do Supabase
+  const equips = window.equipamentosData || [];
+  document.getElementById("np-equip").innerHTML = equips.map(e =>
+    `<option value="${e.id}">${e.nome}</option>`
+  ).join("");
+
+  // Popula técnicos do Supabase
+  const tecnicos = (window.profissionaisData || []).filter(p => p.status === "ativo");
+  document.getElementById("np-tecnico").innerHTML = tecnicos.map(t =>
+    `<option>${t.nome}</option>`
+  ).join("");
+
+  document.getElementById("np-nome").value = "";
+  document.getElementById("np-data").value = "";
+  document.getElementById("np-freq").value = "Mensal";
+  document.getElementById("np-tipo").value = "Preventiva";
+
   abrirModal("modal-novo-plano");
 }
-function salvarPlano(){
-  const nome=document.getElementById("np-nome").value.trim();
-  const data=document.getElementById("np-data").value;
-  if(!nome||!data){alert("Preencha nome e data!");return;}
-  const equipId=parseInt(document.getElementById("np-equip").value);
-  const eq=equipamentos.find(e=>e.id===equipId)||equipamentos[0];
-  planos.unshift({id:Date.now(),nome,equipId:eq.id,equip:eq.nome,
-    freq:document.getElementById("np-freq").value,tipo:document.getElementById("np-tipo").value,
-    proxima:data,status:"ativo",tecnico:document.getElementById("np-tecnico").value});
-  fecharModal("modal-novo-plano");renderPlanos();
+  
+let planoEditandoId = null;
+
+async function salvarPlano(){
+  const nome = document.getElementById("np-nome").value.trim();
+  const data = document.getElementById("np-data").value;
+  if(!nome || !data){ alert("Preencha nome e data!"); return; }
+
+  const empresa_id = usuarioLogado?.empresa_id;
+  if(!empresa_id){ alert("Nenhuma empresa selecionada."); return; }
+
+  const equipId = document.getElementById("np-equip").value;
+  const eq = (window.equipamentosData||[]).find(e => String(e.id) === String(equipId));
+  const tecnicoNome = document.getElementById("np-tecnico").value;
+  const tecnico = (window.profissionaisData||[]).find(p => p.nome === tecnicoNome);
+
+  const dados = {
+    empresa_id,
+    nome,
+    equipamento_id:   eq?.id || null,
+    equipamento_nome: eq?.nome || "",
+    frequencia:       document.getElementById("np-freq").value,
+    tipo:             document.getElementById("np-tipo").value,
+    proxima_execucao: data,
+    tecnico_id:       tecnico?.id || null,
+    tecnico_nome:     tecnicoNome,
+    status:           "ativo"
+  };
+
+  if(planoEditandoId){
+    const { error } = await supabaseClient
+      .from("planos_manutencao")
+      .update(dados)
+      .eq("id", planoEditandoId);
+    if(error){
+      console.error("Erro ao editar plano:", error);
+      alert("Erro ao salvar plano.");
+      return;
+    }
+    planoEditandoId = null;
+  } else {
+    const { error } = await supabaseClient
+      .from("planos_manutencao")
+      .insert([dados]);
+    if(error){
+      console.error("Erro ao criar plano:", error);
+      alert("Erro ao salvar plano.");
+      return;
+    }
+  }
+
+  document.querySelector("#modal-novo-plano .modal-title").textContent = "📅 Novo Plano de Manutenção";
+  fecharModal("modal-novo-plano");
+  renderPlanos();
 }
 
 // ════════════════════════════════════════════
