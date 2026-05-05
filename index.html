@@ -596,11 +596,54 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
       </div>
       <div class="prof-grid" id="prof-grid"></div>
     </div>
+    
+    <!-- USUÁRIOS -->
+<div id="tela-usuarios" class="tela">
+  <div class="page-header">
+    <div><div class="page-title">🔑 Usuários do Sistema</div><div class="page-sub" id="usuarios-count"></div></div>
+    <button class="btn btn-primary" id="btn-novo-usuario" onclick="abrirModalNovoUsuario()">+ Novo Usuário</button>
+  </div>
+  <div class="busca-wrap">
+    <input class="busca-input" id="usuarios-busca" placeholder="Buscar por nome, CPF, perfil..." oninput="renderUsuarios()"/>
+    <select class="busca-select" id="usuarios-filtro-perfil" onchange="renderUsuarios()">
+      <option value="">Todos os perfis</option>
+      <option value="gerente">Gerente</option>
+      <option value="admin_enc">Administrativo / Encarregado</option>
+      <option value="tecnico">Técnico</option>
+    </select>
+  </div>
+  <div class="prof-grid" id="usuarios-grid"></div>
+</div>
 
   </div><!-- /conteudo -->
 </div><!-- /app-sistema -->
 
 <!-- ══ MODAIS SISTEMA ═══════════════════════════════════════════ -->
+  <!-- MODAL NOVO USUÁRIO -->
+<div class="modal-overlay" id="modal-novo-usuario">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-usuario-titulo">🔑 Novo Usuário</div>
+      <button class="modal-close" onclick="document.getElementById('modal-novo-usuario').classList.remove('aberto')">✕</button>
+    </div>
+    <div class="field"><label>Nome Completo *</label><input id="nu-nome" placeholder="Ex: João Silva"/></div>
+    <div class="grid2">
+      <div class="field"><label>CPF *</label><input id="nu-cpf" placeholder="000.000.000-00" maxlength="14" oninput="formatarCPF(this)"/></div>
+      <div class="field"><label>Perfil *</label><select id="nu-perfil"></select></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Senha *</label><input id="nu-senha" type="text" placeholder="Ex: senha123"/></div>
+      <div class="field"><label>Status</label><select id="nu-status"><option value="true">Ativo</option><option value="false">Inativo</option></select></div>
+    </div>
+    <div class="field" id="nu-empresa-field" style="display:none">
+      <label>Empresa *</label><select id="nu-empresa"></select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-novo-usuario').classList.remove('aberto')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-salvar-usuario" onclick="salvarUsuario()">Salvar</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL NOVA OS -->
 <div class="modal-overlay" id="modal-nova-os">
@@ -1217,7 +1260,6 @@ async function irPara(tela){
   localStorage.setItem("tela_atual", tela);
   if(tela==="dashboard") renderDashboard();
   if(tela==="os"){
-    // Garante que profissionais estejam carregados antes de popular o filtro
     if(!window.profissionaisData || window.profissionaisData.length === 0){
       const empresa_id = usuarioLogado?.empresa_id;
       if(empresa_id){
@@ -1236,8 +1278,9 @@ async function irPara(tela){
   if(tela==="equip") renderEquip();
   if(tela==="planos") renderPlanos();
   if(tela==="profissionais") renderProfissionais();
+  if(tela==="usuarios") renderUsuarios();
 }
-
+  
 // ════════════════════════════════════════════
 // DASHBOARD
 // ════════════════════════════════════════════
@@ -2413,6 +2456,185 @@ async function excluirProfAtual(){
 
   document.getElementById("modal-detalhe-prof").classList.remove("aberto");
   renderProfissionais();
+}
+  // ════════════════════════════════════════════
+// USUÁRIOS
+// ════════════════════════════════════════════
+let usuarioEditandoId = null;
+
+const PERFIL_LABELS = {
+  gerente:   { icon:"📊", label:"Gerente" },
+  admin_enc: { icon:"📋", label:"Administrativo / Encarregado" },
+  tecnico:   { icon:"🔧", label:"Técnico de Manutenção" },
+};
+
+async function renderUsuarios(){
+  const empresa_id = usuarioLogado?.empresa_id;
+  const busca = (document.getElementById("usuarios-busca")?.value || "").toLowerCase();
+  const filtroPerfil = document.getElementById("usuarios-filtro-perfil")?.value || "";
+
+  let query = supabaseClient
+    .from("usuarios")
+    .select("*, empresas(nome)")
+    .eq("ativo", true)
+    .order("nome");
+
+  // admin_senior vê todos — gerente e admin_enc veem só da sua empresa
+  if(usuarioLogado?.perfil !== "admin_senior"){
+    query = query.eq("empresa_id", empresa_id);
+  }
+
+  // Filtra perfis que pode ver
+  const perfisVisiveis = usuarioLogado?.perfisQuePodeCriar || [];
+  if(perfisVisiveis.length > 0){
+    query = query.in("perfil", perfisVisiveis);
+  }
+
+  const { data, error } = await query;
+  if(error){ console.error("Erro ao carregar usuários:", error); return; }
+
+  window.usuariosData = data || [];
+
+  const filtrados = window.usuariosData.filter(u => {
+    const mP = !filtroPerfil || u.perfil === filtroPerfil;
+    const mB = !busca ||
+      u.nome.toLowerCase().includes(busca) ||
+      (u.cpf||"").toLowerCase().includes(busca) ||
+      (u.perfil||"").toLowerCase().includes(busca);
+    return mP && mB;
+  });
+
+  document.getElementById("usuarios-count").textContent =
+    `${window.usuariosData.length} cadastrados`;
+
+  if(filtrados.length === 0){
+    document.getElementById("usuarios-grid").innerHTML =
+      `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔑</div>Nenhum usuário encontrado</div>`;
+    return;
+  }
+
+  document.getElementById("usuarios-grid").innerHTML = filtrados.map(u => {
+    const p = PERFIL_LABELS[u.perfil] || { icon:"👤", label: u.perfil };
+    return `<div class="prof-card">
+      <div class="prof-avatar-area">
+        <div class="prof-avatar" style="background:var(--blue-700)">${iniciais(u.nome)}</div>
+        <div><div class="prof-nome">${u.nome}</div><div class="prof-cargo">${p.icon} ${p.label}</div></div>
+      </div>
+      <div style="margin-top:10px">
+        <div class="prof-info">👤 CPF: <span>${u.cpf||"—"}</span></div>
+        <div class="prof-info">🏢 Empresa: <span>${u.empresas?.nome||"—"}</span></div>
+      </div>
+      <div class="prof-actions" style="margin-top:12px">
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="abrirEditarUsuario('${u.id}')">✏️ Editar</button>
+        <button class="btn btn-danger btn-sm" style="flex:1" onclick="excluirUsuario('${u.id}','${u.nome}')">🗑 Excluir</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function abrirModalNovoUsuario(){
+  usuarioEditandoId = null;
+  document.getElementById("modal-usuario-titulo").textContent = "🔑 Novo Usuário";
+  document.getElementById("btn-salvar-usuario").textContent = "Salvar";
+  document.getElementById("nu-nome").value = "";
+  document.getElementById("nu-cpf").value = "";
+  document.getElementById("nu-senha").value = "";
+  document.getElementById("nu-status").value = "true";
+
+  // Popula perfis que pode criar
+  const perfis = usuarioLogado?.perfisQuePodeCriar || [];
+  document.getElementById("nu-perfil").innerHTML = perfis.map(p =>
+    `<option value="${p}">${PERFIL_LABELS[p]?.icon} ${PERFIL_LABELS[p]?.label || p}</option>`
+  ).join("");
+
+  // Se admin_senior mostra campo empresa
+  const isAdmin = usuarioLogado?.perfil === "admin_senior";
+  document.getElementById("nu-empresa-field").style.display = isAdmin ? "" : "none";
+  if(isAdmin){
+    const empresas = window.empresasData || [];
+    document.getElementById("nu-empresa").innerHTML = empresas.map(e =>
+      `<option value="${e.id}">${e.nome}</option>`
+    ).join("");
+  }
+
+  document.getElementById("modal-novo-usuario").classList.add("aberto");
+}
+
+function abrirEditarUsuario(id){
+  const u = window.usuariosData?.find(x => String(x.id) === String(id));
+  if(!u) return;
+  usuarioEditandoId = id;
+  document.getElementById("modal-usuario-titulo").textContent = "✏️ Editar Usuário";
+  document.getElementById("btn-salvar-usuario").textContent = "Salvar alterações";
+  document.getElementById("nu-nome").value = u.nome || "";
+  document.getElementById("nu-cpf").value = u.cpf || "";
+  document.getElementById("nu-senha").value = u.senha || "";
+  document.getElementById("nu-status").value = u.ativo ? "true" : "false";
+
+  const perfis = usuarioLogado?.perfisQuePodeCriar || [];
+  document.getElementById("nu-perfil").innerHTML = perfis.map(p =>
+    `<option value="${p}" ${p===u.perfil?'selected':''}>${PERFIL_LABELS[p]?.icon} ${PERFIL_LABELS[p]?.label || p}</option>`
+  ).join("");
+
+  const isAdmin = usuarioLogado?.perfil === "admin_senior";
+  document.getElementById("nu-empresa-field").style.display = isAdmin ? "" : "none";
+  if(isAdmin){
+    const empresas = window.empresasData || [];
+    document.getElementById("nu-empresa").innerHTML = empresas.map(e =>
+      `<option value="${e.id}" ${String(e.id)===String(u.empresa_id)?'selected':''}>${e.nome}</option>`
+    ).join("");
+  }
+
+  document.getElementById("modal-novo-usuario").classList.add("aberto");
+}
+
+async function salvarUsuario(){
+  const nome = document.getElementById("nu-nome").value.trim();
+  const cpf  = document.getElementById("nu-cpf").value.trim();
+  const senha = document.getElementById("nu-senha").value.trim();
+  const perfil = document.getElementById("nu-perfil").value;
+  const ativo = document.getElementById("nu-status").value === "true";
+
+  if(!nome || !cpf || !senha || !perfil){
+    alert("Preencha todos os campos obrigatórios!");
+    return;
+  }
+
+  const isAdmin = usuarioLogado?.perfil === "admin_senior";
+  const empresa_id = isAdmin
+    ? document.getElementById("nu-empresa").value
+    : usuarioLogado?.empresa_id;
+
+  if(!empresa_id){ alert("Nenhuma empresa selecionada."); return; }
+
+  const dados = { nome, cpf, senha, perfil, ativo, empresa_id };
+
+  if(usuarioEditandoId){
+    const { error } = await supabaseClient
+      .from("usuarios")
+      .update(dados)
+      .eq("id", usuarioEditandoId);
+    if(error){ console.error(error); alert("Erro ao editar usuário."); return; }
+    usuarioEditandoId = null;
+  } else {
+    const { error } = await supabaseClient
+      .from("usuarios")
+      .insert([dados]);
+    if(error){ console.error(error); alert("Erro ao cadastrar usuário."); return; }
+  }
+
+  document.getElementById("modal-novo-usuario").classList.remove("aberto");
+  renderUsuarios();
+}
+
+async function excluirUsuario(id, nome){
+  if(!confirm(`Deseja excluir o usuário "${nome}"? Esta ação é irreversível.`)) return;
+  const { error } = await supabaseClient
+    .from("usuarios")
+    .delete()
+    .eq("id", id);
+  if(error){ console.error(error); alert("Erro ao excluir usuário."); return; }
+  renderUsuarios();
 }
 
 </script> <!-- ✅ FECHA O SCRIPT PRINCIPAL -->
