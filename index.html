@@ -484,23 +484,11 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <div id="tela-empresas" class="tela">
   <div class="page-header">
     <div>
-      <div class="page-title">Empresas</div>
-      <div class="page-sub">Selecione uma empresa</div>
+      <div class="page-title">🏢 Empresas</div>
+      <div class="page-sub">Selecione uma empresa para acessar</div>
     </div>
-
-    <!-- 👇 BOTÃO NOVO -->
-    <button class="btn btn-primary" onclick="abrirModalEmpresa()">+ Nova Empresa</button>
+    <button class="btn btn-primary" id="btn-nova-empresa" onclick="abrirModalEmpresa()">+ Nova Empresa</button>
   </div>
-
-  <div id="lista-empresas"></div>
-</div>
-  <div class="page-header">
-    <div>
-      <div class="page-title">Empresas</div>
-      <div class="page-sub">Selecione uma empresa</div>
-    </div>
-  </div>
-
   <div id="lista-empresas"></div>
 </div>
 
@@ -1637,57 +1625,62 @@ const supabaseClient = supabase.createClient(
 // 📦 LISTAR EMPRESAS
 async function renderEmpresas(){
   const container = document.getElementById("lista-empresas");
-
-  container.innerHTML = "Carregando empresas...";
+  container.innerHTML = '<div style="color:var(--sub);padding:20px;">Carregando empresas...</div>';
 
   const { data, error } = await supabaseClient
     .from("empresas")
-    .select("*");
-
-  console.log("RETORNO SUPABASE:", data, error);
+    .select("*")
+    .order("nome");
 
   if(error){
-    console.error(error);
-    container.innerHTML = "Erro ao carregar empresas";
+    console.error("Erro ao carregar empresas:", error);
+    container.innerHTML = '<div style="color:red;padding:20px;">Erro ao carregar empresas.</div>';
     return;
   }
 
   if(!data || data.length === 0){
-    container.innerHTML = "Nenhuma empresa cadastrada";
+    container.innerHTML = '<div class="empty"><div class="empty-icon">🏢</div>Nenhuma empresa cadastrada. Clique em + Nova Empresa para começar.</div>';
     return;
   }
 
   // salva global
   window.empresasData = data;
 
-  // renderiza
-  container.innerHTML = data.map(e => `
-    <div class="equip-card" data-id="${e.id}">
+  // renderiza cards
+  container.innerHTML = `<div class="equip-grid">${data.map(e => `
+    <div class="equip-card" style="cursor:pointer" data-id="${e.id}">
+      <div style="font-size:28px;margin-bottom:10px;">🏢</div>
       <div class="equip-nome">${e.nome}</div>
       <div class="equip-sub">Clique para acessar</div>
+      <div class="equip-info" style="margin-top:8px;">Criada em: <span>${new Date(e.created_at).toLocaleDateString('pt-BR')}</span></div>
     </div>
-  `).join("");
+  `).join("")}</div>`;
 
-  // adiciona clique (FORMA CORRETA)
-  document.querySelectorAll(".equip-card").forEach(card => {
+  // adiciona clique
+  document.querySelectorAll(".equip-card[data-id]").forEach(card => {
     card.addEventListener("click", () => {
-      const id = card.getAttribute("data-id");
-      entrarEmpresa(id);
+      entrarEmpresa(card.getAttribute("data-id"));
     });
   });
 }
 
-// 🚀 ENTRAR NA EMPRESA (FORA DA FUNÇÃO!)
+// 🚀 ENTRAR NA EMPRESA
 function entrarEmpresa(id){
-  const empresa = window.empresasData.find(e => String(e.id) === String(id));
+  const empresa = window.empresasData?.find(e => String(e.id) === String(id));
 
   if(!empresa){
-    console.error("Empresa não encontrada", id);
+    console.error("Empresa não encontrada:", id);
     return;
   }
 
+  // Salva empresa selecionada no usuário logado
   usuarioLogado.empresaSelecionada = empresa.nome;
+  usuarioLogado.empresa_id = empresa.id;
 
+  // Atualiza sidebar
+  document.getElementById("sidebar-empresa").textContent = empresa.nome;
+
+  // Navega para o dashboard da empresa
   irPara("dashboard");
   renderDashboard();
   renderOS();
