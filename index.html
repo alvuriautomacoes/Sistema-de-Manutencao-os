@@ -1683,6 +1683,12 @@ function entrarEmpresa(id){
   // Atualiza sidebar
   document.getElementById("sidebar-empresa").textContent = empresa.nome;
 
+  // Reexibe itens do menu ao entrar numa empresa
+  ["dashboard","os","equip","planos","profissionais"].forEach(id => {
+    const btn = document.getElementById("nav-"+id);
+    if(btn) btn.style.display = "";
+  });
+
   // Mostra botão "Trocar empresa" para admin_senior
   if(usuarioLogado.perfil === "admin_senior"){
     document.getElementById("btn-voltar-empresas").style.display = "block";
@@ -1700,6 +1706,13 @@ function voltarEmpresas(){
   usuarioLogado.empresa_id = null;
   document.getElementById("sidebar-empresa").textContent = "Todas as empresas";
   document.getElementById("btn-voltar-empresas").style.display = "none";
+
+  // Oculta itens do menu enquanto nenhuma empresa está selecionada
+  ["dashboard","os","equip","planos","profissionais"].forEach(id => {
+    const btn = document.getElementById("nav-"+id);
+    if(btn) btn.style.display = "none";
+  });
+
   irPara("empresas");
   renderEmpresas();
 }
