@@ -1305,12 +1305,13 @@ function entrarEmpresa(id){
     return;
   }
 
-  // 🔥 Limpa dados antigos ANTES de tudo
-  window.ordensData    = [];
-  window.usuariosData  = [];
-  window.equipData     = [];
-  window.planosData    = [];
-  window.profData      = [];
+  // 🔥 Limpa TODOS os dados antigos
+  window.ordensData        = [];
+  window.usuariosData      = [];
+  window.equipData         = [];
+  window.planosData        = [];
+  window.profData          = [];
+  window.profissionaisData = []; // 🔥 esse é o culpado
 
   // 🔥 Limpa telas visualmente
   const limpar = ['os-lista','dash-os-recentes','dash-stats','dash-equip','dash-planos','usuarios-grid'];
@@ -1333,8 +1334,10 @@ function entrarEmpresa(id){
     document.getElementById("btn-voltar-empresas").style.display = "block";
   }
 
-  // 🔥 só irPara — ele já chama renderDashboard e renderOS internamente
-  irPara("dashboard");
+  // 🔥 Pequeno delay garante que a limpeza terminou antes de renderizar
+  setTimeout(() => {
+    irPara("dashboard");
+  }, 50);
 }
   
 // ════════════════════════════════════════════
