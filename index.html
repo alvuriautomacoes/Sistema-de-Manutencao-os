@@ -1887,31 +1887,105 @@ async function salvarEquip(){
 // ════════════════════════════════════════════
 // PLANOS
 // ════════════════════════════════════════════
-function renderPlanos(){
-  document.getElementById("planos-count").textContent=`${planos.length} planos agendados`;
-  const venc=planos.filter(p=>p.status==="vencido");
-  const al=document.getElementById("planos-alerta");
-  al.style.display=venc.length>0?"block":"none";
-  if(venc.length>0)al.textContent=`⚠️ ${venc.length} plano(s) vencido(s) — crie as OS correspondentes.`;
-  document.getElementById("planos-grid").innerHTML=planos.map(p=>{
-    const v=p.status==="vencido";
+async function renderPlanos(){
+  const empresa_id = usuarioLogado?.empresa_id;
+  if(!empresa_id){ document.getElementById("planos-grid").innerHTML = ""; return; }
+
+  const { data, error } = await supabaseClient
+    .from("planos_manutencao")
+    .select("*")
+    .eq("empresa_id", empresa_id)
+    .order("proxima_execucao");
+
+  if(error){
+    console.error("Erro ao carregar planos:", error);
+    return;
+  }
+
+  window.planosData = data || [];
+
+  const venc = window.planosData.filter(p => p.status === "vencido");
+  const al = document.getElementById("planos-alerta");
+  al.style.display = venc.length > 0 ? "block" : "none";
+  if(venc.length > 0) al.textContent = `⚠️ ${venc.length} plano(s) vencido(s) — crie as OS correspondentes.`;
+
+  document.getElementById("planos-count").textContent = `${window.planosData.length} planos agendados`;
+
+  const podeEditar  = usuarioLogado?.podeEditar;
+  const podeExcluir = usuarioLogado?.podeExcluir;
+
+  if(window.planosData.length === 0){
+    document.getElementById("planos-grid").innerHTML = '<div class="empty"><div class="empty-icon">📅</div>Nenhum plano cadastrado.</div>';
+    return;
+  }
+
+  document.getElementById("planos-grid").innerHTML = window.planosData.map(p => {
+    const v = p.status === "vencido";
     return `<div class="plano-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div style="font-size:18px;opacity:.5">📅</div>
         <div style="display:flex;gap:4px;flex-wrap:wrap">
-          <span class="badge tipo-badge">${p.freq}</span><span class="badge tipo-badge">${p.tipo}</span>
+          <span class="badge tipo-badge">${p.frequencia||"—"}</span>
+          <span class="badge tipo-badge">${p.tipo||"—"}</span>
           ${v?badge("Vencido","var(--s-cancelada-bg)","var(--s-cancelada-txt)","var(--s-cancelada-bd)"):""}
         </div>
       </div>
       <div class="plano-nome">${p.nome}</div>
-      <div class="plano-sub">⚙️ ${p.equip}</div>
-      <div class="plano-info">Técnico: <span>${p.tecnico}</span></div>
-      <div class="plano-info">Próxima: <span style="color:${v?'var(--s-cancelada-txt)':'var(--e-ativo-txt)'}">${p.proxima}</span></div>
+      <div class="plano-sub">⚙️ ${p.equipamento_nome||"—"}</div>
+      <div class="plano-info">Técnico: <span>${p.tecnico_nome||"—"}</span></div>
+      <div class="plano-info">Próxima: <span style="color:${v?'var(--s-cancelada-txt)':'var(--e-ativo-txt)'}">
+        ${p.proxima_execucao||"—"}</span>
+      </div>
       ${v?`<div class="plano-vencido">⚠️ Plano vencido — crie uma OS corretiva.</div>`:""}
+      <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+        ${podeEditar?`<button class="btn btn-primary btn-sm" onclick="abrirEditarPlano('${p.id}')">✏️ Editar</button>`:""}
+        ${podeExcluir?`<button class="btn btn-danger btn-sm" onclick="excluirPlano('${p.id}','${p.nome}')">🗑 Excluir</button>`:""}
+      </div>
     </div>`;
   }).join("");
 }
 
+// ── EXCLUIR PLANO ─────────────────────────────────────────────
+async function excluirPlano(id, nome){
+  if(!confirm(`Deseja excluir o plano "${nome}"? Esta ação é irreversível.`)) return;
+  const { error } = await supabaseClient
+    .from("planos_manutencao")
+    .delete()
+    .eq("id", id);
+  if(error){
+    console.error("Erro ao excluir plano:", error);
+    alert("Erro ao excluir plano.");
+    return;
+  }
+  renderPlanos();
+}
+
+// ── EDITAR PLANO ──────────────────────────────────────────────
+function abrirEditarPlano(id){
+  const p = window.planosData?.find(x => String(x.id) === String(id));
+  if(!p) return;
+  planoEditandoId = id;
+  document.querySelector("#modal-novo-plano .modal-title").textContent = "✏️ Editar Plano";
+  document.getElementById("np-nome").value  = p.nome || "";
+  document.getElementById("np-freq").value  = p.frequencia || "Mensal";
+  document.getElementById("np-tipo").value  = p.tipo || "Preventiva";
+  document.getElementById("np-data").value  = p.proxima_execucao || "";
+  document.getElementById("np-tecnico").value = p.tecnico_nome || "";
+
+  // Popula equipamentos e seleciona o correto
+  const equips = window.equipamentosData || [];
+  document.getElementById("np-equip").innerHTML = equips.map(e =>
+    `<option value="${e.id}" ${String(e.id)===String(p.equipamento_id)?'selected':''}>${e.nome}</option>`
+  ).join("");
+
+  // Popula técnicos e seleciona o correto
+  const tecnicos = (window.profissionaisData || []).filter(x => x.status === "ativo");
+  document.getElementById("np-tecnico").innerHTML = tecnicos.map(t =>
+    `<option ${t.nome===p.tecnico_nome?'selected':''}>${t.nome}</option>`
+  ).join("");
+
+  document.getElementById("modal-novo-plano").classList.add("aberto");
+}
 function abrirModalNovoPlano(){
   document.getElementById("np-equip").innerHTML=equipamentos.map(e=>`<option value="${e.id}">${e.nome}</option>`).join("");
   document.getElementById("np-tecnico").innerHTML=listarTecnicos().map(t=>`<option>${t}</option>`).join("");
