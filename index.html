@@ -436,14 +436,14 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <div id="app-sistema">
   <div id="sidebar">
     <div class="logo-area">
-  <div class="logo-icon">🔩</div>
-  <div><div class="logo-name">ManutençãoOS</div><div class="logo-sub">by ALVURI</div></div>
-</div>
-<div id="btn-voltar-empresas" style="display:none;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.10);">
-  <button onclick="voltarEmpresas()" style="width:100%;padding:7px 10px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:11.5px;font-family:inherit;cursor:pointer;text-align:left;display:flex;align-items:center;gap:7px;">
-    ← Trocar empresa
-  </button>
-</div>
+      <div class="logo-icon">🔩</div>
+      <div><div class="logo-name">ManutençãoOS</div><div class="logo-sub">by ALVURI</div></div>
+    </div>
+    <div id="btn-voltar-empresas" style="display:none;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.10);">
+      <button onclick="voltarEmpresas()" style="width:100%;padding:7px 10px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:11.5px;font-family:inherit;cursor:pointer;text-align:left;display:flex;align-items:center;gap:7px;">
+        ← Trocar empresa
+      </button>
+    </div>
     <nav>
       <div class="nav-section">Menu</div>
       <button class="nav-btn ativo" onclick="irPara('dashboard')" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</button>
@@ -451,6 +451,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
       <button class="nav-btn" onclick="irPara('equip')" id="nav-equip"><span class="nav-icon">⚙️</span> Equipamentos</button>
       <button class="nav-btn" onclick="irPara('planos')" id="nav-planos"><span class="nav-icon">📅</span> Planos de Manutenção</button>
       <button class="nav-btn" onclick="irPara('profissionais')" id="nav-profissionais"><span class="nav-icon">👷</span> Profissionais</button>
+      <button class="nav-btn" onclick="irPara('usuarios')" id="nav-usuarios"><span class="nav-icon">🔑</span> Usuários</button>
     </nav>
     <div class="user-area">
       <div class="user-row">
@@ -464,7 +465,6 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
       <button class="btn-sair" onclick="fazerLogout()">🚪 Sair do sistema</button>
     </div>
   </div>
-
   <div id="conteudo">
 
     <!-- DASHBOARD -->
@@ -857,14 +857,10 @@ async function fazerLogin(){
   const btn = document.getElementById("btn-entrar");
   const spn = document.getElementById("spinner");
   const txt = document.getElementById("btn-entrar-txt");
-
   if(!cpf || cpf.length < 14){ mostrarErroLogin("Informe um CPF válido no formato 000.000.000-00."); return; }
   if(!senha){ mostrarErroLogin("Informe sua senha."); return; }
-
   btn.disabled = true; spn.style.display = "block"; txt.textContent = "Verificando...";
   document.getElementById("msg-erro").classList.remove("visivel");
-
-  // Busca usuário no Supabase
   const { data, error } = await supabaseClient
     .from("usuarios")
     .select("*, empresas(nome)")
@@ -872,47 +868,46 @@ async function fazerLogin(){
     .eq("senha", senha)
     .eq("ativo", true)
     .single();
-
   btn.disabled = false; spn.style.display = "none"; txt.textContent = "Entrar no sistema";
-
   if(error || !data){
     mostrarErroLogin("CPF ou senha inválidos. Verifique e tente novamente.");
     document.getElementById("input-senha").value = "";
     document.getElementById("input-senha").focus();
     return;
   }
-
   // Permissões por perfil
   const PERFIS = {
     admin_senior: {
       icon:"👑", perfilLabel:"Administrador Sênior",
-      acesso:["empresas","dashboard","os","equip","planos","profissionais"],
+      acesso:["empresas","dashboard","os","equip","planos","profissionais","usuarios"],
       somentePropriaOS:false, podeEditar:true, podeCadastrar:true, podeExcluir:true,
-      podeCriarEmpresas:true, podeCriarUsuarios:false, verDashboard:true, acessoTodasEmpresas:true
+      podeCriarEmpresas:true, podeCriarUsuarios:true, verDashboard:true, acessoTodasEmpresas:true,
+      perfisQuePodeCriar:["gerente","admin_enc","tecnico"]
     },
     gerente: {
       icon:"📊", perfilLabel:"Gerente",
-      acesso:["dashboard","os","equip","planos","profissionais"],
+      acesso:["dashboard","os","equip","planos","profissionais","usuarios"],
       somentePropriaOS:false, podeEditar:true, podeCadastrar:true, podeExcluir:true,
-      podeCriarEmpresas:false, podeCriarUsuarios:true, verDashboard:true, acessoTodasEmpresas:false
+      podeCriarEmpresas:false, podeCriarUsuarios:true, verDashboard:true, acessoTodasEmpresas:false,
+      perfisQuePodeCriar:["admin_enc","tecnico"]
     },
     admin_enc: {
       icon:"📋", perfilLabel:"Administrativo / Encarregado",
-      acesso:["os","equip","planos","profissionais"],
+      acesso:["dashboard","os","equip","planos","profissionais","usuarios"],
       somentePropriaOS:false, podeEditar:true, podeCadastrar:true, podeExcluir:true,
-      podeCriarEmpresas:false, podeCriarUsuarios:false, verDashboard:false, acessoTodasEmpresas:false
+      podeCriarEmpresas:false, podeCriarUsuarios:true, verDashboard:true, acessoTodasEmpresas:false,
+      perfisQuePodeCriar:["tecnico"]
     },
     tecnico: {
       icon:"🔧", perfilLabel:"Técnico de Manutenção",
       acesso:["os"],
       somentePropriaOS:true, podeEditar:true, podeCadastrar:false, podeExcluir:false,
-      podeCriarEmpresas:false, podeCriarUsuarios:false, verDashboard:false, acessoTodasEmpresas:false
+      podeCriarEmpresas:false, podeCriarUsuarios:false, verDashboard:false, acessoTodasEmpresas:false,
+      perfisQuePodeCriar:[]
     },
   };
-
   const perfil = PERFIS[data.perfil];
   if(!perfil){ mostrarErroLogin("Perfil de usuário inválido."); return; }
-
   const usuario = {
     id: data.id,
     nome: data.nome,
@@ -922,12 +917,10 @@ async function fazerLogin(){
     empresa_id: data.empresa_id || null,
     ...perfil
   };
-
   if(document.getElementById("lembrar").checked)
     localStorage.setItem("cpf-salvo", cpf);
   else
     localStorage.removeItem("cpf-salvo");
-
   entrarNoSistema(usuario);
 }
   
@@ -983,15 +976,16 @@ function iniciarSistema(u){
     document.getElementById("sidebar-empresa").textContent = u.empresa || "—";
   }
   // Aplica visibilidade dos itens do menu conforme perfil
-  const todosNavs=["dashboard","os","equip","planos","profissionais"];
+  const todosNavs=["dashboard","os","equip","planos","profissionais","usuarios"];
   todosNavs.forEach(id=>{
     const btn=document.getElementById("nav-"+id);
     if(!btn)return;
     if(u.acesso.includes(id)){
       btn.classList.remove("bloqueado");
+      btn.style.display="";
       btn.onclick=()=>irPara(id);
     } else {
-      btn.classList.add("bloqueado");
+      btn.style.display="none";
       btn.onclick=null;
     }
   });
@@ -1015,18 +1009,15 @@ function iniciarSistema(u){
   const temEmpresa   = !!localStorage.getItem("empresa_selecionada_id");
   if(u.perfil === "admin_senior"){
     if(temEmpresa && telaAnterior && telaAnterior !== "empresas"){
-      // Tem empresa salva — mostra sidebar e vai para tela anterior
       mostrarMenuNav();
       document.getElementById("btn-voltar-empresas").style.display = "block";
       irPara(telaAnterior);
     } else {
-      // Sem empresa — esconde sidebar e vai para tela de empresas
       ocultarMenuNav();
       irPara("empresas");
       renderEmpresas();
     }
   } else {
-    // Outros perfis sempre mostram sidebar
     mostrarMenuNav();
     const tela = (telaAnterior && u.acesso.includes(telaAnterior))
       ? telaAnterior
