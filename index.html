@@ -1081,8 +1081,12 @@ function ocultarMenuNav(){
 function mostrarMenuNav(){
   document.getElementById("sidebar").style.display = "flex";
   document.getElementById("conteudo").style.marginLeft = "232px";
-}
-  
+  // Botão trocar empresa só para admin_senior
+  const btnVoltar = document.getElementById("btn-voltar-empresas");
+  if(btnVoltar){
+    btnVoltar.style.display = usuarioLogado?.perfil === "admin_senior" ? "block" : "none";
+  }
+}  
 function fazerLogout(){
   if(!confirm("Deseja sair do sistema?"))return;
   usuarioLogado=null;
