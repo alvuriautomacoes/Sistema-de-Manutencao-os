@@ -1046,15 +1046,16 @@ window.addEventListener("load",()=>{
   if(sessaoSalva){
     try{
       const usuario = JSON.parse(sessaoSalva);
-
       // Restaura empresa ANTES de qualquer coisa
-      const empresaId   = localStorage.getItem("empresa_selecionada_id");
-      const empresaNome = localStorage.getItem("empresa_selecionada_nome");
+      const empresaId    = localStorage.getItem("empresa_selecionada_id");
+      const empresaNome  = localStorage.getItem("empresa_selecionada_nome");
       const telaAnterior = localStorage.getItem("tela_atual");
       if(empresaId && empresaNome){
         usuario.empresa_id         = empresaId;
         usuario.empresaSelecionada = empresaNome;
       }
+      // ✅ ATRIBUI usuarioLogado ANTES de tudo
+      usuarioLogado = usuario;
 
       const ld = document.getElementById("app-loading");
       ld.style.display = "flex";
@@ -1068,16 +1069,10 @@ window.addEventListener("load",()=>{
         if(p>=100){p=100;clearInterval(iv);}
         bar.style.width=p+"%";
       },80);
-
       setTimeout(()=>{
         ld.style.display="none";
-
-        // Força tela anterior no localStorage ANTES de iniciarSistema
-        // para que iniciarSistema já leia correto
         if(telaAnterior) localStorage.setItem("tela_atual", telaAnterior);
-
         iniciarSistema(usuario);
-
       }, 700);
       return;
     } catch(e){
