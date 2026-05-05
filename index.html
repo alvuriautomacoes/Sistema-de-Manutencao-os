@@ -932,13 +932,11 @@ function iniciarSistema(u){
   } else {
     u.empresaSelecionada = u.empresa;
   }
-
   // Configura sidebar com dados do usuário
   const ini=u.nome.split(" ").slice(0,2).map(p=>p[0]).join("").toUpperCase();
   document.getElementById("sidebar-avatar").textContent=ini;
   document.getElementById("sidebar-nome").textContent=u.nome;
   document.getElementById("sidebar-perfil").textContent=u.icon+" "+u.perfilLabel;
-
   // Restaura empresa selecionada na sidebar se existir
   const empresaNomeSalvo = localStorage.getItem("empresa_selecionada_nome");
   const empresaIdSalvo   = localStorage.getItem("empresa_selecionada_id");
@@ -949,7 +947,6 @@ function iniciarSistema(u){
   } else {
     document.getElementById("sidebar-empresa").textContent = u.empresa || "—";
   }
-
   // Aplica visibilidade dos itens do menu conforme perfil
   const todosNavs=["dashboard","os","equip","planos","profissionais"];
   todosNavs.forEach(id=>{
@@ -963,14 +960,12 @@ function iniciarSistema(u){
       btn.onclick=null;
     }
   });
-
   // Banner de perfil no dashboard
   document.getElementById("perfil-banner").style.display="flex";
   document.getElementById("pb-icon").textContent=u.icon;
   document.getElementById("pb-txt").textContent=u.nome+" · "+u.perfilLabel;
   document.getElementById("pb-sub").textContent=u.empresa;
   document.getElementById("dash-subtitulo").textContent="Acompanhe o status da operação";
-
   // Controle de botões criar/editar conforme perfil
   const podeC=u.podeCadastrar;
   const btnIds=["btn-nova-os","btn-novo-equip","btn-novo-plano","btn-novo-prof"];
@@ -978,17 +973,13 @@ function iniciarSistema(u){
     const el=document.getElementById(id);
     if(el) el.style.display=podeC?"":"none";
   });
-
   // Mostra o sistema
   document.getElementById("app-sistema").style.display="block";
-
   // Verifica se há tela e empresa salvas (restauração de sessão)
-  const telaAnterior  = localStorage.getItem("tela_atual");
-  const temEmpresa    = !!localStorage.getItem("empresa_selecionada_id");
-
+  const telaAnterior = localStorage.getItem("tela_atual");
+  const temEmpresa   = !!localStorage.getItem("empresa_selecionada_id");
   if(u.perfil === "admin_senior"){
     if(temEmpresa && telaAnterior && telaAnterior !== "empresas"){
-      // Estava dentro de uma empresa — mostra botão trocar empresa e vai para a tela
       document.getElementById("btn-voltar-empresas").style.display = "block";
       todosNavs.forEach(id=>{
         const btn=document.getElementById("nav-"+id);
@@ -996,19 +987,16 @@ function iniciarSistema(u){
       });
       irPara(telaAnterior);
     } else {
-      // Sem empresa selecionada — vai para lista de empresas
       irPara("empresas");
       renderEmpresas();
     }
   } else {
-    // Outros perfis — vai para tela anterior ou primeira do acesso
+    // Vai para tela anterior ou primeira do acesso — SEM chamar renderDashboard extra
     const tela = (telaAnterior && u.acesso.includes(telaAnterior))
       ? telaAnterior
       : (u.acesso[0] || "os");
     irPara(tela);
-    if(u.verDashboard) renderDashboard();
   }
-
   // Atualizações gerais
   atualizarBadgeUrgente();
 }
