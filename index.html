@@ -1058,6 +1058,16 @@ window.addEventListener("load",()=>{
   if(sessaoSalva){
     try{
       const usuario = JSON.parse(sessaoSalva);
+
+      // Restaura empresa ANTES de qualquer coisa
+      const empresaId   = localStorage.getItem("empresa_selecionada_id");
+      const empresaNome = localStorage.getItem("empresa_selecionada_nome");
+      const telaAnterior = localStorage.getItem("tela_atual");
+      if(empresaId && empresaNome){
+        usuario.empresa_id         = empresaId;
+        usuario.empresaSelecionada = empresaNome;
+      }
+
       const ld = document.getElementById("app-loading");
       ld.style.display = "flex";
       document.getElementById("app-login").style.display = "none";
@@ -1070,24 +1080,15 @@ window.addEventListener("load",()=>{
         if(p>=100){p=100;clearInterval(iv);}
         bar.style.width=p+"%";
       },80);
+
       setTimeout(()=>{
         ld.style.display="none";
 
-        // Restaura empresa selecionada se existir
-        const empresaId   = localStorage.getItem("empresa_selecionada_id");
-        const empresaNome = localStorage.getItem("empresa_selecionada_nome");
-        if(empresaId && empresaNome){
-          usuario.empresa_id        = empresaId;
-          usuario.empresaSelecionada = empresaNome;
-        }
+        // Força tela anterior no localStorage ANTES de iniciarSistema
+        // para que iniciarSistema já leia correto
+        if(telaAnterior) localStorage.setItem("tela_atual", telaAnterior);
 
         iniciarSistema(usuario);
-
-        // Após iniciar, vai para a tela que o usuário estava
-        const telaAnterior = localStorage.getItem("tela_atual");
-        if(telaAnterior && telaAnterior !== "empresas"){
-          setTimeout(()=> irPara(telaAnterior), 100);
-        }
 
       }, 700);
       return;
@@ -1102,6 +1103,7 @@ window.addEventListener("load",()=>{
   const cpfSalvo=localStorage.getItem("cpf-salvo");
   if(cpfSalvo){ document.getElementById("input-cpf").value=cpfSalvo; document.getElementById("lembrar").checked=true; detectarPerfil(); }
 });
+  
 // ════════════════════════════════════════════
 // DADOS DO SISTEMA
 // ════════════════════════════════════════════
