@@ -654,7 +654,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <!-- MODAL DETALHE EQUIP -->
 <div class="modal-overlay" id="modal-detalhe-equip">
   <div class="modal-box">
-    <div class="modal-header"><div class="modal-title" id="deq-titulo"></div><button class="modal-close" onclick="fecharModal('modal-detalhe-equip')">✕</button></div>
+    <div class="modal-header"><div class="modal-title" id="deq-titulo"></div><button class="modal-close" onclick="document.getElementById('modal-detalhe-equip').classList.remove('aberto')">✕</button></div>
     <div id="deq-rows"></div>
   </div>
 </div>
