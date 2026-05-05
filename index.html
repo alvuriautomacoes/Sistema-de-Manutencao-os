@@ -939,19 +939,18 @@ function iniciarSistema(u){
 document.getElementById("app-sistema").style.display="block";
 
 // Vai para a primeira tela conforme perfil
-if(u.perfil === "admin"){
+if(u.perfil === "admin_senior"){
   irPara("empresas");
   renderEmpresas();
 } else {
   const primeira = u.acesso[0] || "os";
   irPara(primeira);
-  renderDashboard(); // só roda para usuários normais
+  if(u.verDashboard) renderDashboard();
 }
 
 // Atualizações gerais
 atualizarBadgeUrgente();
 }
-
 function fazerLogout(){
   if(!confirm("Deseja sair do sistema?"))return;
   usuarioLogado=null;
