@@ -699,7 +699,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <!-- MODAL DETALHE PROFISSIONAL -->
 <div class="modal-overlay" id="modal-detalhe-prof">
   <div class="modal-box">
-    <div class="modal-header"><div class="modal-title" id="dp-titulo"></div><button class="modal-close" onclick="fecharModal('modal-detalhe-prof')">✕</button></div>
+    <div class="modal-header"><div class="modal-title" id="dp-titulo"></div><button class="modal-close" onclick="document.getElementById('modal-detalhe-prof').classList.remove('aberto')">✕</button></div>
     <div id="dp-content"></div>
     <div style="display:flex;gap:8px;margin-top:16px" id="dp-btns-admin">
       <button class="btn btn-ghost" style="flex:1" onclick="editarProfAtual()">✏️ Editar</button>
