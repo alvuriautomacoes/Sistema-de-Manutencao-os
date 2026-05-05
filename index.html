@@ -637,6 +637,17 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
       <button class="btn btn-ghost" id="det-editar-btn" onclick="editarOSAtual()" style="flex:1">✏️ Editar</button>
       <button class="btn btn-primary" id="det-avancar-btn" onclick="avancarStatusAtual()" style="flex:1">Avançar Status ▶</button>
     </div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn btn-ghost" id="det-imprimir-btn" onclick="imprimirOSIndividual(osDetalheId)" style="flex:1">🖨️ Imprimir</button>
+      <button class="btn btn-danger" id="det-excluir-btn" onclick="excluirOSDoModal()" style="flex:1">🗑 Excluir</button>
+    </div>
+    <div id="det-confirm-del" class="confirm-bar" style="display:none">
+      Tem certeza? Esta ação é irreversível.
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn btn-danger btn-sm" onclick="confirmarExcluirOSModal()">Confirmar exclusão</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('det-confirm-del').style.display='none'">Cancelar</button>
+      </div>
+    </div>
     <div id="det-concluida-msg" style="display:none;text-align:center;padding:10px;font-weight:700;font-size:13px"></div>
   </div>
 </div>
@@ -1337,8 +1348,6 @@ async function renderOS(){
       <div class="os-actions">
         <button class="btn btn-ghost btn-sm" onclick="abrirDetalheOS('${o.id}')">Detalhes</button>
         ${podeAvancar&&!fim?`<button class="btn btn-primary btn-sm" onclick="avancarStatus('${o.id}')">Avançar ▶</button>`:""}
-        <button class="btn btn-ghost btn-sm" onclick="imprimirOSIndividual('${o.id}')" title="Imprimir / Salvar PDF">🖨️ Imprimir</button>
-        ${podeExcluir?`<button class="btn btn-danger btn-sm" onclick="excluirOS('${o.id}','${o.numero}')">🗑 Excluir</button>`:""}
       </div>
     </div>`;
   }).join("");
@@ -1437,6 +1446,28 @@ async function excluirOS(id, numero){
     alert("Erro ao excluir OS.");
     return;
   }
+  renderOS();
+  atualizarBadgeUrgente();
+}
+
+function excluirOSDoModal(){
+  document.getElementById("det-confirm-del").style.display = "block";
+}
+
+async function confirmarExcluirOSModal(){
+  const o = (window.ordensData || []).find(x => String(x.id) === String(osDetalheId));
+  if(!o) return;
+  const { error } = await supabaseClient
+    .from("ordens_servico")
+    .delete()
+    .eq("id", osDetalheId);
+  if(error){
+    console.error("Erro ao excluir OS:", error);
+    alert("Erro ao excluir OS.");
+    return;
+  }
+  document.getElementById("modal-detalhe-os").classList.remove("aberto");
+  document.getElementById("det-confirm-del").style.display = "none";
   renderOS();
   atualizarBadgeUrgente();
 }
@@ -1584,26 +1615,20 @@ function abrirDetalheOS(id){
 function renderDetalheOS(id){
   const o = (window.ordensData || []).find(x => String(x.id) === String(id));
   if(!o) return;
-
   const s = STATUS_OS[o.status];
   const p = PRIO_OS[o.prioridade];
-
   document.getElementById("det-titulo").textContent = `${o.numero} — ${o.equipamento_nome||"—"}`;
   document.getElementById("det-badges").innerHTML = badgeTipo(o.tipo) + " " + badge(p.label,p.bg,p.txt,p.bd) + " " + badge(s.label,s.bg,s.txt,s.bd);
-
   const rows = [
     ["Técnico", o.tecnico_nome||"—"],
     ["Abertura", o.data_abertura||"—"],
     ["Conclusão", o.data_conclusao||"—"],
     ["Peças / Materiais", o.pecas_materiais||"—"]
   ];
-
   document.getElementById("det-rows").innerHTML = rows.map(([k,v]) =>
     `<div class="detalhe-row"><span class="detalhe-key">${k}</span><span class="detalhe-val">${v}</span></div>`
   ).join("");
-
   document.getElementById("det-desc").textContent = o.descricao || "";
-
   const idx = STATUS_SEQ.indexOf(o.status);
   const pColors = {
     aberta:"var(--blue-500)",
@@ -1611,23 +1636,21 @@ function renderDetalheOS(id){
     aguardando:"var(--s-aguardando-txt)",
     concluida:"var(--s-concluida-txt)"
   };
-
   document.getElementById("det-progress-track").innerHTML = STATUS_SEQ.map((st,i) =>
     `<div class="progress-seg" style="background:${i<=idx?pColors[st]:'#d5e4f0'}"></div>`
   ).join("");
-
   document.getElementById("det-progress-labels").innerHTML = STATUS_SEQ.map((st,i) =>
     `<div class="progress-lbl" style="color:${i<=idx?pColors[st]:'#8aaec8'}">${STATUS_OS[st].label}</div>`
   ).join("");
-
   const fim = o.status === "concluida" || o.status === "cancelada";
   const podeAvancar = usuarioLogado?.podeEditar || usuarioLogado?.somentePropriaOS;
   const podeEditar = usuarioLogado?.podeEditar;
-
+  const podeExcluir = usuarioLogado?.podeExcluir;
   document.getElementById("det-avancar-btn").style.display = (podeAvancar&&!fim) ? "block" : "none";
   document.getElementById("det-editar-btn").style.display = podeEditar ? "block" : "none";
   document.getElementById("det-acoes").style.display = (podeAvancar&&!fim)||podeEditar ? "flex" : "none";
-
+  document.getElementById("det-excluir-btn").style.display = podeExcluir ? "" : "none";
+  document.getElementById("det-confirm-del").style.display = "none";
   const msg = document.getElementById("det-concluida-msg");
   msg.style.display = fim ? "block" : "none";
   msg.style.color = o.status === "concluida" ? "var(--s-concluida-txt)" : "var(--s-cancelada-txt)";
