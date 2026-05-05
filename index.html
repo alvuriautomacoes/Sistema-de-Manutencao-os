@@ -1473,8 +1473,9 @@ async function renderEquip(){
 
 function abrirModalNovoEquip(){
   ["ne-nome","ne-marca","ne-modelo","ne-serie"].forEach(id=>document.getElementById(id).value="");
-  abrirModal("modal-novo-equip");
+  document.getElementById("modal-novo-equip").classList.add("aberto");
 }
+  
 async function salvarEquip(){
   const nome = document.getElementById("ne-nome").value.trim();
   if(!nome){ alert("Preencha o nome!"); return; }
