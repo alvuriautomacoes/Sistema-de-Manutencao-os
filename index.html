@@ -436,9 +436,14 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <div id="app-sistema">
   <div id="sidebar">
     <div class="logo-area">
-      <div class="logo-icon">🔩</div>
-      <div><div class="logo-name">ManutençãoOS</div><div class="logo-sub">by ALVURI</div></div>
-    </div>
+  <div class="logo-icon">🔩</div>
+  <div><div class="logo-name">ManutençãoOS</div><div class="logo-sub">by ALVURI</div></div>
+</div>
+<div id="btn-voltar-empresas" style="display:none;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.10);">
+  <button onclick="voltarEmpresas()" style="width:100%;padding:7px 10px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:11.5px;font-family:inherit;cursor:pointer;text-align:left;display:flex;align-items:center;gap:7px;">
+    ← Trocar empresa
+  </button>
+</div>
     <nav>
       <div class="nav-section">Menu</div>
       <button class="nav-btn ativo" onclick="irPara('dashboard')" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</button>
@@ -1666,7 +1671,6 @@ async function renderEmpresas(){
 // 🚀 ENTRAR NA EMPRESA
 function entrarEmpresa(id){
   const empresa = window.empresasData?.find(e => String(e.id) === String(id));
-
   if(!empresa){
     console.error("Empresa não encontrada:", id);
     return;
@@ -1679,10 +1683,25 @@ function entrarEmpresa(id){
   // Atualiza sidebar
   document.getElementById("sidebar-empresa").textContent = empresa.nome;
 
+  // Mostra botão "Trocar empresa" para admin_senior
+  if(usuarioLogado.perfil === "admin_senior"){
+    document.getElementById("btn-voltar-empresas").style.display = "block";
+  }
+
   // Navega para o dashboard da empresa
   irPara("dashboard");
   renderDashboard();
   renderOS();
+}
+
+// ← VOLTAR PARA TELA DE EMPRESAS
+function voltarEmpresas(){
+  usuarioLogado.empresaSelecionada = null;
+  usuarioLogado.empresa_id = null;
+  document.getElementById("sidebar-empresa").textContent = "Todas as empresas";
+  document.getElementById("btn-voltar-empresas").style.display = "none";
+  irPara("empresas");
+  renderEmpresas();
 }
 </script>
 
