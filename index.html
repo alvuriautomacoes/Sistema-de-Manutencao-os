@@ -1450,6 +1450,11 @@ function getOrdensFiltradas(){
 async function renderOS(){
   const empresa_id = usuarioLogado?.empresa_id;
   if(!empresa_id){ document.getElementById("os-lista").innerHTML = ""; return; }
+
+  // 🔥 Limpa dados antigos imediatamente
+  window.ordensData = [];
+  document.getElementById("os-lista").innerHTML = `<div class="empty"><div class="empty-icon">⏳</div>Carregando ordens...</div>`;
+
   let query = supabaseClient
     .from("ordens_servico")
     .select("*")
@@ -1467,7 +1472,6 @@ async function renderOS(){
   const filtradas = getOrdensFiltradas();
   const base = window.ordensData;
   document.getElementById("os-count").textContent = `${base.length} ordens · ${filtradas.length} exibidas`;
-
   const abas = [
     {key:"todos", label:"Todas"},
     {key:"aberta", label:"Abertas"},
@@ -1478,16 +1482,13 @@ async function renderOS(){
   document.getElementById("os-filtros").innerHTML = abas.map(a =>
     `<button class="filtro-aba ${filtroOS===a.key?'ativo':''}" onclick="setFiltroOS('${a.key}')">${a.label} (${a.count})</button>`
   ).join("");
-
   if(filtradas.length === 0){
     document.getElementById("os-lista").innerHTML = `<div class="empty"><div class="empty-icon">📭</div>Nenhuma OS encontrada para os filtros aplicados</div>`;
     return;
   }
-
   const podeAvancar = usuarioLogado?.podeEditar || usuarioLogado?.somentePropriaOS;
   const podeExcluir = usuarioLogado?.podeExcluir;
   const pColors = {aberta:"var(--blue-400)",andamento:"var(--s-andamento-txt)",aguardando:"var(--s-aguardando-txt)",concluida:"var(--s-concluida-txt)",cancelada:"var(--s-cancelada-txt)"};
-
   document.getElementById("os-lista").innerHTML = filtradas.map(o => {
     const s = STATUS_OS[o.status], p = PRIO_OS[o.prioridade];
     const idx = STATUS_SEQ.indexOf(o.status);
@@ -1502,7 +1503,7 @@ async function renderOS(){
         </div>
         <div class="os-equip">${o.equipamento_nome||"—"}</div>
         <div class="os-desc">${desc.substring(0,90)}${desc.length>90?"...":""}</div>
-        <div class="os-meta">👨‍🔧 ${o.tecnico_nome||"—"} &nbsp;·&nbsp; 📅 ${o.data_abertura||""}${o.data_conclusao?` &nbsp;·&nbsp; ✅ ${o.data_conclusao}`:""}</div>
+        <div class="os-meta"><i class="fa-solid fa-helmet-safety" style="font-size:10px"></i> ${o.tecnico_nome||"—"} &nbsp;·&nbsp; <i class="fa-solid fa-calendar" style="font-size:10px"></i> ${o.data_abertura||""}${o.data_conclusao?` &nbsp;·&nbsp; <i class="fa-solid fa-check" style="font-size:10px"></i> ${o.data_conclusao}`:""}</div>
         <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
           <div style="flex:1;height:4px;background:var(--blue-100);position:relative;">
             <div style="position:absolute;top:0;left:0;height:4px;width:${pct}%;background:${barColor};transition:width .3s;"></div>
