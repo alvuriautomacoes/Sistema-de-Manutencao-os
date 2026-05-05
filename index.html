@@ -673,6 +673,17 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title" id="deq-titulo"></div><button class="modal-close" onclick="document.getElementById('modal-detalhe-equip').classList.remove('aberto')">✕</button></div>
     <div id="deq-rows"></div>
+    <div id="deq-acoes" style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn btn-ghost" id="deq-editar-btn" onclick="editarEquipAtual()" style="flex:1">✏️ Editar</button>
+      <button class="btn btn-danger" id="deq-excluir-btn" onclick="excluirEquipDoModal()" style="flex:1">🗑 Excluir</button>
+    </div>
+    <div id="deq-confirm-del" class="confirm-bar" style="display:none">
+      Tem certeza? Esta ação é irreversível.
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn btn-danger btn-sm" onclick="confirmarExcluirEquipModal()">Confirmar exclusão</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('deq-confirm-del').style.display='none'">Cancelar</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1145,7 +1156,7 @@ const STATUS_PROF={
   inativo:{label:"Inativo",bg:"var(--e-inativo-bg)",txt:"var(--e-inativo-txt)",bd:"var(--e-inativo-bd)"},
 };
 const STATUS_SEQ=["aberta","andamento","aguardando","concluida"];
-let filtroOS="todos", osDetalheId=null, profDetalheId=null, profEditandoId=null, osEditandoId=null;
+let filtroOS="todos", osDetalheId=null, profDetalheId=null, profEditandoId=null, osEditandoId=null, equipDetalheId=null;
 
 function badge(label,bg,txt,bd){return `<span class="badge" style="background:${bg};color:${txt};border-color:${bd}">${label}</span>`;}
 function badgeTipo(label){return `<span class="badge tipo-badge">${label}</span>`;}
@@ -1785,10 +1796,6 @@ async function renderEquip(){
     document.getElementById("equip-grid").innerHTML = '<div class="empty"><div class="empty-icon">⚙️</div>Nenhum equipamento encontrado.</div>';
     return;
   }
-
-  const podeEditar  = usuarioLogado?.podeEditar;
-  const podeExcluir = usuarioLogado?.podeExcluir;
-
   document.getElementById("equip-grid").innerHTML = filtrados.map(e => {
     const s = STATUS_EQ[e.status] || STATUS_EQ.inativo;
     return `<div class="equip-card">
@@ -1800,10 +1807,8 @@ async function renderEquip(){
       <div class="equip-info">Série: <span>${e.serie||"—"}</span></div>
       <div class="equip-info">Última manutenção: <span>${e.ultima_manutencao||"—"}</span></div>
       <div class="equip-info">Próxima: <span style="color:${e.status==='critico'?'var(--e-critico-txt)':'var(--e-ativo-txt)'}">${e.proxima_manutencao||"—"}</span></div>
-      <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;">
+      <div style="margin-top:12px;">
         <button class="btn btn-ghost btn-sm" onclick="abrirDetalheEquip('${e.id}')">Ver detalhes</button>
-        ${podeEditar?`<button class="btn btn-primary btn-sm" onclick="abrirEditarEquip('${e.id}')">✏️ Editar</button>`:""}
-        ${podeExcluir?`<button class="btn btn-danger btn-sm" onclick="excluirEquip('${e.id}','${e.nome}')">🗑 Excluir</button>`:""}
       </div>
     </div>`;
   }).join("");
@@ -1897,14 +1902,12 @@ async function salvarEquip(){
   document.getElementById("modal-novo-equip").classList.remove("aberto");
   renderEquip();
 }  
-  function abrirDetalheEquip(id){
+function abrirDetalheEquip(id){
+  equipDetalheId = id;
   const e = window.equipamentosData?.find(x => String(x.id) === String(id));
   if(!e) return;
-
   const s = STATUS_EQ[e.status] || STATUS_EQ.inativo;
-
   document.getElementById("deq-titulo").textContent = `⚙️ ${e.nome}`;
-
   const rows = [
     ["Marca", e.marca||"—"],
     ["Modelo", e.modelo||"—"],
@@ -1913,7 +1916,6 @@ async function salvarEquip(){
     ["Última manutenção", e.ultima_manutencao||"—"],
     ["Próxima manutenção", e.proxima_manutencao||"—"]
   ];
-
   document.getElementById("deq-rows").innerHTML =
     rows.map(([k,v]) => `
       <div class="detalhe-row">
@@ -1928,9 +1930,41 @@ async function salvarEquip(){
       </div>` : "") +
     `<div style="margin-top:14px">${badge(s.label,s.bg,s.txt,s.bd)}</div>`;
 
+  // Controle de visibilidade conforme perfil
+  const podeEditar  = usuarioLogado?.podeEditar;
+  const podeExcluir = usuarioLogado?.podeExcluir;
+  document.getElementById("deq-editar-btn").style.display  = podeEditar  ? "" : "none";
+  document.getElementById("deq-excluir-btn").style.display = podeExcluir ? "" : "none";
+  document.getElementById("deq-acoes").style.display = (podeEditar || podeExcluir) ? "flex" : "none";
+  document.getElementById("deq-confirm-del").style.display = "none";
+
   document.getElementById("modal-detalhe-equip").classList.add("aberto");
 }
 
+function editarEquipAtual(){
+  document.getElementById("modal-detalhe-equip").classList.remove("aberto");
+  setTimeout(() => abrirEditarEquip(equipDetalheId), 120);
+}
+
+function excluirEquipDoModal(){
+  document.getElementById("deq-confirm-del").style.display = "block";
+}
+
+async function confirmarExcluirEquipModal(){
+  const { error } = await supabaseClient
+    .from("equipamentos")
+    .delete()
+    .eq("id", equipDetalheId);
+  if(error){
+    console.error("Erro ao excluir equipamento:", error);
+    alert("Erro ao excluir equipamento.");
+    return;
+  }
+  document.getElementById("modal-detalhe-equip").classList.remove("aberto");
+  document.getElementById("deq-confirm-del").style.display = "none";
+  renderEquip();
+}
+  
 // ════════════════════════════════════════════
 // PLANOS
 // ════════════════════════════════════════════
