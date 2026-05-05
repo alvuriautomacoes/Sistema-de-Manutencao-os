@@ -1311,7 +1311,7 @@ function entrarEmpresa(id){
   window.equipData         = [];
   window.planosData        = [];
   window.profData          = [];
-  window.profissionaisData = []; // 🔥 esse é o culpado
+  window.profissionaisData = [];
 
   // 🔥 Limpa telas visualmente
   const limpar = ['os-lista','dash-os-recentes','dash-stats','dash-equip','dash-planos','usuarios-grid'];
@@ -1333,6 +1333,16 @@ function entrarEmpresa(id){
   if(usuarioLogado.perfil === "admin_senior"){
     document.getElementById("btn-voltar-empresas").style.display = "block";
   }
+
+  // 🔥 Mostra loading visual imediato
+  document.getElementById("dash-stats").innerHTML = `
+    <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-num">—</div><div class="stat-label">Carregando...</div></div>
+    <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-num">—</div><div class="stat-label">Carregando...</div></div>
+    <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-num">—</div><div class="stat-label">Carregando...</div></div>
+  `;
+  document.getElementById("dash-os-recentes").innerHTML = '<div style="color:var(--muted);font-size:12px;padding:12px 0;">⏳ Carregando...</div>';
+  document.getElementById("dash-equip").innerHTML = '<div style="color:var(--muted);font-size:12px;padding:12px 0;">⏳ Carregando...</div>';
+  document.getElementById("dash-planos").innerHTML = '<div style="color:var(--muted);font-size:12px;padding:12px 0;">⏳ Carregando...</div>';
 
   // 🔥 Pequeno delay garante que a limpeza terminou antes de renderizar
   setTimeout(() => {
