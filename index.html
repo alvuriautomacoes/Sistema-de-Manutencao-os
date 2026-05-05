@@ -1138,10 +1138,11 @@ let filtroOS="todos", osDetalheId=null, profDetalheId=null, profEditandoId=null,
 
 function badge(label,bg,txt,bd){return `<span class="badge" style="background:${bg};color:${txt};border-color:${bd}">${label}</span>`;}
 function badgeTipo(label){return `<span class="badge tipo-badge">${label}</span>`;}
+function abrirModal(id){ document.getElementById(id).classList.add("aberto"); }
+function fecharModal(id){ document.getElementById(id).classList.remove("aberto"); }
 function hoje(){return new Date().toISOString().split("T")[0];}
 function iniciais(nome){return nome.split(" ").slice(0,2).map(p=>p[0]).join("").toUpperCase();}
 function listarTecnicos(){return profissionais.filter(p=>p.status==="ativo").map(p=>p.nome);}
-
 function atualizarBadgeUrgente(){
   const u=ordens.filter(o=>o.prio==="urgente"&&o.status!=="concluida"&&o.status!=="cancelada").length;
   const el=document.getElementById("badge-urgente");
@@ -1890,44 +1891,38 @@ async function salvarEquip(){
 async function renderPlanos(){
   const empresa_id = usuarioLogado?.empresa_id;
   if(!empresa_id){ document.getElementById("planos-grid").innerHTML = ""; return; }
-
   const { data, error } = await supabaseClient
     .from("planos_manutencao")
     .select("*")
     .eq("empresa_id", empresa_id)
     .order("proxima_execucao");
-
   if(error){
     console.error("Erro ao carregar planos:", error);
     return;
   }
-
   window.planosData = data || [];
-
   const venc = window.planosData.filter(p => p.status === "vencido");
   const al = document.getElementById("planos-alerta");
   al.style.display = venc.length > 0 ? "block" : "none";
   if(venc.length > 0) al.textContent = `⚠️ ${venc.length} plano(s) vencido(s) — crie as OS correspondentes.`;
-
   document.getElementById("planos-count").textContent = `${window.planosData.length} planos agendados`;
-
   const podeEditar  = usuarioLogado?.podeEditar;
   const podeExcluir = usuarioLogado?.podeExcluir;
-
   if(window.planosData.length === 0){
     document.getElementById("planos-grid").innerHTML = '<div class="empty"><div class="empty-icon">📅</div>Nenhum plano cadastrado.</div>';
     return;
   }
-
   document.getElementById("planos-grid").innerHTML = window.planosData.map(p => {
     const v = p.status === "vencido";
+    const ok = p.status === "ok";
     return `<div class="plano-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div style="font-size:18px;opacity:.5">📅</div>
         <div style="display:flex;gap:4px;flex-wrap:wrap">
           <span class="badge tipo-badge">${p.frequencia||"—"}</span>
           <span class="badge tipo-badge">${p.tipo||"—"}</span>
-          ${v?badge("Vencido","var(--s-cancelada-bg)","var(--s-cancelada-txt)","var(--s-cancelada-bd)"):""}
+          ${v ? badge("Vencido","var(--s-cancelada-bg)","var(--s-cancelada-txt)","var(--s-cancelada-bd)") : ""}
+          ${ok ? badge("OK","var(--s-concluida-bg)","var(--s-concluida-txt)","var(--s-concluida-bd)") : ""}
         </div>
       </div>
       <div class="plano-nome">${p.nome}</div>
@@ -2016,15 +2011,12 @@ async function salvarPlano(){
   const nome = document.getElementById("np-nome").value.trim();
   const data = document.getElementById("np-data").value;
   if(!nome || !data){ alert("Preencha nome e data!"); return; }
-
   const empresa_id = usuarioLogado?.empresa_id;
   if(!empresa_id){ alert("Nenhuma empresa selecionada."); return; }
-
   const equipId = document.getElementById("np-equip").value;
   const eq = (window.equipamentosData||[]).find(e => String(e.id) === String(equipId));
   const tecnicoNome = document.getElementById("np-tecnico").value;
   const tecnico = (window.profissionaisData||[]).find(p => p.nome === tecnicoNome);
-
   const dados = {
     empresa_id,
     nome,
@@ -2035,9 +2027,8 @@ async function salvarPlano(){
     proxima_execucao: data,
     tecnico_id:       tecnico?.id || null,
     tecnico_nome:     tecnicoNome,
-    status:           "ativo"
+    status:           "ok"
   };
-
   if(planoEditandoId){
     const { error } = await supabaseClient
       .from("planos_manutencao")
@@ -2059,7 +2050,6 @@ async function salvarPlano(){
       return;
     }
   }
-
   document.querySelector("#modal-novo-plano .modal-title").textContent = "📅 Novo Plano de Manutenção";
   fecharModal("modal-novo-plano");
   renderPlanos();
