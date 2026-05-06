@@ -1095,7 +1095,8 @@ function iniciarSistema(u){
   }
   // Configura sidebar com dados do usuário
   const ini=u.nome.split(" ").slice(0,2).map(p=>p[0]).join("").toUpperCase();
-  document.getElementById("sidebar-avatar").textContent=ini;
+const iniciaisSpan = document.getElementById("sidebar-avatar-iniciais");
+if(iniciaisSpan) iniciaisSpan.textContent=ini;
   document.getElementById("sidebar-nome").textContent=u.nome;
   document.getElementById("sidebar-perfil").textContent=u.icon+" "+u.perfilLabel;
   // Restaura empresa selecionada na sidebar se existir
@@ -1116,7 +1117,8 @@ function iniciarSistema(u){
     logoEl.style.display = "none";
     iniciaisEl.style.display = "block";
   }
-} else {
+} 
+ else {
   document.getElementById("sidebar-empresa").textContent = u.empresa || "—";
 }
   // Aplica visibilidade dos itens do menu conforme perfil
