@@ -1393,7 +1393,6 @@ function entrarEmpresa(id){
   localStorage.setItem("empresa_selecionada_id", String(empresa.id));
   localStorage.setItem("empresa_selecionada_nome", empresa.nome);
   document.getElementById("sidebar-empresa").textContent = empresa.nome;
-  document.getElementById("sidebar-logo-empresa").src = empresa.logo_url || '';
  
   mostrarMenuNav();
 
