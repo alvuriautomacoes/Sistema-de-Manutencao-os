@@ -444,10 +444,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     <img id="sidebar-logo-empresa" src="" style="width:55px;height:55px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,0.05);padding:6px;">
   </div>
       <div class="user-row">
-        <div class="user-avatar" id="sidebar-avatar">
-  <img id="sidebar-avatar-img" style="width:100%;height:100%;object-fit:cover;border-radius:6px;display:none;">
-  <span id="sidebar-avatar-text">?</span>
-</div>
+        <div class="user-avatar" id="sidebar-avatar">?</div>
         <div>
           <div class="user-name" id="sidebar-nome">—</div>
           <div class="user-role" id="sidebar-perfil">—</div>
@@ -1397,18 +1394,7 @@ function entrarEmpresa(id){
   localStorage.setItem("empresa_selecionada_nome", empresa.nome);
   document.getElementById("sidebar-empresa").textContent = empresa.nome;
   document.getElementById("sidebar-logo-empresa").src = empresa.logo_url || '';
-  const avatarImg = document.getElementById("sidebar-avatar-img");
-const avatarText = document.getElementById("sidebar-avatar-text");
-
-if (empresa.logo_url) {
-  avatarImg.src = empresa.logo_url;
-  avatarImg.style.display = "block";
-  avatarText.style.display = "none";
-} else {
-  avatarImg.style.display = "none";
-  avatarText.style.display = "block";
-}
-
+ 
   mostrarMenuNav();
 
   if(usuarioLogado.perfil === "admin_senior"){
