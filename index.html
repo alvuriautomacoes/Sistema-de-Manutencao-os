@@ -2211,6 +2211,7 @@ function abrirDetalheEquip(id){
   const s = STATUS_EQ[e.status] || STATUS_EQ.inativo;
   document.getElementById("deq-titulo").textContent = `⚙️ ${e.nome}`;
   const rows = [
+    ["NI", e.ni||"—"],
     ["Marca", e.marca||"—"],
     ["Modelo", e.modelo||"—"],
     ["Série", e.serie||"—"],
