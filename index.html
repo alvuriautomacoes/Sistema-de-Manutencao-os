@@ -1365,6 +1365,7 @@ function atualizarBadgeUrgente(){
 // ════════════════════════════════════════════
 function entrarEmpresa(id){
   const empresa = window.empresasData?.find(e => String(e.id) === String(id));
+  console.log("LOGO URL:", empresa.logo_url);
   if(!empresa){
     console.error("Empresa não encontrada:", id);
     return;
