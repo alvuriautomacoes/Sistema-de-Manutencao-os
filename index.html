@@ -781,20 +781,75 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <!-- MODAL NOVO TÉCNICO -->
 <div class="modal-overlay" id="modal-novo-prof">
   <div class="modal-box">
-    <div class="modal-header"><div class="modal-title" id="modal-prof-titulo">👷 Novo Técnico</div><button class="modal-close" onclick="document.getElementById('modal-novo-prof').classList.remove('aberto')">✕</button></div>
-    <div class="field" style="grid-column:1/-1"><label>Nome Completo *</label><input id="np2-nome" placeholder="Ex: Carlos Lima"/></div>
+    <div class="modal-header">
+      <div class="modal-title" id="modal-prof-titulo">👷 Novo Técnico</div>
+      <button class="modal-close" onclick="document.getElementById('modal-novo-prof').classList.remove('aberto')">✕</button>
+    </div>
+
+    <div class="field" style="grid-column:1/-1">
+      <label>Nome Completo *</label>
+      <input id="np2-nome" placeholder="Ex: Carlos Lima"/>
+    </div>
     <div class="grid2">
-      <div class="field"><label>Cargo *</label><select id="np2-cargo"><option>Técnico de Manutenção</option><option>Mecânico Industrial</option><option>Eletricista Industrial</option><option>Instrumentista</option><option>Lubrificador</option><option>Soldador</option><option>Supervisor de Manutenção</option><option>Engenheiro de Manutenção</option><option>Auxiliar de Manutenção</option></select></div>
+      <div class="field"><label>Cargo *</label>
+        <select id="np2-cargo">
+          <option>Técnico de Manutenção</option>
+          <option>Mecânico Industrial</option>
+          <option>Eletricista Industrial</option>
+          <option>Instrumentista</option>
+          <option>Lubrificador</option>
+          <option>Soldador</option>
+          <option>Supervisor de Manutenção</option>
+          <option>Engenheiro de Manutenção</option>
+          <option>Auxiliar de Manutenção</option>
+        </select>
+      </div>
       <div class="field"><label>Matrícula</label><input id="np2-matricula" placeholder="Ex: MAT-0042"/></div>
     </div>
     <div class="grid2">
-      <div class="field"><label>Turno</label><select id="np2-turno"><option>Manhã</option><option>Tarde</option><option>Noite</option><option>Integral</option></select></div>
-      <div class="field"><label>Status</label><select id="np2-status"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></div>
+      <div class="field"><label>Turno</label>
+        <select id="np2-turno">
+          <option>Manhã</option><option>Tarde</option><option>Noite</option><option>Integral</option>
+        </select>
+      </div>
+      <div class="field"><label>Status</label>
+        <select id="np2-status">
+          <option value="ativo">Ativo</option><option value="inativo">Inativo</option>
+        </select>
+      </div>
     </div>
     <div class="field"><label>Telefone / Contato</label><input id="np2-tel" placeholder="Ex: (11) 99999-8888"/></div>
     <div class="field"><label>Especialidades (separadas por vírgula)</label><input id="np2-esp" placeholder="Ex: Hidráulica, Pneumática, CNC"/></div>
     <div class="field"><label>Observações</label><textarea id="np2-obs" rows="2" placeholder="Informações adicionais..."></textarea></div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="document.getElementById('modal-novo-prof').classList.remove('aberto')">Cancelar</button><button class="btn btn-primary" id="btn-salvar-prof" onclick="salvarProf()">Salvar</button></div>
+
+    <!-- 🔥 SEÇÃO ACESSO AO SISTEMA -->
+    <div style="margin-top:16px;padding:14px;background:var(--blue-50);border:1px solid var(--blue-200);border-left:3px solid var(--blue-500);border-radius:5px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <input type="checkbox" id="np2-criar-acesso" onchange="toggleAcessoTecnico(this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:var(--blue-600)"/>
+        <label for="np2-criar-acesso" style="font-size:12.5px;font-weight:700;color:var(--txt);cursor:pointer;">Criar acesso ao sistema para este técnico</label>
+      </div>
+      <div id="np2-acesso-campos" style="display:none;">
+        <div class="grid2">
+          <div class="field">
+            <label>CPF (usado para login) *</label>
+            <input id="np2-cpf" placeholder="000.000.000-00" maxlength="14" oninput="formatarCPF(this)"/>
+          </div>
+          <div class="field">
+            <label>Senha *</label>
+            <input type="password" id="np2-senha" placeholder="Mínimo 6 caracteres"/>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--sub);margin-top:4px;">
+          <i class="fa-solid fa-circle-info" style="color:var(--blue-400)"></i>
+          O técnico terá acesso somente às OS direcionadas a ele.
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-novo-prof').classList.remove('aberto')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-salvar-prof" onclick="salvarProf()">Salvar</button>
+    </div>
   </div>
 </div>
 
@@ -2459,13 +2514,25 @@ function abrirEditarProf(id){
   document.getElementById("np2-obs").value = p.observacoes || "";
   document.getElementById("modal-novo-prof").classList.add("aberto");
 }
+  function toggleAcessoTecnico(checked){
+  document.getElementById("np2-acesso-campos").style.display = checked ? "block" : "none";
+}
 
-  async function salvarProf(){
+async function salvarTecnico(){
   const nome = document.getElementById("np2-nome").value.trim();
   if(!nome){ alert("Preencha o nome!"); return; }
-
   const empresa_id = usuarioLogado?.empresa_id;
   if(!empresa_id){ alert("Nenhuma empresa selecionada."); return; }
+
+  const criarAcesso = document.getElementById("np2-criar-acesso").checked;
+  const cpf   = document.getElementById("np2-cpf")?.value.trim();
+  const senha  = document.getElementById("np2-senha")?.value.trim();
+
+  // 🔥 Valida acesso se checkbox marcado
+  if(criarAcesso){
+    if(!cpf || cpf.length < 14){ alert("Preencha o CPF corretamente!"); return; }
+    if(!senha || senha.length < 6){ alert("A senha deve ter no mínimo 6 caracteres!"); return; }
+  }
 
   const espRaw = document.getElementById("np2-esp").value.trim();
   const especialidades = espRaw ? espRaw.split(",").map(s => s.trim()).filter(Boolean) : [];
@@ -2482,34 +2549,57 @@ function abrirEditarProf(id){
     observacoes: document.getElementById("np2-obs").value.trim()
   };
 
+  const btn = document.getElementById("btn-salvar-prof");
+  btn.disabled = true;
+  btn.textContent = "Salvando...";
+
   if(profEditandoId){
     const { error } = await supabaseClient
       .from("tecnicos")
       .update(dados)
       .eq("id", profEditandoId);
-
     if(error){
-      console.error("Erro ao editar tecnico:", error);
-      alert("Erro ao salvar tecnico.");
+      alert("Erro ao salvar técnico: " + error.message);
+      btn.disabled = false; btn.textContent = "Salvar";
       return;
     }
   } else {
     const { error } = await supabaseClient
       .from("tecnicos")
       .insert([dados]);
-
     if(error){
-      console.error("Erro ao cadastrar tecnico:", error);
-      alert("Erro ao salvar tecnico.");
+      alert("Erro ao salvar técnico: " + error.message);
+      btn.disabled = false; btn.textContent = "Salvar";
       return;
+    }
+
+    // 🔥 Cria acesso ao sistema se checkbox marcado
+    if(criarAcesso){
+      const dadosUsuario = {
+        empresa_id,
+        nome,
+        cpf,
+        senha,
+        perfil: "tecnico",
+        ativo: true,
+      };
+      const { error: errUsuario } = await supabaseClient
+        .from("usuarios")
+        .insert([dadosUsuario]);
+      if(errUsuario){
+        alert("Técnico salvo, mas erro ao criar acesso: " + errUsuario.message);
+      } else {
+        alert(`✅ Técnico cadastrado e acesso criado!\nCPF: ${cpf}\nSenha: ${senha}`);
+      }
     }
   }
 
   document.getElementById("modal-novo-prof").classList.remove("aberto");
+  btn.disabled = false; btn.textContent = "Salvar";
   renderTecnicos();
   profEditandoId = null;
 }
-
+  
   function abrirDetalheProf(id){
   profDetalheId = id;
   const p = window.tecnicosData?.find(x => String(x.id) === String(id));
