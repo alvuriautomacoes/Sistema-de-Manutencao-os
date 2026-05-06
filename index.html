@@ -440,6 +440,9 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <button class="nav-btn" onclick="irPara('usuarios')" id="nav-usuarios"><span class="nav-icon"><i class="fa-solid fa-users-gear"></i></span> Usuários</button>
 </nav>
     <div class="user-area">
+      <div style="display:flex;justify-content:center;margin-bottom:10px;">
+    <img id="sidebar-logo-empresa" style="width:60px;height:60px;object-fit:contain;border-radius:8px;">
+  </div>
       <div class="user-row">
         <div class="user-avatar" id="sidebar-avatar">?</div>
         <div>
@@ -1389,6 +1392,7 @@ function entrarEmpresa(id){
   localStorage.setItem("empresa_selecionada_id", String(empresa.id));
   localStorage.setItem("empresa_selecionada_nome", empresa.nome);
   document.getElementById("sidebar-empresa").textContent = empresa.nome;
+  document.getElementById("sidebar-logo-empresa").src = empresa.logo_url || '';
 
   mostrarMenuNav();
 
