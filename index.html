@@ -686,9 +686,32 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
       <div class="progress-labels" id="det-progress-labels"></div>
     </div>
     <div id="det-acoes" style="display:flex;gap:8px;margin-top:8px;">
-      <button class="btn btn-ghost" id="det-editar-btn" onclick="editarOSAtual()" style="flex:1">✏️ Editar</button>
-      <button class="btn btn-primary" id="det-avancar-btn" onclick="avancarStatusAtual()" style="flex:1">Avançar Status ▶</button>
-    </div>
+  <button class="btn btn-ghost" id="det-editar-btn" onclick="editarOSAtual()" style="flex:1">✏️ Editar</button>
+  <button class="btn btn-primary" id="det-avancar-btn" onclick="avancarStatusAtual()" style="flex:1">Avançar Status ▶</button>
+</div>
+
+<!-- 🔥 BOTÃO EXCLUSIVO DO TÉCNICO -->
+<div id="det-acoes-tecnico" style="display:none;margin-top:8px;">
+  <button class="btn btn-ghost" style="width:100%" onclick="abrirEdicaoTecnico()">✏️ Atualizar Descrição / Peças</button>
+</div>
+
+<!-- 🔥 ÁREA DE EDIÇÃO DO TÉCNICO -->
+<div id="det-tecnico-edit" style="display:none;margin-top:14px;padding:14px;background:var(--blue-50);border:1px solid var(--blue-200);border-left:3px solid var(--blue-500);border-radius:5px;">
+  <div style="font-size:10px;font-weight:700;color:var(--blue-600);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">✏️ Atualizar OS</div>
+  <div class="field" style="margin-bottom:10px;">
+    <label>Descrição do Serviço</label>
+    <textarea id="det-edit-desc" rows="3" placeholder="Descreva o serviço realizado..."></textarea>
+  </div>
+  <div class="field" style="margin-bottom:10px;">
+    <label>Peças / Materiais Utilizados</label>
+    <textarea id="det-edit-pecas" rows="2" placeholder="Ex: Filtro AR-200, Óleo sintético 5L..."></textarea>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn btn-ghost" style="flex:1" onclick="document.getElementById('det-tecnico-edit').style.display='none'">Cancelar</button>
+    <button class="btn btn-primary" style="flex:1" onclick="salvarEdicaoTecnico()">💾 Salvar</button>
+  </div>
+</div>
+    
     <div style="display:flex;gap:8px;margin-top:8px;">
       <button class="btn btn-ghost" id="det-imprimir-btn" onclick="imprimirOSIndividual(osDetalheId)" style="flex:1">🖨️ Imprimir</button>
       <button class="btn btn-danger" id="det-excluir-btn" onclick="excluirOSDoModal()" style="flex:1">🗑 Excluir</button>
@@ -1909,15 +1932,49 @@ function renderDetalheOS(id){
   const podeAvancar = usuarioLogado?.podeEditar || usuarioLogado?.somentePropriaOS;
   const podeEditar = usuarioLogado?.podeEditar;
   const podeExcluir = usuarioLogado?.podeExcluir;
-  document.getElementById("det-avancar-btn").style.display = (podeAvancar&&!fim) ? "block" : "none";
-  document.getElementById("det-editar-btn").style.display = podeEditar ? "block" : "none";
-  document.getElementById("det-acoes").style.display = (podeAvancar&&!fim)||podeEditar ? "flex" : "none";
-  document.getElementById("det-excluir-btn").style.display = podeExcluir ? "" : "none";
-  document.getElementById("det-confirm-del").style.display = "none";
+  const isTecnico = usuarioLogado?.perfil === "tecnico";
+
+document.getElementById("det-avancar-btn").style.display = (podeAvancar&&!fim) ? "block" : "none";
+document.getElementById("det-editar-btn").style.display = (!isTecnico && podeEditar) ? "block" : "none";
+document.getElementById("det-acoes").style.display = (podeAvancar&&!fim)||(!isTecnico&&podeEditar) ? "flex" : "none";
+document.getElementById("det-excluir-btn").style.display = (!isTecnico && podeExcluir) ? "" : "none";
+document.getElementById("det-acoes-tecnico").style.display = isTecnico ? "block" : "none";  document.getElementById("det-confirm-del").style.display = "none";
   const msg = document.getElementById("det-concluida-msg");
   msg.style.display = fim ? "block" : "none";
   msg.style.color = o.status === "concluida" ? "var(--s-concluida-txt)" : "var(--s-cancelada-txt)";
   msg.textContent = o.status === "concluida" ? "✅ Ordem de Serviço Concluída" : "❌ OS Cancelada";
+}
+  function abrirEdicaoTecnico(){
+  const o = (window.ordensData || []).find(x => String(x.id) === String(osDetalheId));
+  if(!o) return;
+  document.getElementById("det-edit-desc").value  = o.descricao || "";
+  document.getElementById("det-edit-pecas").value = o.pecas_materiais || "";
+  document.getElementById("det-tecnico-edit").style.display = "block";
+}
+
+async function salvarEdicaoTecnico(){
+  const desc  = document.getElementById("det-edit-desc").value.trim();
+  const pecas = document.getElementById("det-edit-pecas").value.trim();
+
+  const { error } = await supabaseClient
+    .from("ordens_servico")
+    .update({ descricao: desc, pecas_materiais: pecas })
+    .eq("id", osDetalheId);
+
+  if(error){
+    alert("Erro ao salvar: " + error.message);
+    return;
+  }
+
+  const idx = (window.ordensData || []).findIndex(x => String(x.id) === String(osDetalheId));
+  if(idx !== -1){
+    window.ordensData[idx].descricao = desc;
+    window.ordensData[idx].pecas_materiais = pecas;
+  }
+
+  document.getElementById("det-tecnico-edit").style.display = "none";
+  renderDetalheOS(osDetalheId);
+  alert("✅ OS atualizada com sucesso!");
 }
 
 function avancarStatusAtual(){
