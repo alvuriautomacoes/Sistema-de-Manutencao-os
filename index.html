@@ -436,7 +436,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <button class="nav-btn" onclick="irPara('os')" id="nav-os"><span class="nav-icon"><i class="fa-solid fa-screwdriver-wrench"></i></span> Ordens de Serviço<span class="badge-urgente" id="badge-urgente" style="display:none">0</span></button>
 <button class="nav-btn" onclick="irPara('equip')" id="nav-equip"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span> Equipamentos</button>
 <button class="nav-btn" onclick="irPara('planos')" id="nav-planos"><span class="nav-icon"><i class="fa-solid fa-calendar-check"></i></span> Planos de Manutenção</button>
-<button class="nav-btn" onclick="irPara('profissionais')" id="nav-profissionais"><span class="nav-icon"><i class="fa-solid fa-helmet-safety"></i></span> Profissionais</button>
+<button class="nav-btn" onclick="irPara('tecnicos')" id="nav-tecnicos"><span class="nav-icon"><i class="fa-solid fa-helmet-safety"></i></span> tecnicos</button>
 <button class="nav-btn" onclick="irPara('usuarios')" id="nav-usuarios"><span class="nav-icon"><i class="fa-solid fa-users-gear"></i></span> Usuários</button>
 </nav>
     <div class="user-area">
@@ -588,18 +588,18 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
       <div class="planos-grid" id="planos-grid"></div>
     </div>
 
-    <!-- PROFISSIONAIS -->
-    <div id="tela-profissionais" class="tela">
+    <!-- TÉCNICOS -->
+    <div id="tela-tecnicos" class="tela">
       <div class="page-header">
-        <div><div class="page-title">Profissionais de Manutenção</div><div class="page-sub" id="prof-count"></div></div>
+        <div><div class="page-title">tecnicos de Manutenção</div><div class="page-sub" id="prof-count"></div></div>
         <button class="btn btn-primary" id="btn-novo-prof" onclick="abrirModalNovoProf()">+ Novo Profissional</button>
       </div>
       <div class="busca-wrap">
-        <input class="busca-input" id="prof-busca" placeholder="Buscar por nome, cargo, especialidade, turno..." oninput="renderProfissionais()"/>
-        <select class="busca-select" id="prof-filtro-status" onchange="renderProfissionais()">
+        <input class="busca-input" id="prof-busca" placeholder="Buscar por nome, cargo, especialidade, turno..." oninput="renderTecnicos()"/>
+        <select class="busca-select" id="prof-filtro-status" onchange="renderTecnicos()">
           <option value="">Todos os status</option><option value="ativo">Ativos</option><option value="inativo">Inativos</option>
         </select>
-        <select class="busca-select" id="prof-filtro-turno" onchange="renderProfissionais()">
+        <select class="busca-select" id="prof-filtro-turno" onchange="renderTecnicos()">
           <option value="">Todos os turnos</option><option>Manhã</option><option>Tarde</option><option>Noite</option><option>Integral</option>
         </select>
       </div>
@@ -826,21 +826,21 @@ const USUARIOS = [
   cpf:"111.111.111-11", senha:"admin123",
   perfil:"admin", nome:"Roberto Souza", icon:"👑", perfilLabel:"Administrador",
   empresa:null,
-  acesso:["dashboard","os","equip","planos","profissionais"],
+  acesso:["dashboard","os","equip","planos","tecnicos"],
   somentePropriaOS: false, podeEditar: true, podeCadastrar: true
 },
   {
     cpf:"222.222.222-22", senha:"gerente123",
     perfil:"gerente", nome:"Fernanda Lima", icon:"📊", perfilLabel:"Gerente",
     empresa:"Metalúrgica Souza Ltda",
-    acesso:["dashboard","os","equip","planos","profissionais"],
+    acesso:["dashboard","os","equip","planos","tecnicos"],
     somentePropriaOS: false, podeEditar: false, podeCadastrar: false
   },
   {
     cpf:"333.333.333-33", senha:"admin456",
     perfil:"admin_enc", nome:"Carlos Mendes", icon:"📋", perfilLabel:"Administrativo / Encarregado",
     empresa:"Metalúrgica Souza Ltda",
-    acesso:["dashboard","os","equip","planos","profissionais"],
+    acesso:["dashboard","os","equip","planos","tecnicos"],
     somentePropriaOS: false, podeEditar: true, podeCadastrar: true
   },
   {
@@ -931,21 +931,21 @@ async function fazerLogin(){
   const PERFIS = {
     admin_senior: {
       icon:"👑", perfilLabel:"Administrador Sênior",
-      acesso:["empresas","dashboard","os","equip","planos","profissionais","usuarios"],
+      acesso:["empresas","dashboard","os","equip","planos","tecnicos","usuarios"],
       somentePropriaOS:false, podeEditar:true, podeCadastrar:true, podeExcluir:true,
       podeCriarEmpresas:true, podeCriarUsuarios:true, verDashboard:true, acessoTodasEmpresas:true,
       perfisQuePodeCriar:["gerente","admin_enc","tecnico"]
     },
     gerente: {
       icon:"📊", perfilLabel:"Gerente",
-      acesso:["dashboard","os","equip","planos","profissionais","usuarios"],
+      acesso:["dashboard","os","equip","planos","tecnicos","usuarios"],
       somentePropriaOS:false, podeEditar:true, podeCadastrar:true, podeExcluir:true,
       podeCriarEmpresas:false, podeCriarUsuarios:true, verDashboard:true, acessoTodasEmpresas:false,
       perfisQuePodeCriar:["admin_enc","tecnico"]
     },
     admin_enc: {
       icon:"📋", perfilLabel:"Administrativo / Encarregado",
-      acesso:["dashboard","os","equip","planos","profissionais","usuarios"],
+      acesso:["dashboard","os","equip","planos","tecnicos","usuarios"],
       somentePropriaOS:false, podeEditar:true, podeCadastrar:true, podeExcluir:true,
       podeCriarEmpresas:false, podeCriarUsuarios:true, verDashboard:true, acessoTodasEmpresas:false,
       perfisQuePodeCriar:["tecnico"]
@@ -1028,7 +1028,7 @@ function iniciarSistema(u){
     document.getElementById("sidebar-empresa").textContent = u.empresa || "—";
   }
   // Aplica visibilidade dos itens do menu conforme perfil
-  const todosNavs=["dashboard","os","equip","planos","profissionais","usuarios"];
+  const todosNavs=["dashboard","os","equip","planos","tecnicos","usuarios"];
   todosNavs.forEach(id=>{
     const btn=document.getElementById("nav-"+id);
     if(!btn)return;
@@ -1085,7 +1085,7 @@ function ocultarMenuNav(){
   if(usuarioLogado?.perfil === "admin_senior"){
     document.getElementById("sidebar").style.display = "flex";
     document.getElementById("conteudo").style.marginLeft = "232px";
-    ["dashboard","os","equip","planos","profissionais"].forEach(id => {
+    ["dashboard","os","equip","planos","tecnicos"].forEach(id => {
       const btn = document.getElementById("nav-"+id);
       if(btn) btn.style.display = "none";
     });
@@ -1105,7 +1105,7 @@ function ocultarMenuNav(){
 function mostrarMenuNav(){
   document.getElementById("sidebar").style.display = "flex";
   document.getElementById("conteudo").style.marginLeft = "232px";
-  const todosNavs = ["dashboard","os","equip","planos","profissionais","usuarios"];
+  const todosNavs = ["dashboard","os","equip","planos","tecnicos","usuarios"];
   todosNavs.forEach(id => {
     const btn = document.getElementById("nav-"+id);
     if(!btn) return;
@@ -1210,7 +1210,7 @@ window.addEventListener("load",()=>{
 // ════════════════════════════════════════════
 // DADOS DO SISTEMA
 // ════════════════════════════════════════════
-let profissionais=[
+let tecnicos=[
   {id:1,nome:"Ana Costa",cargo:"Instrumentista",matricula:"MAT-0002",turno:"Tarde",status:"ativo",tel:"(11) 98800-5678",especialidades:["CNC","Instrumentação","PLC"],obs:"Certificação NR-12."},
   {id:2,nome:"Carlos Lima",cargo:"Técnico de Manutenção",matricula:"MAT-0001",turno:"Manhã",status:"ativo",tel:"(11) 98800-1234",especialidades:["Hidráulica","Pneumática","Elétrica"],obs:"Responsável pela linha de produção A."},
   {id:3,nome:"João Melo",cargo:"Mecânico Industrial",matricula:"MAT-0003",turno:"Manhã",status:"ativo",tel:"(11) 98800-9012",especialidades:["Mecânica","Soldagem","Tornaria"],obs:""},
@@ -1272,7 +1272,7 @@ function abrirModal(id){ document.getElementById(id).classList.add("aberto"); }
 function fecharModal(id){ document.getElementById(id).classList.remove("aberto"); }
 function hoje(){return new Date().toISOString().split("T")[0];}
 function iniciais(nome){return nome.split(" ").slice(0,2).map(p=>p[0]).join("").toUpperCase();}
-function listarTecnicos(){return profissionais.filter(p=>p.status==="ativo").map(p=>p.nome);}
+function listarTecnicos(){return tecnicos.filter(p=>p.status==="ativo").map(p=>p.nome);}
 function atualizarBadgeUrgente(){
   const u=ordens.filter(o=>o.prio==="urgente"&&o.status!=="concluida"&&o.status!=="cancelada").length;
   const el=document.getElementById("badge-urgente");
@@ -1294,8 +1294,8 @@ function entrarEmpresa(id){
   window.usuariosData      = [];
   window.equipData         = [];
   window.planosData        = [];
-  window.profData          = [];
-  window.profissionaisData = [];
+  window.tecnicosData          = [];
+  window.tecnicosData = [];
 
   // 🔥 Limpa telas visualmente
   const limpar = ['os-lista','dash-os-recentes','dash-stats','dash-equip','dash-planos','usuarios-grid'];
@@ -1352,7 +1352,7 @@ async function renderDashboard(){
     supabaseClient.from("ordens_servico").select("*").eq("empresa_id", empresa_id).order("created_at", { ascending: false }),
     supabaseClient.from("equipamentos").select("*").eq("empresa_id", empresa_id),
     supabaseClient.from("planos_manutencao").select("*").eq("empresa_id", empresa_id),
-    supabaseClient.from("profissionais").select("*").eq("empresa_id", empresa_id).eq("status", "ativo"),
+    supabaseClient.from("tecnicos").select("*").eq("empresa_id", empresa_id).eq("status", "ativo"),
   ]);
 
   const ordensDB  = resOS.data    || [];
@@ -1364,7 +1364,7 @@ async function renderDashboard(){
   window.ordensData       = ordensDB;
   window.equipamentosData = equipDB;
   window.planosData       = planosDB;
-  window.profissionaisData= profDB;
+  window.tecnicosData= profDB;
 
   // 🔥 KPIs
   const ordensVisiveis = usuarioLogado?.somentePropriaOS
@@ -1381,7 +1381,7 @@ async function renderDashboard(){
     { label:"Urgentes",         val: urgentes,      icon:"🚨", sub:"requerem atenção",   cls: urgentes > 0 ? "accent-urgente" : "accent-ok" },
     { label:"Equip. Críticos",  val: criticos,      icon:"⚠️", sub:"precisam de OS",     cls: criticos > 0 ? "accent-alerta"  : "accent-ok" },
     { label:"Planos Vencidos",  val: vencidos,      icon:"📅", sub:"agendamentos",       cls: vencidos > 0 ? "accent-urgente" : "accent-ok" },
-    { label:"Profissionais",    val: profDB.length, icon:"👷", sub:"ativos",             cls:"accent-ok" },
+    { label:"Técnicos",    val: profDB.length, icon:"👷", sub:"ativos",             cls:"accent-ok" },
   ];
 
   document.getElementById("dash-stats").innerHTML = stats.map(s => `
@@ -1437,9 +1437,9 @@ function popularFiltroTecnico(){
   const sel = document.getElementById("os-filtro-tecnico");
   const atual = sel.value;
 
-  // Puxa técnicos cadastrados no sistema (profissionais ativos da empresa)
+  // Puxa técnicos cadastrados no sistema (Técnicos ativos da empresa)
   const tecs = [...new Set(
-    (window.profissionaisData || [])
+    (window.tecnicosData || [])
       .filter(p => p.status === "ativo")
       .map(p => p.nome)
   )].sort();
@@ -1694,7 +1694,7 @@ function abrirModalNovaOS(){
   ).join("");
 
   // Popula técnicos do Supabase
-  const tecnicos = (window.profissionaisData || [])
+  const tecnicos = (window.tecnicosData || [])
     .filter(p => p.status === "ativo")
     .map(p => p.nome);
   document.getElementById("nos-tecnico").innerHTML = tecnicos.map(t =>
@@ -1726,7 +1726,7 @@ async function salvarOS(){
   const eq = (window.equipamentosData || []).find(e => String(e.id) === String(equipId));
 
   const tecnicoNome = document.getElementById("nos-tecnico").value;
-  const tecnico = (window.profissionaisData || []).find(p => p.nome === tecnicoNome);
+  const tecnico = (window.tecnicosData || []).find(p => p.nome === tecnicoNome);
 
   if(osEditandoId){
     const { error } = await supabaseClient
@@ -2291,7 +2291,7 @@ function abrirEditarPlano(id){
   ).join("");
 
   // Popula técnicos e seleciona o correto
-  const tecnicos = (window.profissionaisData || []).filter(x => x.status === "ativo");
+  const tecnicos = (window.tecnicosData || []).filter(x => x.status === "ativo");
   document.getElementById("np-tecnico").innerHTML = tecnicos.map(t =>
     `<option ${t.nome===p.tecnico_nome?'selected':''}>${t.nome}</option>`
   ).join("");
@@ -2309,7 +2309,7 @@ function abrirModalNovoPlano(){
   ).join("");
 
   // Popula técnicos do Supabase
-  const tecnicos = (window.profissionaisData || []).filter(p => p.status === "ativo");
+  const tecnicos = (window.tecnicosData || []).filter(p => p.status === "ativo");
   document.getElementById("np-tecnico").innerHTML = tecnicos.map(t =>
     `<option>${t.nome}</option>`
   ).join("");
@@ -2333,7 +2333,7 @@ async function salvarPlano(){
   const equipId = document.getElementById("np-equip").value;
   const eq = (window.equipamentosData||[]).find(e => String(e.id) === String(equipId));
   const tecnicoNome = document.getElementById("np-tecnico").value;
-  const tecnico = (window.profissionaisData||[]).find(p => p.nome === tecnicoNome);
+  const tecnico = (window.tecnicosData||[]).find(p => p.nome === tecnicoNome);
   const dados = {
     empresa_id,
     nome,
@@ -2375,25 +2375,25 @@ async function salvarPlano(){
 }
 
 // ════════════════════════════════════════════
-// PROFISSIONAIS
+// TÉCNICOS
 // ════════════════════════════════════════════
-async function renderProfissionais(){
+async function renderTecnicos(){
   const empresa_id = usuarioLogado?.empresa_id;
   if(!empresa_id){ document.getElementById("prof-grid").innerHTML = ""; return; }
   const { data, error } = await supabaseClient
-    .from("profissionais")
+    .from("tecnicos")
     .select("*")
     .eq("empresa_id", empresa_id)
     .order("nome");
   if(error){
-    console.error("Erro ao carregar profissionais:", error);
+    console.error("Erro ao carregar tecnicos:", error);
     return;
   }
-  window.profissionaisData = data || [];
+  window.tecnicosData = data || [];
   const busca = (document.getElementById("prof-busca")?.value || "").toLowerCase();
   const filtroStatus = document.getElementById("prof-filtro-status")?.value || "";
   const filtroTurno = document.getElementById("prof-filtro-turno")?.value || "";
-  const filtrados = window.profissionaisData.filter(p => {
+  const filtrados = window.tecnicosData.filter(p => {
     const mS = !filtroStatus || p.status === filtroStatus;
     const mT = !filtroTurno || p.turno === filtroTurno;
     const mB = !busca ||
@@ -2404,8 +2404,8 @@ async function renderProfissionais(){
       (p.especialidades||[]).some(e => e.toLowerCase().includes(busca));
     return mS && mT && mB;
   });
-  const ativos = window.profissionaisData.filter(p => p.status === "ativo").length;
-  document.getElementById("prof-count").textContent = `${window.profissionaisData.length} cadastrados · ${ativos} ativos`;
+  const ativos = window.tecnicosData.filter(p => p.status === "ativo").length;
+  document.getElementById("prof-count").textContent = `${window.tecnicosData.length} cadastrados · ${ativos} ativos`;
   if(filtrados.length === 0){
     document.getElementById("prof-grid").innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👷</div>Nenhum profissional encontrado</div>`;
     return;
@@ -2443,7 +2443,7 @@ function abrirModalNovoProf(){
 }
   
 function abrirEditarProf(id){
-  const p = window.profissionaisData?.find(x => String(x.id) === String(id));
+  const p = window.tecnicosData?.find(x => String(x.id) === String(id));
   if(!p) return;
 
   profEditandoId = id;
@@ -2484,7 +2484,7 @@ function abrirEditarProf(id){
 
   if(profEditandoId){
     const { error } = await supabaseClient
-      .from("profissionais")
+      .from("tecnicos")
       .update(dados)
       .eq("id", profEditandoId);
 
@@ -2495,7 +2495,7 @@ function abrirEditarProf(id){
     }
   } else {
     const { error } = await supabaseClient
-      .from("profissionais")
+      .from("tecnicos")
       .insert([dados]);
 
     if(error){
@@ -2506,13 +2506,13 @@ function abrirEditarProf(id){
   }
 
   document.getElementById("modal-novo-prof").classList.remove("aberto");
-  renderProfissionais();
+  renderTecnicos();
   profEditandoId = null;
 }
 
   function abrirDetalheProf(id){
   profDetalheId = id;
-  const p = window.profissionaisData?.find(x => String(x.id) === String(id));
+  const p = window.ptecnicosData?.find(x => String(x.id) === String(id));
   if(!p) return;
 
   document.getElementById("dp-titulo").textContent = `👷 ${p.nome}`;
@@ -2548,7 +2548,7 @@ function confirmarExclusaoProf(){
 
 async function excluirProfAtual(){
   const { error } = await supabaseClient
-    .from("profissionais")
+    .from("tecnicos")
     .delete()
     .eq("id", profDetalheId);
 
@@ -2559,7 +2559,7 @@ async function excluirProfAtual(){
   }
 
   document.getElementById("modal-detalhe-prof").classList.remove("aberto");
-  renderProfissionais();
+  renderTecnicos();
 }
   // ════════════════════════════════════════════
 // USUÁRIOS
@@ -2825,16 +2825,16 @@ async function irPara(tela){
   localStorage.setItem("tela_atual", tela);
   if(tela==="dashboard") renderDashboard();
   if(tela==="os"){
-    if(!window.profissionaisData || window.profissionaisData.length === 0){
+    if(!window.tecnicosData || window.tecnicosData.length === 0){
       const empresa_id = usuarioLogado?.empresa_id;
       if(empresa_id){
         const { data } = await supabaseClient
-          .from("profissionais")
+          .from("tecnicos")
           .select("*")
           .eq("empresa_id", empresa_id)
           .eq("status", "ativo")
           .order("nome");
-        window.profissionaisData = data || [];
+        window.tecnicosData = data || [];
       }
     }
     popularFiltroTecnico();
@@ -2842,7 +2842,7 @@ async function irPara(tela){
   }
   if(tela==="equip") renderEquip();
   if(tela==="planos") renderPlanos();
-  if(tela==="profissionais") renderProfissionais();
+  if(tela==="tecnicos") renderTecnicos();
   if(tela==="usuarios"){
   renderUsuarios();
   // Garante botão voltar para admin_senior
