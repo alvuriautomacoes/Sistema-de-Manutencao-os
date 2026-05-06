@@ -2512,7 +2512,7 @@ function abrirEditarProf(id){
 
   function abrirDetalheProf(id){
   profDetalheId = id;
-  const p = window.ptecnicosData?.find(x => String(x.id) === String(id));
+  const p = window.tecnicosData?.find(x => String(x.id) === String(id));
   if(!p) return;
 
   document.getElementById("dp-titulo").textContent = `👷 ${p.nome}`;
