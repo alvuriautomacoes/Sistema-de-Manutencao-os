@@ -444,7 +444,10 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   <img id="sidebar-logo-empresa">
 </div>
       <div class="user-row">
-        <div class="user-avatar" id="sidebar-avatar">?</div>
+        <div class="user-avatar" id="sidebar-avatar">
+  <img id="sidebar-logo-empresa" style="display:none;width:100%;height:100%;object-fit:contain;padding:2px;"/>
+  <span id="sidebar-avatar-iniciais">?</span>
+</div>
         <div>
           <div class="user-name" id="sidebar-nome">—</div>
           <div class="user-role" id="sidebar-perfil">—</div>
@@ -1101,13 +1104,24 @@ function iniciarSistema(u){
   // Restaura empresa selecionada na sidebar se existir
   const empresaNomeSalvo = localStorage.getItem("empresa_selecionada_nome");
   const empresaIdSalvo   = localStorage.getItem("empresa_selecionada_id");
-  if(empresaNomeSalvo && empresaIdSalvo){
-    u.empresa_id          = empresaIdSalvo;
-    u.empresaSelecionada  = empresaNomeSalvo;
-    document.getElementById("sidebar-empresa").textContent = empresaNomeSalvo;
+ if(empresaNomeSalvo && empresaIdSalvo){
+  u.empresa_id          = empresaIdSalvo;
+  u.empresaSelecionada  = empresaNomeSalvo;
+  document.getElementById("sidebar-empresa").textContent = empresaNomeSalvo;
+  const empresa = window.empresasData?.find(e => String(e.id) === String(empresaIdSalvo));
+  const logoEl = document.getElementById("sidebar-logo-empresa");
+  const iniciaisEl = document.getElementById("sidebar-avatar-iniciais");
+  if(empresa?.logo_url){
+    logoEl.src = empresa.logo_url;
+    logoEl.style.display = "block";
+    iniciaisEl.style.display = "none";
   } else {
-    document.getElementById("sidebar-empresa").textContent = u.empresa || "—";
+    logoEl.style.display = "none";
+    iniciaisEl.style.display = "block";
   }
+} else {
+  document.getElementById("sidebar-empresa").textContent = u.empresa || "—";
+}
   // Aplica visibilidade dos itens do menu conforme perfil
   const todosNavs=["dashboard","os","equip","planos","tecnicos","usuarios"];
   todosNavs.forEach(id=>{
@@ -1393,6 +1407,16 @@ function entrarEmpresa(id){
   localStorage.setItem("empresa_selecionada_id", String(empresa.id));
   localStorage.setItem("empresa_selecionada_nome", empresa.nome);
   document.getElementById("sidebar-empresa").textContent = empresa.nome;
+  const logoEl = document.getElementById("sidebar-logo-empresa");
+const iniciaisEl = document.getElementById("sidebar-avatar-iniciais");
+if(empresa.logo_url){
+  logoEl.src = empresa.logo_url;
+  logoEl.style.display = "block";
+  iniciaisEl.style.display = "none";
+} else {
+  logoEl.style.display = "none";
+  iniciaisEl.style.display = "block";
+}
  
   mostrarMenuNav();
 
