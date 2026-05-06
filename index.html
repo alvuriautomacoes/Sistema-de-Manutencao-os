@@ -778,7 +778,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   </div>
 </div>
 
-<!-- MODAL NOVO PROFISSIONAL -->
+<!-- MODAL NOVO TÉCNICO -->
 <div class="modal-overlay" id="modal-novo-prof">
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title" id="modal-prof-titulo">👷 Novo Técnico</div><button class="modal-close" onclick="document.getElementById('modal-novo-prof').classList.remove('aberto')">✕</button></div>
@@ -798,7 +798,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   </div>
 </div>
 
-<!-- MODAL DETALHE PROFISSIONAL -->
+<!-- MODAL DETALHE TÉCNICO -->
 <div class="modal-overlay" id="modal-detalhe-prof">
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title" id="dp-titulo"></div><button class="modal-close" onclick="document.getElementById('modal-detalhe-prof').classList.remove('aberto')">✕</button></div>
@@ -2407,7 +2407,7 @@ async function renderTecnicos(){
   const ativos = window.tecnicosData.filter(p => p.status === "ativo").length;
   document.getElementById("prof-count").textContent = `${window.tecnicosData.length} cadastrados · ${ativos} ativos`;
   if(filtrados.length === 0){
-    document.getElementById("prof-grid").innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👷</div>Nenhum profissional encontrado</div>`;
+    document.getElementById("prof-grid").innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👷</div>Nenhum técnico encontrado</div>`;
     return;
   }
   document.getElementById("prof-grid").innerHTML = filtrados.map(p => {
@@ -2447,7 +2447,7 @@ function abrirEditarProf(id){
   if(!p) return;
 
   profEditandoId = id;
-  document.getElementById("modal-prof-titulo").textContent = "✏️ Editar Profissional";
+  document.getElementById("modal-prof-titulo").textContent = "✏️ Editar Técnico";
   document.getElementById("btn-salvar-prof").textContent = "Salvar alterações";
   document.getElementById("np2-nome").value = p.nome;
   document.getElementById("np2-cargo").value = p.cargo || "";
@@ -2489,8 +2489,8 @@ function abrirEditarProf(id){
       .eq("id", profEditandoId);
 
     if(error){
-      console.error("Erro ao editar profissional:", error);
-      alert("Erro ao salvar profissional.");
+      console.error("Erro ao editar tecnico:", error);
+      alert("Erro ao salvar tecnico.");
       return;
     }
   } else {
@@ -2499,8 +2499,8 @@ function abrirEditarProf(id){
       .insert([dados]);
 
     if(error){
-      console.error("Erro ao cadastrar profissional:", error);
-      alert("Erro ao salvar profissional.");
+      console.error("Erro ao cadastrar tecnico:", error);
+      alert("Erro ao salvar tecnico.");
       return;
     }
   }
@@ -2553,8 +2553,8 @@ async function excluirProfAtual(){
     .eq("id", profDetalheId);
 
   if(error){
-    console.error("Erro ao excluir profissional:", error);
-    alert("Erro ao excluir profissional.");
+    console.error("Erro ao excluir tecnico:", error);
+    alert("Erro ao excluir tecnico.");
     return;
   }
 
