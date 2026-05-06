@@ -2088,7 +2088,8 @@ async function renderEquip(){
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div style="font-size:20px;opacity:.6;">⚙️</div>${badge(s.label,s.bg,s.txt,s.bd)}
       </div>
-      <div class="equip-nome">${e.nome}</div>
+      ${e.ni ? `<div style="font-size:10px;font-weight:700;color:var(--blue-500);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;margin-bottom:4px;">${e.ni}</div>` : ""}
+<div class="equip-nome">${e.nome}</div>
       <div class="equip-sub">${e.marca||"—"} · ${e.modelo||"—"} · ${e.setor||"—"}</div>
       <div class="equip-info">Série: <span>${e.serie||"—"}</span></div>
       <div class="equip-info">Última manutenção: <span>${e.ultima_manutencao||"—"}</span></div>
@@ -2151,43 +2152,58 @@ async function salvarEquip(){
   const dados = {
     empresa_id,
     nome,
-    marca:         document.getElementById("ne-marca").value.trim(),
-    modelo:        document.getElementById("ne-modelo").value.trim(),
-    serie:         document.getElementById("ne-serie").value.trim(),
-    setor:         document.getElementById("ne-setor").value,
-    dados_tecnicos:document.getElementById("ne-dados-tecnicos").value.trim()
+    marca:          document.getElementById("ne-marca").value.trim(),
+    modelo:         document.getElementById("ne-modelo").value.trim(),
+    serie:          document.getElementById("ne-serie").value.trim(),
+    setor:          document.getElementById("ne-setor").value,
+    dados_tecnicos: document.getElementById("ne-dados-tecnicos").value.trim()
   };
 
   if(equipEditandoId){
-    // EDITAR
     const { error } = await supabaseClient
       .from("equipamentos")
       .update(dados)
       .eq("id", equipEditandoId);
     if(error){
-      console.error("Erro ao editar equipamento:", error);
-      alert("Erro ao salvar equipamento.");
+      alert("Erro ao salvar equipamento: " + error.message);
       return;
     }
     equipEditandoId = null;
   } else {
-    // NOVO
     dados.status = "ativo";
+
+    // 🔥 Gera NI sequencial por empresa
+    const { data: ultimos } = await supabaseClient
+      .from("equipamentos")
+      .select("ni")
+      .eq("empresa_id", empresa_id)
+      .not("ni", "is", null)
+      .order("ni", { ascending: false })
+      .limit(1);
+
+    let proximoNum = 1;
+    if(ultimos && ultimos.length > 0){
+      const ultimo = ultimos[0].ni || "EQ-0000";
+      const num = parseInt(ultimo.replace("EQ-", "")) || 0;
+      proximoNum = num + 1;
+    }
+
+    dados.ni = `EQ-${String(proximoNum).padStart(4, "0")}`;
+
     const { error } = await supabaseClient
       .from("equipamentos")
       .insert([dados]);
     if(error){
-      console.error("Erro ao salvar equipamento:", error);
-      alert("Erro ao salvar equipamento.");
+      alert("Erro ao salvar equipamento: " + error.message);
       return;
     }
   }
 
-  // Restaura título do modal
   document.querySelector("#modal-novo-equip .modal-title").textContent = "➕ Novo Equipamento";
   document.getElementById("modal-novo-equip").classList.remove("aberto");
   renderEquip();
-}  
+}
+  
 function abrirDetalheEquip(id){
   equipDetalheId = id;
   const e = window.equipamentosData?.find(x => String(x.id) === String(id));
