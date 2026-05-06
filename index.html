@@ -2088,7 +2088,7 @@ async function renderEquip(){
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div style="font-size:20px;opacity:.6;">⚙️</div>${badge(s.label,s.bg,s.txt,s.bd)}
       </div>
-      ${e.ni ? `<div style="font-size:10px;font-weight:700;color:var(--blue-500);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;margin-bottom:4px;">${e.ni}</div>` : ""}
+      ${e.ni ? `<div style="font-size:10px;font-weight:700;color:var(--blue-500);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;margin-bottom:4px;">NI · ${e.ni}</div>` : ""}
 <div class="equip-nome">${e.nome}</div>
       <div class="equip-sub">${e.marca||"—"} · ${e.modelo||"—"} · ${e.setor||"—"}</div>
       <div class="equip-info">Série: <span>${e.serie||"—"}</span></div>
