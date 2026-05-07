@@ -1798,6 +1798,12 @@ function imprimirOSIndividual(id){
         <div class="section-title">Descrição do Serviço</div>
         <div class="desc-box">${o.descricao||"—"}</div>
       </div>
+      <div class="section">
+  <div class="section-title">Custos da OS</div>
+  <div class="row"><span class="row-key">Tempo de Serviço</span><span class="row-val">${formatarTempo(calcularTempoAtual(o))}</span></div>
+  <div class="row"><span class="row-key">Custo Adicional</span><span class="row-val">R$ ${(o.custo_adicional||0).toFixed(2).replace(".",",")}</span></div>
+  ${o.obs_custo_adicional ? `<div class="row"><span class="row-key">Obs. do Custo</span><span class="row-val">${o.obs_custo_adicional}</span></div>` : ""}
+</div>
 
       <div class="assinatura">
         <div class="assin-box">Técnico Responsável<br><br>${o.tecnico_nome||""}</div>
