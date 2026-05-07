@@ -723,6 +723,34 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     <button class="btn btn-primary" style="flex:1" onclick="salvarEdicaoTecnico()">💾 Salvar</button>
   </div>
 </div>
+
+    <!-- 🔥 CUSTOS DA OS -->
+<div id="det-custos" style="display:none;margin-top:10px;padding:14px;background:var(--blue-50);border:1px solid var(--blue-200);border-left:3px solid var(--blue-500);">
+  <div style="font-size:10px;font-weight:700;color:var(--blue-600);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">💰 Custos da OS</div>
+  <div class="detalhe-row">
+    <span class="detalhe-key">Custo mão de obra</span>
+    <span class="detalhe-val" id="det-custo-mao-obra">R$ 0,00</span>
+  </div>
+  <div class="detalhe-row">
+    <span class="detalhe-key">Custo adicional</span>
+    <span class="detalhe-val" id="det-custo-adicional-display">R$ 0,00</span>
+  </div>
+  <div class="detalhe-row" style="border-bottom:none;">
+    <span class="detalhe-key" style="font-weight:700;color:var(--txt);">Custo total</span>
+    <span class="detalhe-val" style="color:var(--blue-700);font-size:14px;" id="det-custo-total">R$ 0,00</span>
+  </div>
+  <div id="det-custo-edit" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--blue-200);">
+    <div class="field" style="margin-bottom:8px;">
+      <label>Custo Adicional (R$)</label>
+      <input id="det-custo-adicional-input" type="number" step="0.01" min="0" placeholder="Ex: 150.00"/>
+    </div>
+    <div class="field" style="margin-bottom:8px;">
+      <label>Observações do custo</label>
+      <textarea id="det-obs-custo-input" rows="2" placeholder="Ex: Peças compradas, frete, etc..."></textarea>
+    </div>
+    <button class="btn btn-primary btn-sm" style="width:100%" onclick="salvarCustoAdicional()">💾 Salvar custos</button>
+  </div>
+</div>    
     
     <div style="display:flex;gap:8px;margin-top:8px;">
       <button class="btn btn-ghost" id="det-imprimir-btn" onclick="imprimirOSIndividual(osDetalheId)" style="flex:1">🖨️ Imprimir</button>
@@ -2030,6 +2058,8 @@ document.getElementById("det-acoes-tecnico").style.display = isTecnico ? "block"
   msg.style.color = o.status === "concluida" ? "var(--s-concluida-txt)" : "var(--s-cancelada-txt)";
   msg.textContent = o.status === "concluida" ? "✅ Ordem de Serviço Concluída" : "❌ OS Cancelada";
   renderCronometro(o);
+  // 🔥 Custos da OS
+renderCustosOS(o);
 }
   function abrirEdicaoTecnico(){
   const o = (window.ordensData || []).find(x => String(x.id) === String(osDetalheId));
@@ -3110,6 +3140,64 @@ function renderCronometro(o){
     btnRetomar.style.display = fim ? "none" : "";
   }
   iniciarDisplayCronometro(o);
+}
+  async function renderCustosOS(o){
+  const box = document.getElementById("det-custos");
+  if(!box) return;
+  box.style.display = "block";
+
+  // Busca o técnico para pegar o salário
+  const tecnico = (window.tecnicosData || []).find(t => t.nome === o.tecnico_nome);
+  const salario = tecnico?.salario || 0;
+  const custoHora = salario / 220;
+  const totalHoras = calcularTempoAtual(o) / 3600;
+  const custoMaoObra = totalHoras * custoHora;
+  const custoAdicional = o.custo_adicional || 0;
+  const custoTotal = custoMaoObra + custoAdicional;
+
+  const podVerSalario = ["admin_senior","gerente"].includes(usuarioLogado?.perfil);
+
+  // Exibe custo mão de obra só para admin/gerente
+  document.getElementById("det-custo-mao-obra").textContent = podVerSalario
+    ? `R$ ${custoMaoObra.toFixed(2).replace(".",",")}`
+    : "—";
+
+  document.getElementById("det-custo-adicional-display").textContent =
+    `R$ ${custoAdicional.toFixed(2).replace(".",",")}`;
+
+  document.getElementById("det-custo-total").textContent = podVerSalario
+    ? `R$ ${custoTotal.toFixed(2).replace(".",",")}`
+    : `R$ ${custoAdicional.toFixed(2).replace(".",",")}`;
+
+  // Preenche campos de edição
+  document.getElementById("det-custo-adicional-input").value = custoAdicional || "";
+  document.getElementById("det-obs-custo-input").value = o.obs_custo_adicional || "";
+
+  // Oculta edição para técnico
+  const isTecnico = usuarioLogado?.perfil === "tecnico";
+  document.getElementById("det-custo-edit").style.display = isTecnico ? "none" : "";
+}
+
+async function salvarCustoAdicional(){
+  const custo = parseFloat(document.getElementById("det-custo-adicional-input").value) || 0;
+  const obs = document.getElementById("det-obs-custo-input").value.trim();
+
+  const { error } = await supabaseClient
+    .from("ordens_servico")
+    .update({ custo_adicional: custo, obs_custo_adicional: obs })
+    .eq("id", osDetalheId);
+
+  if(error){ alert("Erro ao salvar custos: " + error.message); return; }
+
+  // Atualiza cache local
+  const idx = (window.ordensData || []).findIndex(x => String(x.id) === String(osDetalheId));
+  if(idx !== -1){
+    window.ordensData[idx].custo_adicional = custo;
+    window.ordensData[idx].obs_custo_adicional = obs;
+  }
+
+  renderDetalheOS(osDetalheId);
+  alert("✅ Custos salvos com sucesso!");
 }
 
 async function pausarCronometro(){
