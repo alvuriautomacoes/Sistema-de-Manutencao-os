@@ -1439,13 +1439,16 @@ function atualizarBadgeUrgente(){
   const el=document.getElementById("badge-urgente");
   if(el){el.style.display=u>0?"inline-block":"none";el.textContent=u;}
 }
-  function calcularCustoOS(os, tecnico) {
-  const maoDeObra = (os.tempo_total || 0) * (tecnico.valor_hora || 0);
+function calcularCustoOS(os, tecnico){
+  const tempo = os.tempo_total || 0;
+  const valorHora = tecnico?.valor_hora || 0;
   const adicionais = os.custo_adicional || 0;
+
+  const maoDeObra = tempo * valorHora;
 
   return maoDeObra + adicionais;
 }
-
+  
 // ════════════════════════════════════════════
 // NAVEGAÇÃO
 // ════════════════════════════════════════════
