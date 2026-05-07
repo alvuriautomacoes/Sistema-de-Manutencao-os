@@ -3050,59 +3050,165 @@ function abrirEditarUsuario(id){
 }
 
 async function salvarUsuario(){
-  const nome = document.getElementById("nu-nome").value.trim();
-  const cpf  = document.getElementById("nu-cpf").value.trim();
-  const senha = document.getElementById("nu-senha").value.trim();
+  const nome   = document.getElementById("nu-nome").value.trim();
+  const cpf    = document.getElementById("nu-cpf").value.trim();
+  const senha  = document.getElementById("nu-senha").value.trim();
   const perfil = document.getElementById("nu-perfil").value;
-  const ativo = document.getElementById("nu-status").value === "true";
+  const ativo  = document.getElementById("nu-status").value === "true";
 
+  // 🔒 VALIDAÇÕES
   if(!nome || !cpf || !senha || !perfil){
     alert("Preencha todos os campos obrigatórios!");
     return;
   }
 
+  if(senha.length < 6){
+    alert("A senha deve ter no mínimo 6 caracteres.");
+    return;
+  }
+
   const isAdmin = usuarioLogado?.perfil === "admin_senior";
+
   const empresa_id = isAdmin
     ? document.getElementById("nu-empresa").value
     : usuarioLogado?.empresa_id;
 
-  if(!empresa_id){ alert("Nenhuma empresa selecionada."); return; }
-
-  const dados = { nome, cpf, senha, perfil, ativo, empresa_id };
-
-  if(usuarioEditandoId){
-    const { error } = await supabaseClient
-      .from("usuarios")
-      .update(dados)
-      .eq("id", usuarioEditandoId);
-    if(error){
-      console.error("Erro completo ao editar:", JSON.stringify(error));
-      alert(`Erro: ${error.message}`);
-      return;
-    }
-    usuarioEditandoId = null;
-  } else {
-    const { error } = await supabaseClient
-      .from("usuarios")
-      .insert([dados]);
-    if(error){
-      console.error("Erro completo ao criar:", JSON.stringify(error));
-      alert(`Erro: ${error.message}`);
-      return;
-    }
+  if(!empresa_id){
+    alert("Nenhuma empresa selecionada.");
+    return;
   }
 
-  document.getElementById("modal-novo-usuario").classList.remove("aberto");
-  renderUsuarios();
+  // 🔒 VERIFICA SE O PERFIL É PERMITIDO
+  const perfisPermitidos = usuarioLogado?.perfisQuePodeCriar || [];
+
+  if(!perfisPermitidos.includes(perfil)){
+    alert("Você não tem permissão para criar este perfil.");
+    return;
+  }
+
+  // 🔒 IMPEDE CPF DUPLICADO
+  let queryCpf = supabaseClient
+    .from("usuarios")
+    .select("id")
+    .eq("cpf", cpf)
+    .limit(1);
+
+  // Se estiver editando, ignora o próprio usuário
+  if(usuarioEditandoId){
+    queryCpf = queryCpf.neq("id", usuarioEditandoId);
+  }
+
+  const { data: cpfExistente, error: erroCpf } = await queryCpf;
+
+  if(erroCpf){
+    console.error("Erro ao validar CPF:", erroCpf);
+    alert("Erro ao validar CPF.");
+    return;
+  }
+
+  if(cpfExistente && cpfExistente.length > 0){
+    alert("Já existe um usuário com este CPF.");
+    return;
+  }
+
+  // 🔒 DADOS FINAIS
+  const dados = {
+    nome,
+    cpf,
+    senha,
+    perfil,
+    ativo,
+    empresa_id
+  };
+
+  // 🔒 BLOQUEIA BOTÃO
+  const btn = document.getElementById("btn-salvar-usuario");
+  btn.disabled = true;
+  btn.textContent = usuarioEditandoId
+    ? "Salvando..."
+    : "Criando...";
+
+  try {
+
+    // ✏️ EDITAR
+    if(usuarioEditandoId){
+
+      const { error } = await supabaseClient
+        .from("usuarios")
+        .update(dados)
+        .eq("id", usuarioEditandoId);
+
+      if(error){
+        console.error("Erro completo ao editar:", error);
+        alert(`Erro ao editar usuário: ${error.message}`);
+        return;
+      }
+
+      usuarioEditandoId = null;
+
+    } else {
+
+      // ➕ CRIAR
+      const { error } = await supabaseClient
+        .from("usuarios")
+        .insert([dados]);
+
+      if(error){
+        console.error("Erro completo ao criar:", error);
+        alert(`Erro ao criar usuário: ${error.message}`);
+        return;
+      }
+    }
+
+    // ✅ FECHA MODAL
+    document.getElementById("modal-novo-usuario")
+      .classList.remove("aberto");
+
+    // ✅ LIMPA FORM
+    document.getElementById("nu-nome").value = "";
+    document.getElementById("nu-cpf").value = "";
+    document.getElementById("nu-senha").value = "";
+
+    // ✅ RECARREGA LISTA
+    renderUsuarios();
+
+  } finally {
+
+    // 🔓 REATIVA BOTÃO
+    btn.disabled = false;
+    btn.textContent = usuarioEditandoId
+      ? "Salvar alterações"
+      : "Salvar";
+  }
 }
 
 async function excluirUsuario(id, nome){
-  if(!confirm(`Deseja excluir o usuário "${nome}"? Esta ação é irreversível.`)) return;
+
+  // 🔒 Verifica permissão
+  if(!usuarioLogado?.podeExcluir){
+    alert("Você não possui permissão para excluir usuários.");
+    return;
+  }
+
+  // Confirma exclusão
+  if(!confirm(`Deseja excluir o usuário "${nome}"? Esta ação é irreversível.`)){
+    return;
+  }
+
+  // Exclui usuário
   const { error } = await supabaseClient
     .from("usuarios")
     .delete()
     .eq("id", id);
-  if(error){ console.error(error); alert("Erro ao excluir usuário."); return; }
+
+  // Trata erro
+  if(error){
+    console.error("Erro ao excluir usuário:", error);
+    alert("Erro ao excluir usuário.");
+    return;
+  }
+
+  // Atualiza lista
   renderUsuarios();
 }
   
@@ -3342,47 +3448,104 @@ container.innerHTML = `<div class="equip-grid">${data.map(e => {
   
 // 🚀 ENTRAR NA EMPRESA
 async function irPara(tela){
-  if(!usuarioLogado)return;
-  // Verifica acesso
+
+  if(!usuarioLogado) return;
+
+  // 🔒 Verifica acesso corretamente
   if(!usuarioLogado.acesso.includes(tela)){
-    document.querySelectorAll(".tela").forEach(t=>t.classList.remove("ativa"));
-    document.getElementById("tela-"+tela)?.classList.add("ativa");
+    alert("Você não possui acesso a esta área.");
     return;
   }
-  document.querySelectorAll(".tela").forEach(t=>t.classList.remove("ativa"));
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("ativo"));
-  document.getElementById("tela-"+tela)?.classList.add("ativa");
-  document.getElementById("nav-"+tela)?.classList.add("ativo");
-  // Salva tela atual no localStorage
+
+  // Troca telas
+  document.querySelectorAll(".tela").forEach(t => 
+    t.classList.remove("ativa")
+  );
+
+  // Atualiza menu ativo
+  document.querySelectorAll(".nav-btn").forEach(b => 
+    b.classList.remove("ativo")
+  );
+
+  // Abre tela
+  document.getElementById("tela-" + tela)?.classList.add("ativa");
+  document.getElementById("nav-" + tela)?.classList.add("ativo");
+
+  // 💾 Salva última tela
   localStorage.setItem("tela_atual", tela);
-  if(tela==="dashboard") renderDashboard();
-  if(tela==="os"){
+
+  // ════════════════════════════════════════
+  // DASHBOARD
+  // ════════════════════════════════════════
+  if(tela === "dashboard"){
+    renderDashboard();
+  }
+
+  // ════════════════════════════════════════
+  // ORDENS DE SERVIÇO
+  // ════════════════════════════════════════
+  if(tela === "os"){
+
+    // Carrega técnicos ativos se ainda não carregou
     if(!window.tecnicosData || window.tecnicosData.length === 0){
+
       const empresa_id = usuarioLogado?.empresa_id;
+
       if(empresa_id){
+
         const { data } = await supabaseClient
           .from("tecnicos")
           .select("*")
           .eq("empresa_id", empresa_id)
           .eq("status", "ativo")
           .order("nome");
+
         window.tecnicosData = data || [];
       }
     }
+
     popularFiltroTecnico();
     renderOS();
   }
-  if(tela==="equip") renderEquip();
-  if(tela==="planos") renderPlanos();
-  if(tela==="tecnicos") renderTecnicos();
-  if(tela==="usuarios"){
-  renderUsuarios();
-  // Garante botão voltar para admin_senior
-  if(usuarioLogado?.perfil === "admin_senior"){
-    const btnVoltar = document.getElementById("btn-voltar-empresas");
-    if(btnVoltar) btnVoltar.style.display = "block";
+
+  // ════════════════════════════════════════
+  // EQUIPAMENTOS
+  // ════════════════════════════════════════
+  if(tela === "equip"){
+    renderEquip();
   }
-}
+
+  // ════════════════════════════════════════
+  // PLANOS
+  // ════════════════════════════════════════
+  if(tela === "planos"){
+    renderPlanos();
+  }
+
+  // ════════════════════════════════════════
+  // TÉCNICOS
+  // ════════════════════════════════════════
+  if(tela === "tecnicos"){
+    renderTecnicos();
+  }
+
+  // ════════════════════════════════════════
+  // USUÁRIOS
+  // ════════════════════════════════════════
+  if(tela === "usuarios"){
+
+    renderUsuarios();
+
+    // Garante botão voltar para admin_senior
+    if(usuarioLogado?.perfil === "admin_senior"){
+
+      const btnVoltar = document.getElementById("btn-voltar-empresas");
+
+      if(btnVoltar){
+        btnVoltar.style.display = "block";
+      }
+    }
+  }
 }
 
 // ← VOLTAR PARA TELA DE EMPRESAS
