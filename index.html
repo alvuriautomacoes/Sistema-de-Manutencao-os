@@ -1079,21 +1079,21 @@ async function fazerLogin(){
   const PERFIS = {
     admin_senior: {
       icon:"👑", perfilLabel:"Administrador Sênior",
-      acesso:["empresas","dashboard","os","equip","planos","tecnicos","usuarios"],
+      acesso:["empresas","dashboard","os","equip","planos","tecnicos","usuarios","custos"],
       somentePropriaOS:false, podeEditar:true, podeCadastrar:true, podeExcluir:true,
       podeCriarEmpresas:true, podeCriarUsuarios:true, verDashboard:true, acessoTodasEmpresas:true,
       perfisQuePodeCriar:["gerente","admin_enc","tecnico"]
     },
     gerente: {
       icon:"📊", perfilLabel:"Gerente",
-      acesso:["dashboard","os","equip","planos","tecnicos","usuarios"],
+      acesso:["dashboard","os","equip","planos","tecnicos","usuarios","custos"],
       somentePropriaOS:false, podeEditar:true, podeCadastrar:true, podeExcluir:true,
       podeCriarEmpresas:false, podeCriarUsuarios:true, verDashboard:true, acessoTodasEmpresas:false,
       perfisQuePodeCriar:["admin_enc","tecnico"]
     },
     admin_enc: {
       icon:"📋", perfilLabel:"Administrativo / Encarregado",
-      acesso:["dashboard","os","equip","planos","tecnicos","usuarios"],
+      acesso:["os","equip","planos","tecnicos","usuarios"],
       somentePropriaOS:false, podeEditar:true, podeCadastrar:true, podeExcluir:true,
       podeCriarEmpresas:false, podeCriarUsuarios:true, verDashboard:true, acessoTodasEmpresas:false,
       perfisQuePodeCriar:["tecnico"]
