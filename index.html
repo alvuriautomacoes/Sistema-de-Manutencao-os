@@ -2460,7 +2460,6 @@ function abrirEditarPlano(id){
   document.getElementById("np-freq").value  = p.frequencia || "Mensal";
   document.getElementById("np-tipo").value  = p.tipo || "Preventiva";
   document.getElementById("np-data").value  = p.proxima_execucao || "";
-  document.getElementById("np-tecnico").value = p.tecnico_nome || "";
 
   // Popula equipamentos e seleciona o correto
   const equips = window.equipamentosData || [];
@@ -2474,8 +2473,13 @@ function abrirEditarPlano(id){
     `<option ${t.nome===p.tecnico_nome?'selected':''}>${t.nome}</option>`
   ).join("");
 
+  // 🔥 Preenche novos campos
+  document.getElementById("np-descricao").value  = p.descricao  || "";
+  document.getElementById("np-observacoes").value = p.observacoes || "";
+
   document.getElementById("modal-novo-plano").classList.add("aberto");
 }
+  
 function abrirModalNovoPlano(){
   planoEditandoId = null;
   document.querySelector("#modal-novo-plano .modal-title").textContent = "📅 Novo Plano de Manutenção";
