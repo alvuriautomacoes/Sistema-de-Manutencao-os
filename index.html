@@ -433,12 +433,6 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     <nav>
      <div class="nav-section">Menu</div>
 <button class="nav-btn ativo" onclick="irPara('dashboard')" id="nav-dashboard"><span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span> Dashboard</button>
-<button class="nav-btn" onclick="irPara('custos')" id="nav-custos">
-  <span class="nav-icon">
-    <i class="fa-solid fa-sack-dollar"></i>
-  </span>
-  Custos e Indicadores
-</button>      
 <button class="nav-btn" onclick="irPara('os')" id="nav-os"><span class="nav-icon"><i class="fa-solid fa-screwdriver-wrench"></i></span> Ordens de Serviço<span class="badge-urgente" id="badge-urgente" style="display:none">0</span></button>
 <button class="nav-btn" onclick="irPara('equip')" id="nav-equip"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span> Equipamentos</button>
 <button class="nav-btn" onclick="irPara('planos')" id="nav-planos"><span class="nav-icon"><i class="fa-solid fa-calendar-check"></i></span> Planos de Manutenção</button>
@@ -490,16 +484,6 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     <button class="btn btn-primary" id="btn-nova-empresa" onclick="abrirModalEmpresa()">+ Nova Empresa</button>
   </div>
   <div id="lista-empresas"></div>
-</div>
-
-  <div id="tela-custos" class="tela">
-
-  <h2>💰 Custos e Indicadores</h2>
-
-  <p style="color:var(--sub);font-size:12px;">
-    Tela em construção...
-  </p>
-
 </div>
 
 <!-- MODAL NOVA EMPRESA -->
@@ -596,38 +580,6 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
       <input class="busca-input" id="equip-busca" placeholder="Buscar equipamento, setor, marca, modelo..." oninput="renderEquip()" style="margin-bottom:16px;width:100%"/>
       <div class="equip-grid" id="equip-grid"></div>
     </div>
-
-    <!-- CUSTOS E INDICADORES -->
-<div id="tela-custos" class="tela">
-
-  <div class="page-header">
-    <div>
-      <div class="page-title">Custos e Indicadores</div>
-      <div class="page-sub" id="custos-count">Análise geral das manutenções</div>
-    </div>
-  </div>
-
-  <!-- KPIs -->
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0;">
-
-    <div class="equip-card">
-      <div style="font-size:12px;color:var(--sub)">💰 Total Gasto</div>
-      <div id="kpi-total" style="font-size:20px;font-weight:700;margin-top:6px;">R$ 0,00</div>
-    </div>
-
-    <div class="equip-card">
-      <div style="font-size:12px;color:var(--sub)">📊 Média por OS</div>
-      <div id="kpi-media" style="font-size:20px;font-weight:700;margin-top:6px;">R$ 0,00</div>
-    </div>
-
-    <div class="equip-card">
-      <div style="font-size:12px;color:var(--sub)">🧾 Total de OS</div>
-      <div id="kpi-os" style="font-size:20px;font-weight:700;margin-top:6px;">0</div>
-    </div>
-
-  </div>
-
-</div>
 
     <!-- PLANOS -->
     <div id="tela-planos" class="tela">
@@ -1111,21 +1063,21 @@ async function fazerLogin(){
   const PERFIS = {
     admin_senior: {
       icon:"👑", perfilLabel:"Administrador Sênior",
-      acesso:["empresas","dashboard","os","equip","planos","tecnicos","usuarios","custos"],
+      acesso:["empresas","dashboard","os","equip","planos","tecnicos","usuarios"],
       somentePropriaOS:false, podeEditar:true, podeCadastrar:true, podeExcluir:true,
       podeCriarEmpresas:true, podeCriarUsuarios:true, verDashboard:true, acessoTodasEmpresas:true,
       perfisQuePodeCriar:["gerente","admin_enc","tecnico"]
     },
     gerente: {
       icon:"📊", perfilLabel:"Gerente",
-      acesso:["dashboard","os","equip","planos","tecnicos","usuarios","custos"],
+      acesso:["dashboard","os","equip","planos","tecnicos","usuarios"],
       somentePropriaOS:false, podeEditar:true, podeCadastrar:true, podeExcluir:true,
       podeCriarEmpresas:false, podeCriarUsuarios:true, verDashboard:true, acessoTodasEmpresas:false,
       perfisQuePodeCriar:["admin_enc","tecnico"]
     },
     admin_enc: {
       icon:"📋", perfilLabel:"Administrativo / Encarregado",
-      acesso:["os","equip","planos","tecnicos","usuarios"],
+      acesso:["dashboard","os","equip","planos","tecnicos","usuarios"],
       somentePropriaOS:false, podeEditar:true, podeCadastrar:true, podeExcluir:true,
       podeCriarEmpresas:false, podeCriarUsuarios:true, verDashboard:true, acessoTodasEmpresas:false,
       perfisQuePodeCriar:["tecnico"]
@@ -1471,16 +1423,7 @@ function atualizarBadgeUrgente(){
   const el=document.getElementById("badge-urgente");
   if(el){el.style.display=u>0?"inline-block":"none";el.textContent=u;}
 }
-function calcularCustoOS(os, tecnico){
-  const tempo = os.tempo_total || 0;
-  const valorHora = tecnico?.valor_hora || 0;
-  const adicionais = os.custo_adicional || 0;
 
-  const maoDeObra = tempo * valorHora;
-
-  return maoDeObra + adicionais;
-}
-  
 // ════════════════════════════════════════════
 // NAVEGAÇÃO
 // ════════════════════════════════════════════
@@ -1701,45 +1644,6 @@ function getOrdensFiltradas(){
     return mS && mT && mTipo && mProg && mPrio && mB;
   });
 }
-  function renderCustos(){
-
-  const ordens = window.ordensData || [];
-  const tecnicos = window.tecnicosData || [];
-
-  let totalGasto = 0;
-  let totalOS = ordens.length;
-
-  for(const os of ordens){
-
-    const tecnico = tecnicos.find(t => t.id === os.tecnico_id);
-
-    totalGasto += calcularCustoOS(os, tecnico);
-  }
-
-  const media = totalOS ? totalGasto / totalOS : 0;
-
-  const elTotal = document.getElementById("kpi-total");
-  const elMedia = document.getElementById("kpi-media");
-  const elOS = document.getElementById("kpi-os");
-
-  if(elTotal){
-    elTotal.textContent = totalGasto.toLocaleString("pt-BR",{
-      style:"currency",
-      currency:"BRL"
-    });
-  }
-
-  if(elMedia){
-    elMedia.textContent = media.toLocaleString("pt-BR",{
-      style:"currency",
-      currency:"BRL"
-    });
-  }
-
-  if(elOS){
-    elOS.textContent = totalOS;
-  }
-}
 
 async function renderOS(){
   const empresa_id = usuarioLogado?.empresa_id;
@@ -1817,7 +1721,6 @@ async function renderOS(){
       </div>
     </div>`;
   }).join("");
-}
   // 🔥 Atualiza cronômetros dos cards em tempo real
 if(window.cronometroCardsInterval) clearInterval(window.cronometroCardsInterval);
 const ordensRodando = (window.ordensData || []).filter(o => o.cronometro_status === "rodando");
@@ -3451,40 +3354,6 @@ async function retomarCronometro(){
   o.cronometro_inicio = agora;
   renderCronometro(o);
 }
-  async function carregarCustosIndicadores() {
-  const isAdminSenior = usuarioLogado?.perfil === "admin_senior";
-
-  let query = supabaseClient
-    .from("ordens_servico")
-    .select("*");
-
-  // 🔵 filtro só para gerente
-  if (!isAdminSenior) {
-    query = query.eq("empresa_id", usuarioLogado.empresa_id);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error("Erro ao carregar custos:", error);
-    return;
-  }
-
-  window.osCustos = data || [];
-
-  montarKPIs();
-}
-  function montarKPIs() {
-  const os = window.osCustos || [];
-
-  const totalGasto = os.reduce((acc, o) => acc + (o.custo_total || 0), 0);
-
-  const media = os.length ? totalGasto / os.length : 0;
-
-  document.getElementById("kpi-total").innerText = totalGasto.toFixed(2);
-  document.getElementById("kpi-media").innerText = media.toFixed(2);
-  document.getElementById("kpi-os").innerText = os.length;
-}
 
 </script> <!-- ✅ FECHA O SCRIPT PRINCIPAL -->
   
@@ -3666,7 +3535,6 @@ async function irPara(tela){
   if(tela === "usuarios"){
 
     renderUsuarios();
-    
 
     // Garante botão voltar para admin_senior
     if(usuarioLogado?.perfil === "admin_senior"){
@@ -3678,11 +3546,6 @@ async function irPara(tela){
       }
     }
   }
-  // ════════════════════════════════════════
-// CUSTOS E INDICADORES
-// ════════════════════════════════════════
-if(tela === "custos"){
-  renderCustos();
 }
 
 // ← VOLTAR PARA TELA DE EMPRESAS
