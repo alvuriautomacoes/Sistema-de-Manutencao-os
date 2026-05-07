@@ -1801,10 +1801,22 @@ function imprimirOSIndividual(id){
       <div class="section">
   <div class="section-title">Custos da OS</div>
   <div class="row"><span class="row-key">Tempo de Serviço</span><span class="row-val">${formatarTempo(calcularTempoAtual(o))}</span></div>
+  <div class="row"><span class="row-key">Custo Mão de Obra</span><span class="row-val">R$ ${(() => {
+    const tecnico = (window.tecnicosData||[]).find(t => t.nome === o.tecnico_nome);
+    const custoHora = (tecnico?.salario || 0) / 220;
+    const horas = calcularTempoAtual(o) / 3600;
+    return (horas * custoHora).toFixed(2).replace(".",",");
+  })()}</span></div>
   <div class="row"><span class="row-key">Custo Adicional</span><span class="row-val">R$ ${(o.custo_adicional||0).toFixed(2).replace(".",",")}</span></div>
+  <div class="row" style="font-weight:700;"><span class="row-key">Custo Total</span><span class="row-val">R$ ${(() => {
+    const tecnico = (window.tecnicosData||[]).find(t => t.nome === o.tecnico_nome);
+    const custoHora = (tecnico?.salario || 0) / 220;
+    const horas = calcularTempoAtual(o) / 3600;
+    const custoMO = horas * custoHora;
+    return (custoMO + (o.custo_adicional||0)).toFixed(2).replace(".",",");
+  })()}</span></div>
   ${o.obs_custo_adicional ? `<div class="row"><span class="row-key">Obs. do Custo</span><span class="row-val">${o.obs_custo_adicional}</span></div>` : ""}
 </div>
-
       <div class="assinatura">
         <div class="assin-box">Técnico Responsável<br><br>${o.tecnico_nome||""}</div>
         <div class="assin-box">Aprovação / Visto<br><br>&nbsp;</div>
