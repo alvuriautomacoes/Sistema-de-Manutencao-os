@@ -3633,6 +3633,7 @@ async function irPara(tela){
   if(tela === "usuarios"){
 
     renderUsuarios();
+    
 
     // Garante botão voltar para admin_senior
     if(usuarioLogado?.perfil === "admin_senior"){
@@ -3644,6 +3645,11 @@ async function irPara(tela){
       }
     }
   }
+  // ════════════════════════════════════════
+// CUSTOS E INDICADORES
+// ════════════════════════════════════════
+if(tela === "custos"){
+  renderCustos();
 }
 
 // ← VOLTAR PARA TELA DE EMPRESAS
