@@ -1679,6 +1679,12 @@ async function renderOS(){
           </div>
           <span style="font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:${barColor};min-width:30px;">${pct}%</span>
         </div>
+        ${o.cronometro_status === "rodando" || o.cronometro_status === "pausado" || o.tempo_total > 0 ? `
+<div style="margin-top:6px;display:flex;align-items:center;gap:6px;">
+  <span style="font-size:10px;color:var(--sub);">⏱</span>
+  <span style="font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:${o.cronometro_status === 'rodando' ? 'var(--blue-600)' : 'var(--sub)'};" id="cronometro-card-${o.id}">${formatarTempo(calcularTempoAtual(o))}</span>
+  ${o.cronometro_status === "rodando" ? `<span style="font-size:9px;color:var(--e-ativo-txt);font-weight:700;">● AO VIVO</span>` : o.cronometro_status === "pausado" ? `<span style="font-size:9px;color:var(--sub);font-weight:700;">⏸ PAUSADO</span>` : `<span style="font-size:9px;color:var(--sub);font-weight:700;">✅ CONCLUÍDO</span>`}
+</div>` : ""}
       </div>
       <div class="os-actions">
         <button class="btn btn-ghost btn-sm" onclick="abrirDetalheOS('${o.id}')">Detalhes</button>
@@ -1686,6 +1692,17 @@ async function renderOS(){
       </div>
     </div>`;
   }).join("");
+  // 🔥 Atualiza cronômetros dos cards em tempo real
+if(window.cronometroCardsInterval) clearInterval(window.cronometroCardsInterval);
+const ordensRodando = (window.ordensData || []).filter(o => o.cronometro_status === "rodando");
+if(ordensRodando.length > 0){
+  window.cronometroCardsInterval = setInterval(() => {
+    ordensRodando.forEach(o => {
+      const el = document.getElementById(`cronometro-card-${o.id}`);
+      if(el) el.textContent = formatarTempo(calcularTempoAtual(o));
+    });
+  }, 1000);
+}
 }
 
 // ── IMPRIMIR OS INDIVIDUAL ────────────────────────────────────
