@@ -777,11 +777,14 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     </div>
     <div class="field"><label>Próxima Execução *</label><input id="np-data" type="date"/></div>
     <div class="field"><label>Técnico</label><select id="np-tecnico"></select></div>
+    <!-- 🔥 NOVOS CAMPOS -->
+    <div class="field"><label>Descrição</label><textarea id="np-descricao" rows="3" placeholder="Descreva as atividades do plano de manutenção..."></textarea></div>
+    <div class="field"><label>Observações</label><textarea id="np-observacoes" rows="2" placeholder="Informações adicionais, requisitos, cuidados..."></textarea></div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="fecharModal('modal-novo-plano')">Cancelar</button><button class="btn btn-primary" onclick="salvarPlano()">Salvar Plano</button></div>
   </div>
 </div>
 
-  <!-- MODAL DETALHE PLANO -->
+<!-- MODAL DETALHE PLANO -->
 <div class="modal-overlay" id="modal-detalhe-plano">
   <div class="modal-box">
     <div class="modal-header">
@@ -790,6 +793,15 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     </div>
     <div id="dpl-badges" class="badges-row" style="margin-bottom:13px"></div>
     <div id="dpl-rows"></div>
+    <!-- 🔥 DESCRIÇÃO E OBSERVAÇÕES NO DETALHE -->
+    <div id="dpl-descricao-wrap" style="display:none;margin-top:13px;">
+      <div style="color:var(--sub);font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;">Descrição</div>
+      <div class="detalhe-desc" id="dpl-descricao"></div>
+    </div>
+    <div id="dpl-observacoes-wrap" style="display:none;margin-top:13px;">
+      <div style="color:var(--sub);font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;">Observações</div>
+      <div class="detalhe-desc" id="dpl-observacoes"></div>
+    </div>
     <div id="dpl-acoes" style="display:flex;gap:8px;margin-top:16px;">
       <button class="btn btn-ghost" id="dpl-editar-btn" onclick="editarPlanoAtual()" style="flex:1">✏️ Editar</button>
       <button class="btn btn-danger" id="dpl-excluir-btn" onclick="excluirPlanoDoModal()" style="flex:1">🗑 Excluir</button>
@@ -803,7 +815,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     </div>
   </div>
 </div>
-
+  
 <!-- MODAL NOVO TÉCNICO -->
 <div class="modal-overlay" id="modal-novo-prof">
   <div class="modal-box">
@@ -2365,17 +2377,14 @@ async function excluirPlano(id, nome){
   planoDetalheId = id;
   const p = window.planosData?.find(x => String(x.id) === String(id));
   if(!p) return;
-
   const v = p.status === "vencido";
   const ok = p.status === "ok";
-
   document.getElementById("dpl-titulo").textContent = `📅 ${p.nome}`;
   document.getElementById("dpl-badges").innerHTML =
     `<span class="badge tipo-badge">${p.frequencia||"—"}</span> ` +
     `<span class="badge tipo-badge">${p.tipo||"—"}</span> ` +
     (v ? badge("Vencido","var(--s-cancelada-bg)","var(--s-cancelada-txt)","var(--s-cancelada-bd)") : "") +
     (ok ? badge("OK","var(--s-concluida-bg)","var(--s-concluida-txt)","var(--s-concluida-bd)") : "");
-
   const rows = [
     ["Equipamento", p.equipamento_nome||"—"],
     ["Técnico", p.tecnico_nome||"—"],
@@ -2383,7 +2392,6 @@ async function excluirPlano(id, nome){
     ["Tipo", p.tipo||"—"],
     ["Próxima execução", p.proxima_execucao||"—"]
   ];
-
   document.getElementById("dpl-rows").innerHTML =
     rows.map(([k,v]) => `
       <div class="detalhe-row">
@@ -2393,14 +2401,28 @@ async function excluirPlano(id, nome){
     ).join("") +
     (v ? `<div class="plano-vencido" style="margin-top:14px">⚠️ Plano vencido — crie uma OS corretiva.</div>` : "");
 
-  // Controle de visibilidade conforme perfil
+  // 🔥 Descrição e Observações
+  const descWrap = document.getElementById("dpl-descricao-wrap");
+  const obsWrap  = document.getElementById("dpl-observacoes-wrap");
+  if(p.descricao){
+    descWrap.style.display = "block";
+    document.getElementById("dpl-descricao").textContent = p.descricao;
+  } else {
+    descWrap.style.display = "none";
+  }
+  if(p.observacoes){
+    obsWrap.style.display = "block";
+    document.getElementById("dpl-observacoes").textContent = p.observacoes;
+  } else {
+    obsWrap.style.display = "none";
+  }
+
   const podeEditar  = usuarioLogado?.podeEditar;
   const podeExcluir = usuarioLogado?.podeExcluir;
   document.getElementById("dpl-editar-btn").style.display  = podeEditar  ? "" : "none";
   document.getElementById("dpl-excluir-btn").style.display = podeExcluir ? "" : "none";
   document.getElementById("dpl-acoes").style.display = (podeEditar || podeExcluir) ? "flex" : "none";
   document.getElementById("dpl-confirm-del").style.display = "none";
-
   document.getElementById("modal-detalhe-plano").classList.add("aberto");
 }
 
@@ -2489,7 +2511,7 @@ async function salvarPlano(){
   const equipId = document.getElementById("np-equip").value;
   const eq = (window.equipamentosData||[]).find(e => String(e.id) === String(equipId));
   const tecnicoNome = document.getElementById("np-tecnico").value;
-  const tecnico = (window.tecnicosData||[]).find(p => p.nome === tecnicoNome);
+
   const dados = {
     empresa_id,
     nome,
@@ -2499,10 +2521,11 @@ async function salvarPlano(){
     tipo:             document.getElementById("np-tipo").value,
     proxima_execucao: data,
     tecnico_nome:     tecnicoNome,
-    status:           "ok"
+    status:           "ok",
+    // 🔥 NOVOS CAMPOS
+    descricao:        document.getElementById("np-descricao").value.trim(),
+    observacoes:      document.getElementById("np-observacoes").value.trim(),
   };
-
-  console.log("Dados enviados:", dados); // ← loga o que está sendo enviado
 
   if(planoEditandoId){
     const { error } = await supabaseClient
@@ -2510,8 +2533,7 @@ async function salvarPlano(){
       .update(dados)
       .eq("id", planoEditandoId);
     if(error){
-      console.error("Erro completo ao editar:", JSON.stringify(error));
-      alert(`Erro: ${error.message || error.code || "Verifique o console"}`);
+      alert(`Erro: ${error.message}`);
       return;
     }
     planoEditandoId = null;
@@ -2520,16 +2542,16 @@ async function salvarPlano(){
       .from("planos_manutencao")
       .insert([dados]);
     if(error){
-      console.error("Erro completo ao criar:", JSON.stringify(error));
-      alert(`Erro: ${error.message || error.code || "Verifique o console"}`);
+      alert(`Erro: ${error.message}`);
       return;
     }
   }
+
   document.querySelector("#modal-novo-plano .modal-title").textContent = "📅 Novo Plano de Manutenção";
   fecharModal("modal-novo-plano");
   renderPlanos();
 }
-
+  
 // ════════════════════════════════════════════
 // TÉCNICOS
 // ════════════════════════════════════════════
