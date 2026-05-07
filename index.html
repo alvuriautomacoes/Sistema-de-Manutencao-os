@@ -697,6 +697,15 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <div id="det-acoes-tecnico" style="display:none;margin-top:8px;">
   <button class="btn btn-ghost" style="width:100%" onclick="abrirEdicaoTecnico()">✏️ Atualizar Descrição / Peças</button>
 </div>
+    <!-- 🔥 CRONÔMETRO -->
+<div id="det-cronometro" style="display:none;margin-top:10px;padding:14px;background:var(--blue-50);border:1px solid var(--blue-200);border-left:3px solid var(--blue-500);">
+  <div style="font-size:10px;font-weight:700;color:var(--blue-600);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">⏱ Tempo de Serviço</div>
+  <div style="font-size:28px;font-weight:700;color:var(--blue-700);font-family:'IBM Plex Mono',monospace;text-align:center;margin-bottom:12px;" id="det-cronometro-display">00:00:00</div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn btn-ghost" style="flex:1" id="det-btn-pausar" onclick="pausarCronometro()">⏸ Pausar</button>
+    <button class="btn btn-primary" style="flex:1" id="det-btn-retomar" onclick="retomarCronometro()" style="display:none">▶ Retomar</button>
+  </div>
+</div>
 
 <!-- 🔥 ÁREA DE EDIÇÃO DO TÉCNICO -->
 <div id="det-tecnico-edit" style="display:none;margin-top:14px;padding:14px;background:var(--blue-50);border:1px solid var(--blue-200);border-left:3px solid var(--blue-500);border-radius:5px;">
@@ -1906,18 +1915,37 @@ async function salvarOS(){
 async function avancarStatus(id){
   const o = (window.ordensData || []).find(x => String(x.id) === String(id));
   if(!o) return;
-
   const idx = STATUS_SEQ.indexOf(o.status);
   if(idx >= STATUS_SEQ.length - 1) return;
-
   const novoStatus = STATUS_SEQ[idx + 1];
   const conclusao = novoStatus === "concluida" ? hoje() : null;
+
+  // 🔥 Lógica do cronômetro
+  let dadosCronometro = {};
+  if(novoStatus === "andamento"){
+    // Inicia o cronômetro
+    dadosCronometro = {
+      cronometro_status: "rodando",
+      cronometro_inicio: new Date().toISOString(),
+      tempo_total: o.tempo_total || 0
+    };
+  } else if(novoStatus === "concluida"){
+    // Para o cronômetro e salva o total
+    const totalFinal = calcularTempoAtual(o);
+    dadosCronometro = {
+      cronometro_status: "parado",
+      cronometro_inicio: null,
+      tempo_total: totalFinal
+    };
+    if(cronometroInterval) clearInterval(cronometroInterval);
+  }
 
   const { error } = await supabaseClient
     .from("ordens_servico")
     .update({
       status: novoStatus,
-      ...(conclusao ? { data_conclusao: conclusao } : {})
+      ...(conclusao ? { data_conclusao: conclusao } : {}),
+      ...dadosCronometro
     })
     .eq("id", id);
 
@@ -1931,7 +1959,7 @@ async function avancarStatus(id){
   atualizarBadgeUrgente();
   if(osDetalheId === id) renderDetalheOS(id);
 }
-
+  
 function abrirDetalheOS(id){
   osDetalheId = id;
   renderDetalheOS(id);
@@ -1983,6 +2011,7 @@ document.getElementById("det-acoes-tecnico").style.display = isTecnico ? "block"
   msg.style.display = fim ? "block" : "none";
   msg.style.color = o.status === "concluida" ? "var(--s-concluida-txt)" : "var(--s-cancelada-txt)";
   msg.textContent = o.status === "concluida" ? "✅ Ordem de Serviço Concluída" : "❌ OS Cancelada";
+  renderCronometro(o);
 }
   function abrirEdicaoTecnico(){
   const o = (window.ordensData || []).find(x => String(x.id) === String(osDetalheId));
@@ -2967,6 +2996,91 @@ async function excluirUsuario(id, nome){
     .eq("id", id);
   if(error){ console.error(error); alert("Erro ao excluir usuário."); return; }
   renderUsuarios();
+}
+  
+  // ════════════════════════════════════════════
+// CRONÔMETRO
+// ════════════════════════════════════════════
+let cronometroInterval = null;
+
+function calcularTempoAtual(o){
+  let total = o.tempo_total || 0;
+  if(o.cronometro_status === "rodando" && o.cronometro_inicio){
+    const inicio = new Date(o.cronometro_inicio).getTime();
+    const agora = Date.now();
+    total += Math.floor((agora - inicio) / 1000);
+  }
+  return total;
+}
+
+function formatarTempo(segundos){
+  const h = Math.floor(segundos / 3600);
+  const m = Math.floor((segundos % 3600) / 60);
+  const s = segundos % 60;
+  return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+
+function iniciarDisplayCronometro(o){
+  if(cronometroInterval) clearInterval(cronometroInterval);
+  const display = document.getElementById("det-cronometro-display");
+  if(!display) return;
+  function atualizar(){
+    const total = calcularTempoAtual(o);
+    display.textContent = formatarTempo(total);
+  }
+  atualizar();
+  if(o.cronometro_status === "rodando"){
+    cronometroInterval = setInterval(atualizar, 1000);
+  }
+}
+
+function renderCronometro(o){
+  const box = document.getElementById("det-cronometro");
+  const btnPausar = document.getElementById("det-btn-pausar");
+  const btnRetomar = document.getElementById("det-btn-retomar");
+  if(!box) return;
+  const fim = o.status === "concluida" || o.status === "cancelada";
+  const emAndamento = o.status === "andamento" || o.cronometro_status === "rodando" || o.cronometro_status === "pausado" || (o.tempo_total > 0);
+  box.style.display = emAndamento ? "block" : "none";
+  if(o.cronometro_status === "rodando"){
+    btnPausar.style.display = "";
+    btnRetomar.style.display = "none";
+  } else {
+    btnPausar.style.display = "none";
+    btnRetomar.style.display = fim ? "none" : "";
+  }
+  iniciarDisplayCronometro(o);
+}
+
+async function pausarCronometro(){
+  const o = (window.ordensData || []).find(x => String(x.id) === String(osDetalheId));
+  if(!o) return;
+  const agora = new Date().toISOString();
+  const totalAtualizado = calcularTempoAtual(o);
+  const { error } = await supabaseClient
+    .from("ordens_servico")
+    .update({ cronometro_status: "pausado", tempo_total: totalAtualizado, cronometro_inicio: null })
+    .eq("id", osDetalheId);
+  if(error){ alert("Erro ao pausar: " + error.message); return; }
+  o.cronometro_status = "pausado";
+  o.tempo_total = totalAtualizado;
+  o.cronometro_inicio = null;
+  if(cronometroInterval) clearInterval(cronometroInterval);
+  renderCronometro(o);
+}
+
+async function retomarCronometro(){
+  const o = (window.ordensData || []).find(x => String(x.id) === String(osDetalheId));
+  if(!o) return;
+  const agora = new Date().toISOString();
+  const { error } = await supabaseClient
+    .from("ordens_servico")
+    .update({ cronometro_status: "rodando", cronometro_inicio: agora })
+    .eq("id", osDetalheId);
+  if(error){ alert("Erro ao retomar: " + error.message); return; }
+  o.cronometro_status = "rodando";
+  o.cronometro_inicio = agora;
+  renderCronometro(o);
 }
 
 </script> <!-- ✅ FECHA O SCRIPT PRINCIPAL -->
