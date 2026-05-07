@@ -793,6 +793,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     </div>
     <div id="dpl-badges" class="badges-row" style="margin-bottom:13px"></div>
     <div id="dpl-rows"></div>
+    
     <!-- 🔥 DESCRIÇÃO E OBSERVAÇÕES NO DETALHE -->
     <div id="dpl-descricao-wrap" style="display:none;margin-top:13px;">
       <div style="color:var(--sub);font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;">Descrição</div>
@@ -2456,6 +2457,7 @@ function abrirEditarPlano(id){
   if(!p) return;
   planoEditandoId = id;
   document.querySelector("#modal-novo-plano .modal-title").textContent = "✏️ Editar Plano";
+  document.querySelector("#modal-novo-plano .btn-primary").textContent = "Salvar Alterações";
   document.getElementById("np-nome").value  = p.nome || "";
   document.getElementById("np-freq").value  = p.frequencia || "Mensal";
   document.getElementById("np-tipo").value  = p.tipo || "Preventiva";
@@ -2552,6 +2554,7 @@ async function salvarPlano(){
   }
 
   document.querySelector("#modal-novo-plano .modal-title").textContent = "📅 Novo Plano de Manutenção";
+  document.querySelector("#modal-novo-plano .btn-primary").textContent = "Salvar Plano"; // 🔥 ADICIONA
   fecharModal("modal-novo-plano");
   renderPlanos();
 }
