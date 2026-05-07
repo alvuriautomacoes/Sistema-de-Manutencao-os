@@ -1817,6 +1817,7 @@ async function renderOS(){
       </div>
     </div>`;
   }).join("");
+}
   // 🔥 Atualiza cronômetros dos cards em tempo real
 if(window.cronometroCardsInterval) clearInterval(window.cronometroCardsInterval);
 const ordensRodando = (window.ordensData || []).filter(o => o.cronometro_status === "rodando");
