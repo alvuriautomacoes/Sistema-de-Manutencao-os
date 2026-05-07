@@ -1669,6 +1669,45 @@ function getOrdensFiltradas(){
     return mS && mT && mTipo && mProg && mPrio && mB;
   });
 }
+  function renderCustos(){
+
+  const ordens = window.ordensData || [];
+  const tecnicos = window.tecnicosData || [];
+
+  let totalGasto = 0;
+  let totalOS = ordens.length;
+
+  for(const os of ordens){
+
+    const tecnico = tecnicos.find(t => t.id === os.tecnico_id);
+
+    totalGasto += calcularCustoOS(os, tecnico);
+  }
+
+  const media = totalOS ? totalGasto / totalOS : 0;
+
+  const elTotal = document.getElementById("kpi-total");
+  const elMedia = document.getElementById("kpi-media");
+  const elOS = document.getElementById("kpi-os");
+
+  if(elTotal){
+    elTotal.textContent = totalGasto.toLocaleString("pt-BR",{
+      style:"currency",
+      currency:"BRL"
+    });
+  }
+
+  if(elMedia){
+    elMedia.textContent = media.toLocaleString("pt-BR",{
+      style:"currency",
+      currency:"BRL"
+    });
+  }
+
+  if(elOS){
+    elOS.textContent = totalOS;
+  }
+}
 
 async function renderOS(){
   const empresa_id = usuarioLogado?.empresa_id;
