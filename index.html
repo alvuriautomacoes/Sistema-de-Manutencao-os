@@ -361,13 +361,18 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
         <div><div class="pd-nome" id="pd-nome"></div><div class="pd-desc" id="pd-desc"></div></div>
       </div>
 
-      <div class="field-login">
-        <label>CPF — Usuário</label>
-        <div class="input-wrap">
-          <span class="input-icon">👤</span>
-          <input type="text" id="input-cpf" placeholder="000.000.000-00" maxlength="14" autocomplete="username" oninput="formatarCPF(this)" onblur="detectarPerfil()"/>
-        </div>
-      </div>
+     <div class="field-login">
+  <label>Email</label>
+  <div class="input-wrap">
+    <span class="input-icon">📧</span>
+    <input
+      type="email"
+      id="input-cpf"
+      placeholder="seuemail@empresa.com"
+      autocomplete="email"
+    />
+  </div>
+</div>
 
       <div class="field-login">
         <label>Senha</label>
