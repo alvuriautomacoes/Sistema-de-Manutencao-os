@@ -1021,7 +1021,7 @@ function preencherDemo(tipo){
   spn.style.display = "block";
   txt.textContent = "Entrando...";
 
-  // LOGIN AUTH
+  // 🔐 LOGIN SUPABASE AUTH
   const { data: authData, error: authError } =
     await supabaseClient.auth.signInWithPassword({
       email,
@@ -1037,7 +1037,7 @@ function preencherDemo(tipo){
     return;
   }
 
-  // BUSCA PERFIL
+  // 👤 BUSCA PERFIL NA TABELA
   const { data: perfil, error: perfilError } =
     await supabaseClient
       .from("perfis")
@@ -1054,23 +1054,37 @@ function preencherDemo(tipo){
     return;
   }
 
+  // 🔥 CONFIGURA PERFIL COMPLETO (EVITA TELA BRANCA)
+  const perfilConfig = PERFIS[perfil.perfil];
+
   const usuario = {
-  id: authData.user.id,
-  nome: perfil.nome,
-  cpf: perfil.cpf,
-  email: perfil.email,
-  perfil: perfil.perfil,
-  empresa_id: perfil.empresa_id
-};
+    id: authData.user.id,
+    nome: perfil.nome,
+    cpf: perfil.cpf,
+    email: authData.user.email,
+    perfil: perfil.perfil,
+    empresa_id: perfil.empresa_id || null,
 
-// salva global (IMPORTANTE pro resto do sistema)
-window.usuarioLogado = usuario;
+    // 🔒 ESSENCIAL (corrige erro includes)
+    acesso: perfilConfig?.acesso || [],
 
-// salva localStorage se quiser manter sessão
-localStorage.setItem("usuario_logado", JSON.stringify(usuario));
+    somentePropriaOS: perfilConfig?.somentePropriaOS || false,
+    podeEditar: perfilConfig?.podeEditar || false,
+    podeCadastrar: perfilConfig?.podeCadastrar || false,
+    podeExcluir: perfilConfig?.podeExcluir || false,
+    verDashboard: perfilConfig?.verDashboard || false,
+    acessoTodasEmpresas: perfilConfig?.acessoTodasEmpresas || false,
+    perfisQuePodeCriar: perfilConfig?.perfisQuePodeCriar || []
+  };
 
-// entra no sistema
-entrarNoSistema(usuario);
+  // 💾 salva global (IMPORTANTE)
+  window.usuarioLogado = usuario;
+
+  // 💾 salva sessão
+  localStorage.setItem("usuario_logado", JSON.stringify(usuario));
+
+  // 🚀 entra no sistema
+  entrarNoSistema(usuario);
 }
 
 function mostrarErroLogin(msg){
