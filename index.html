@@ -1054,10 +1054,23 @@ function preencherDemo(tipo){
     return;
   }
 
-  alert("LOGIN OK");
+  const usuario = {
+  id: authData.user.id,
+  nome: perfil.nome,
+  cpf: perfil.cpf,
+  email: perfil.email,
+  perfil: perfil.perfil,
+  empresa_id: perfil.empresa_id
+};
 
-  console.log(authData.user);
-  console.log(perfil);
+// salva global (IMPORTANTE pro resto do sistema)
+window.usuarioLogado = usuario;
+
+// salva localStorage se quiser manter sessão
+localStorage.setItem("usuario_logado", JSON.stringify(usuario));
+
+// entra no sistema
+entrarNoSistema(usuario);
 }
 
 function mostrarErroLogin(msg){
