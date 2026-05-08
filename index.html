@@ -953,46 +953,9 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 // ════════════════════════════════════════════
 // USUÁRIOS E PERFIS
 // ════════════════════════════════════════════
-const USUARIOS = [
-  {
-  cpf:"111.111.111-11", senha:"admin123",
-  perfil:"admin", nome:"Roberto Souza", icon:"👑", perfilLabel:"Administrador",
-  empresa:null,
-  acesso:["dashboard","os","equip","planos","tecnicos"],
-  somentePropriaOS: false, podeEditar: true, podeCadastrar: true
-},
-  {
-    cpf:"222.222.222-22", senha:"gerente123",
-    perfil:"gerente", nome:"Fernanda Lima", icon:"📊", perfilLabel:"Gerente",
-    empresa:"Metalúrgica Souza Ltda",
-    acesso:["dashboard","os","equip","planos","tecnicos"],
-    somentePropriaOS: false, podeEditar: false, podeCadastrar: false
-  },
-  {
-    cpf:"333.333.333-33", senha:"admin456",
-    perfil:"admin_enc", nome:"Carlos Mendes", icon:"📋", perfilLabel:"Administrativo / Encarregado",
-    empresa:"Metalúrgica Souza Ltda",
-    acesso:["dashboard","os","equip","planos","tecnicos"],
-    somentePropriaOS: false, podeEditar: true, podeCadastrar: true
-  },
-  {
-    cpf:"444.444.444-44", senha:"tec123",
-    perfil:"tecnico", nome:"Ana Costa", icon:"🔧", perfilLabel:"Técnico de Manutenção",
-    empresa:"Metalúrgica Souza Ltda",
-    // técnico vê só as suas OS
-    acesso:["os"],
-    somentePropriaOS: true, podeEditar: false, podeCadastrar: false
-  },
-];
 
 // Usuário logado (preenchido após login)
 let usuarioLogado = null;
-
-  let empresas = [
-  { nome: "Metalúrgica Souza Ltda" },
-  { nome: "Indústria Alpha" },
-  { nome: "Grupo Beta" }
-];
 
 // ════════════════════════════════════════════
 // LOGIN
@@ -1353,36 +1316,6 @@ window.addEventListener("load",()=>{
 });
   
 // ════════════════════════════════════════════
-// DADOS DO SISTEMA
-// ════════════════════════════════════════════
-let tecnicos=[
-  {id:1,nome:"Ana Costa",cargo:"Instrumentista",matricula:"MAT-0002",turno:"Tarde",status:"ativo",tel:"(11) 98800-5678",especialidades:["CNC","Instrumentação","PLC"],obs:"Certificação NR-12."},
-  {id:2,nome:"Carlos Lima",cargo:"Técnico de Manutenção",matricula:"MAT-0001",turno:"Manhã",status:"ativo",tel:"(11) 98800-1234",especialidades:["Hidráulica","Pneumática","Elétrica"],obs:"Responsável pela linha de produção A."},
-  {id:3,nome:"João Melo",cargo:"Mecânico Industrial",matricula:"MAT-0003",turno:"Manhã",status:"ativo",tel:"(11) 98800-9012",especialidades:["Mecânica","Soldagem","Tornaria"],obs:""},
-  {id:4,nome:"Paula Ramos",cargo:"Eletricista Industrial",matricula:"MAT-0004",turno:"Integral",status:"ativo",tel:"(11) 98800-3456",especialidades:["Alta tensão","Painéis elétricos","SDAI"],obs:"NR-10 e NR-35 em dia."},
-];
-let equipamentos=[
-  {id:1,nome:"Compressor AR-200",marca:"Atlas Copco",modelo:"GA 15",serie:"SN-44521",setor:"Produção",status:"ativo",ultima:"2024-03-03",proxima:"2024-06-03"},
-  {id:2,nome:"Torno CNC T500",marca:"Romi",modelo:"T500",serie:"SN-77832",setor:"Usinagem",status:"alerta",ultima:"2024-02-10",proxima:"2024-05-10"},
-  {id:3,nome:"Esteira E-10",marca:"Movex",modelo:"Belt-10",serie:"SN-11290",setor:"Logística",status:"critico",ultima:"2024-01-22",proxima:"2024-04-22"},
-  {id:4,nome:"Prensa HP-80",marca:"Schuler",modelo:"HP-80",serie:"SN-33410",setor:"Produção",status:"ativo",ultima:"2024-04-01",proxima:"2024-07-01"},
-  {id:5,nome:"Fresadora F-300",marca:"Hermle",modelo:"C 400",serie:"SN-55900",setor:"Usinagem",status:"inativo",ultima:"2023-12-15",proxima:"2024-03-15"},
-];
-let ordens=[
-  {id:"OS-001",equipId:1,equip:"Compressor AR-200",tipo:"Corretiva",prio:"alta",status:"concluida",tecnico:"Carlos Lima",abertura:"2024-03-01",conclusao:"2024-03-03",desc:"Troca de filtro e revisão geral do sistema de ar.",pecas:"Filtro AR-200, Óleo sintético 5L"},
-  {id:"OS-002",equipId:2,equip:"Torno CNC T500",tipo:"Preventiva",prio:"media",status:"andamento",tecnico:"Ana Costa",abertura:"2024-04-10",conclusao:null,desc:"Calibração do eixo X e lubrificação dos trilhos.",pecas:"Graxo industrial, Lubrificante"},
-  {id:"OS-003",equipId:3,equip:"Esteira E-10",tipo:"Corretiva",prio:"urgente",status:"aguardando",tecnico:"Carlos Lima",abertura:"2024-04-22",conclusao:null,desc:"Substituição de correia transportadora danificada.",pecas:"Correia Belt-10 (aguardando fornecedor)"},
-  {id:"OS-004",equipId:4,equip:"Prensa HP-80",tipo:"Preventiva",prio:"baixa",status:"aberta",tecnico:"João Melo",abertura:"2024-04-28",conclusao:null,desc:"Revisão semestral preventiva conforme plano de manutenção.",pecas:"-"},
-  {id:"OS-005",equipId:1,equip:"Compressor AR-200",tipo:"Preditiva",prio:"media",status:"concluida",tecnico:"Ana Costa",abertura:"2024-02-15",conclusao:"2024-02-16",desc:"Análise de vibração e termografia.",pecas:"Sensor de vibração"},
-];
-let planos=[
-  {id:1,nome:"Revisão Mensal — Compressores",equipId:1,equip:"Compressor AR-200",freq:"Mensal",proxima:"2024-06-01",tipo:"Preventiva",status:"ativo",tecnico:"Carlos Lima"},
-  {id:2,nome:"Calibração Trimestral CNC",equipId:2,equip:"Torno CNC T500",freq:"Trimestral",proxima:"2024-05-10",tipo:"Preventiva",status:"vencido",tecnico:"Ana Costa"},
-  {id:3,nome:"Inspeção Semestral — Esteiras",equipId:3,equip:"Esteira E-10",freq:"Semestral",proxima:"2024-07-22",tipo:"Preditiva",status:"ativo",tecnico:"João Melo"},
-  {id:4,nome:"Revisão Anual — Prensas",equipId:4,equip:"Prensa HP-80",freq:"Anual",proxima:"2024-10-01",tipo:"Preventiva",status:"ativo",tecnico:"Carlos Lima"},
-];
-
-// ════════════════════════════════════════════
 // CONSTANTES E HELPERS
 // ════════════════════════════════════════════
 const STATUS_OS={
@@ -1417,7 +1350,6 @@ function abrirModal(id){ document.getElementById(id).classList.add("aberto"); }
 function fecharModal(id){ document.getElementById(id).classList.remove("aberto"); }
 function hoje(){return new Date().toISOString().split("T")[0];}
 function iniciais(nome){return nome.split(" ").slice(0,2).map(p=>p[0]).join("").toUpperCase();}
-function listarTecnicos(){return tecnicos.filter(p=>p.status==="ativo").map(p=>p.nome);}
 function atualizarBadgeUrgente(){
   const u=ordens.filter(o=>o.prio==="urgente"&&o.status!=="concluida"&&o.status!=="cancelada").length;
   const el=document.getElementById("badge-urgente");
@@ -1440,7 +1372,6 @@ function entrarEmpresa(id){
   window.usuariosData      = [];
   window.equipData         = [];
   window.planosData        = [];
-  window.tecnicosData          = [];
   window.tecnicosData = [];
 
   // 🔥 Limpa telas visualmente
