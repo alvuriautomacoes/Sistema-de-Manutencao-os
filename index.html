@@ -643,8 +643,9 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
       <div class="field"><label>CPF *</label><input id="nu-cpf" placeholder="000.000.000-00" maxlength="14" oninput="formatarCPF(this)"/></div>
       <div class="field"><label>Perfil *</label><select id="nu-perfil"></select></div>
     </div>
+    <div class="field"><label>Email * (usado para login)</label><input id="nu-email" type="email" placeholder="Ex: joao@empresa.com"/></div>
     <div class="grid2">
-      <div class="field"><label>Senha *</label><input id="nu-senha" type="text" placeholder="Ex: senha123"/></div>
+      <div class="field"><label>Senha *</label><input id="nu-senha" type="password" placeholder="Mínimo 6 caracteres"/></div>
       <div class="field"><label>Status</label><select id="nu-status"><option value="true">Ativo</option><option value="false">Inativo</option></select></div>
     </div>
     <div class="field" id="nu-empresa-field" style="display:none">
@@ -3095,133 +3096,141 @@ function abrirEditarUsuario(id){
 async function salvarUsuario(){
   const nome   = document.getElementById("nu-nome").value.trim();
   const cpf    = document.getElementById("nu-cpf").value.trim();
+  const email  = document.getElementById("nu-email").value.trim();
   const senha  = document.getElementById("nu-senha").value.trim();
   const perfil = document.getElementById("nu-perfil").value;
   const ativo  = document.getElementById("nu-status").value === "true";
 
   // 🔒 VALIDAÇÕES
-  if(!nome || !cpf || !senha || !perfil){
+  if(!nome || !cpf || !email || !perfil){
     alert("Preencha todos os campos obrigatórios!");
     return;
   }
 
-  if(senha.length < 6){
+  if(!usuarioEditandoId && !senha){
+    alert("Informe uma senha para o novo usuário.");
+    return;
+  }
+
+  if(senha && senha.length < 6){
     alert("A senha deve ter no mínimo 6 caracteres.");
     return;
   }
 
   const isAdmin = usuarioLogado?.perfil === "admin_senior";
-
   const empresa_id = isAdmin
-    ? document.getElementById("nu-empresa").value
+    ? document.getElementById("nu-empresa").value || null
     : usuarioLogado?.empresa_id;
 
-  if(!empresa_id){
-    alert("Nenhuma empresa selecionada.");
+  if(!empresa_id && perfil !== "admin_senior"){
+    alert("Selecione uma empresa.");
     return;
   }
 
   // 🔒 VERIFICA SE O PERFIL É PERMITIDO
   const perfisPermitidos = usuarioLogado?.perfisQuePodeCriar || [];
-
   if(!perfisPermitidos.includes(perfil)){
     alert("Você não tem permissão para criar este perfil.");
     return;
   }
 
-  // 🔒 IMPEDE CPF DUPLICADO
-  let queryCpf = supabaseClient
-    .from("usuarios")
-    .select("id")
-    .eq("cpf", cpf)
-    .limit(1);
-
-  // Se estiver editando, ignora o próprio usuário
-  if(usuarioEditandoId){
-    queryCpf = queryCpf.neq("id", usuarioEditandoId);
-  }
-
-  const { data: cpfExistente, error: erroCpf } = await queryCpf;
-
-  if(erroCpf){
-    console.error("Erro ao validar CPF:", erroCpf);
-    alert("Erro ao validar CPF.");
-    return;
-  }
-
-  if(cpfExistente && cpfExistente.length > 0){
-    alert("Já existe um usuário com este CPF.");
-    return;
-  }
-
-  // 🔒 DADOS FINAIS
-  const dados = {
-    nome,
-    cpf,
-    senha,
-    perfil,
-    ativo,
-    empresa_id
-  };
-
   // 🔒 BLOQUEIA BOTÃO
   const btn = document.getElementById("btn-salvar-usuario");
   btn.disabled = true;
-  btn.textContent = usuarioEditandoId
-    ? "Salvando..."
-    : "Criando...";
+  btn.textContent = usuarioEditandoId ? "Salvando..." : "Criando...";
 
   try {
 
-    // ✏️ EDITAR
+    // ✏️ EDITAR usuário existente
     if(usuarioEditandoId){
 
-      const { error } = await supabaseClient
-        .from("usuarios")
-        .update(dados)
+      // Atualiza perfil
+      const { error: erroPerfil } = await supabaseClient
+        .from("perfis")
+        .update({ nome, cpf, perfil, empresa_id, ativo, email })
         .eq("id", usuarioEditandoId);
 
-      if(error){
-        console.error("Erro completo ao editar:", error);
-        alert(`Erro ao editar usuário: ${error.message}`);
+      if(erroPerfil){
+        alert(`Erro ao editar usuário: ${erroPerfil.message}`);
         return;
       }
 
       usuarioEditandoId = null;
+      alert("✅ Usuário atualizado com sucesso!");
 
     } else {
 
-      // ➕ CRIAR
-      const { error } = await supabaseClient
-        .from("usuarios")
-        .insert([dados]);
+      // ➕ CRIAR novo usuário
 
-      if(error){
-        console.error("Erro completo ao criar:", error);
-        alert(`Erro ao criar usuário: ${error.message}`);
+      // 🔒 Verifica CPF duplicado na tabela perfis
+      const { data: cpfExistente } = await supabaseClient
+        .from("perfis")
+        .select("id")
+        .eq("cpf", cpf)
+        .limit(1);
+
+      if(cpfExistente && cpfExistente.length > 0){
+        alert("Já existe um usuário com este CPF.");
         return;
       }
+
+      // 🔒 Verifica email duplicado no Auth
+      const { data: emailExistente } = await supabaseClient
+        .from("perfis")
+        .select("id")
+        .eq("email", email)
+        .limit(1);
+
+      if(emailExistente && emailExistente.length > 0){
+        alert("Já existe um usuário com este email.");
+        return;
+      }
+
+      // 1️⃣ Cria no Supabase Auth
+      const { data: authData, error: erroAuth } = await supabaseClient.auth.admin.createUser({
+        email,
+        password: senha,
+        email_confirm: true
+      });
+
+      if(erroAuth){
+        console.error("Erro ao criar no Auth:", erroAuth);
+        alert(`Erro ao criar acesso: ${erroAuth.message}`);
+        return;
+      }
+
+      // 2️⃣ Cria na tabela perfis
+      const { error: erroPerfil } = await supabaseClient
+        .from("perfis")
+        .insert([{
+          id: authData.user.id,
+          nome,
+          cpf,
+          email,
+          perfil,
+          empresa_id: empresa_id || null,
+          ativo
+        }]);
+
+      if(erroPerfil){
+        console.error("Erro ao criar perfil:", erroPerfil);
+        alert(`Usuário criado no Auth mas erro ao salvar perfil: ${erroPerfil.message}`);
+        return;
+      }
+
+      alert(`✅ Usuário criado com sucesso!\nEmail: ${email}\nSenha: ${senha}`);
     }
 
-    // ✅ FECHA MODAL
-    document.getElementById("modal-novo-usuario")
-      .classList.remove("aberto");
-
-    // ✅ LIMPA FORM
-    document.getElementById("nu-nome").value = "";
-    document.getElementById("nu-cpf").value = "";
-    document.getElementById("nu-senha").value = "";
-
-    // ✅ RECARREGA LISTA
+    // ✅ FECHA MODAL E RECARREGA
+    document.getElementById("modal-novo-usuario").classList.remove("aberto");
     renderUsuarios();
 
+  } catch(e){
+    console.error("Erro inesperado:", e);
+    alert("Erro inesperado: " + e.message);
   } finally {
-
-    // 🔓 REATIVA BOTÃO
     btn.disabled = false;
-    btn.textContent = usuarioEditandoId
-      ? "Salvar alterações"
-      : "Salvar";
+    btn.textContent = usuarioEditandoId ? "Salvar alterações" : "Salvar";
   }
 }
 
