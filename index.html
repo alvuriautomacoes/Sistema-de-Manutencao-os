@@ -991,9 +991,11 @@ let usuarioLogado = null;
 // ════════════════════════════════════════════
   
 function podeAcessar(tela){
-  const acesso = window.usuarioLogado?.acesso;
-  if(!Array.isArray(acesso)) return false;
-  return acesso.includes(tela);
+  const usuario = window.usuarioLogado;
+
+  if(!usuario || !Array.isArray(usuario.acesso)) return false;
+
+  return usuario.acesso.includes(tela);
 }
   function normalizarEmpresa(e){
   return {
@@ -1140,6 +1142,8 @@ async function fazerLogin(){
   btn.disabled = false;
   spn.style.display = "none";
   txt.textContent = "Entrar no sistema";
+  console.log("CHEGOU NO FINAL DO LOGIN");
+  console.log(usuario);
 
   // 🚀 entra no sistema
   entrarNoSistema(usuario);
