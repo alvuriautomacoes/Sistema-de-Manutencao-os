@@ -433,6 +433,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     <nav>
      <div class="nav-section">Menu</div>
 <button class="nav-btn ativo" onclick="irPara('dashboard')" id="nav-dashboard"><span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span> Dashboard</button>
+<button class="nav-btn" onclick="irPara('custos')" id="nav-custos"><span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span> Custos e Indicadores</button>      
 <button class="nav-btn" onclick="irPara('os')" id="nav-os"><span class="nav-icon"><i class="fa-solid fa-screwdriver-wrench"></i></span> Ordens de Serviço<span class="badge-urgente" id="badge-urgente" style="display:none">0</span></button>
 <button class="nav-btn" onclick="irPara('equip')" id="nav-equip"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span> Equipamentos</button>
 <button class="nav-btn" onclick="irPara('planos')" id="nav-planos"><span class="nav-icon"><i class="fa-solid fa-calendar-check"></i></span> Planos de Manutenção</button>
@@ -626,6 +627,69 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   <div class="prof-grid" id="usuarios-grid"></div>
 </div>
 
+    <!-- CUSTOS E INDICADORES -->
+<div id="tela-custos" class="tela">
+  <div class="page-header">
+    <div><div class="page-title">📊 Custos e Indicadores</div><div class="page-sub" id="custos-sub">Análise financeira e operacional</div></div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input type="date" id="custos-data-inicio" class="busca-input" style="width:160px"/>
+      <span style="color:var(--sub);font-size:12px;">até</span>
+      <input type="date" id="custos-data-fim" class="busca-input" style="width:160px"/>
+      <button class="btn btn-primary" onclick="renderCustos()">Filtrar</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid-stats" id="custos-kpis"></div>
+
+  <!-- GRÁFICOS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+    <div class="card">
+      <div class="section-title">Custos por Mês</div>
+      <canvas id="chart-custos-mes" height="200"></canvas>
+    </div>
+    <div class="card">
+      <div class="section-title">OS por Tipo</div>
+      <canvas id="chart-os-tipo" height="200"></canvas>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+    <div class="card">
+      <div class="section-title">Custos por Técnico</div>
+      <canvas id="chart-custos-tecnico" height="200"></canvas>
+    </div>
+    <div class="card">
+      <div class="section-title">Custos por Equipamento</div>
+      <canvas id="chart-custos-equip" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- TABELA -->
+  <div class="card">
+    <div class="section-title">Detalhamento de OS</div>
+    <div style="overflow-x:auto;">
+      <table id="custos-tabela" style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border);text-align:left;">
+            <th style="padding:8px;color:var(--sub);font-weight:600;">Número</th>
+            <th style="padding:8px;color:var(--sub);font-weight:600;">Equipamento</th>
+            <th style="padding:8px;color:var(--sub);font-weight:600;">Tipo</th>
+            <th style="padding:8px;color:var(--sub);font-weight:600;">Técnico</th>
+            <th style="padding:8px;color:var(--sub);font-weight:600;">Abertura</th>
+            <th style="padding:8px;color:var(--sub);font-weight:600;">Conclusão</th>
+            <th style="padding:8px;color:var(--sub);font-weight:600;">Tempo</th>
+            <th style="padding:8px;color:var(--sub);font-weight:600;">Mão de Obra</th>
+            <th style="padding:8px;color:var(--sub);font-weight:600;">Adicional</th>
+            <th style="padding:8px;color:var(--sub);font-weight:600;">Total</th>
+          </tr>
+        </thead>
+        <tbody id="custos-tabela-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+    
   </div><!-- /conteudo -->
 </div><!-- /app-sistema -->
 
@@ -966,11 +1030,11 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   function gerarAcessoPorPerfil(perfil){
 
   const ACESSO = {
-    admin_senior: ["empresas","dashboard","os","equip","planos","tecnicos","usuarios"],
-    gerente: ["dashboard","os","equip","planos","tecnicos","usuarios"],
-    admin_enc: ["dashboard","os","equip","planos","tecnicos","usuarios"],
-    tecnico: ["os"]
-  };
+  admin_senior: ["empresas","dashboard","os","equip","planos","tecnicos","usuarios","custos"],
+  gerente:      ["dashboard","os","equip","planos","tecnicos","usuarios","custos"],
+  admin_enc:    ["dashboard","os","equip","planos","tecnicos","usuarios"],
+  tecnico:      ["os"]
+};
 
   return ACESSO[perfil] || [];
 }
@@ -3051,6 +3115,206 @@ async function renderUsuarios(){
     </div>`;
   }).join("");
 }
+  // ════════════════════════════════════════════
+// CUSTOS E INDICADORES
+// ════════════════════════════════════════════
+let chartCustosMes     = null;
+let chartOsTipo        = null;
+let chartCustosTecnico = null;
+let chartCustosEquip   = null;
+
+async function renderCustos(){
+  const empresa_id = usuarioLogado?.empresa_id;
+  if(!empresa_id) return;
+
+  // Datas padrão — mês atual
+  const hoje = new Date();
+  const inicioMes = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,"0")}-01`;
+  const fimMes = hoje.toISOString().split("T")[0];
+
+  const dataInicio = document.getElementById("custos-data-inicio")?.value || inicioMes;
+  const dataFim    = document.getElementById("custos-data-fim")?.value    || fimMes;
+
+  // Preenche datas se vazias
+  if(!document.getElementById("custos-data-inicio").value)
+    document.getElementById("custos-data-inicio").value = inicioMes;
+  if(!document.getElementById("custos-data-fim").value)
+    document.getElementById("custos-data-fim").value = fimMes;
+
+  document.getElementById("custos-sub").textContent =
+    `Período: ${dataInicio} até ${dataFim}`;
+
+  // 🔥 Busca OS concluídas no período
+  const { data: ordens, error } = await supabaseClient
+    .from("ordens_servico")
+    .select("*")
+    .eq("empresa_id", empresa_id)
+    .eq("status", "concluida")
+    .gte("data_conclusao", dataInicio)
+    .lte("data_conclusao", dataFim)
+    .order("data_conclusao");
+
+  if(error){ console.error(error); return; }
+
+  const os = ordens || [];
+
+  // ── KPIs ──────────────────────────────────
+  const custoTotal    = os.reduce((a, o) => a + (o.custo_total    || 0), 0);
+  const custoMaoObra  = os.reduce((a, o) => a + (o.custo_mao_obra || 0), 0);
+  const custoAdicional= os.reduce((a, o) => a + (o.custo_adicional|| 0), 0);
+  const tempoTotal    = os.reduce((a, o) => a + (o.tempo_total    || 0), 0);
+  const tempoMedio    = os.length > 0 ? tempoTotal / os.length : 0;
+  const taxaConclusao = os.length;
+
+  document.getElementById("custos-kpis").innerHTML = [
+    { label:"Custo Total",          val:`R$ ${custoTotal.toFixed(2).replace(".",",")}`,          icon:"💰", cls:"accent-urgente" },
+    { label:"Custo Mão de Obra",    val:`R$ ${custoMaoObra.toFixed(2).replace(".",",")}`,        icon:"👷", cls:"" },
+    { label:"Custo Adicional",      val:`R$ ${custoAdicional.toFixed(2).replace(".",",")}`,      icon:"🔩", cls:"" },
+    { label:"OS Concluídas",        val: os.length,                                              icon:"✅", cls:"accent-ok" },
+    { label:"Tempo Médio por OS",   val: formatarTempo(Math.round(tempoMedio)),                  icon:"⏱", cls:"" },
+    { label:"Tempo Total",          val: formatarTempo(tempoTotal),                              icon:"🕐", cls:"" },
+  ].map(s => `
+    <div class="stat-card ${s.cls}">
+      <div class="stat-icon">${s.icon}</div>
+      <div class="stat-num" style="font-size:22px">${s.val}</div>
+      <div class="stat-label">${s.label}</div>
+    </div>`
+  ).join("");
+
+  // ── GRÁFICO: Custos por Mês ───────────────
+  const porMes = {};
+  os.forEach(o => {
+    const mes = (o.data_conclusao || "").substring(0,7);
+    if(!porMes[mes]) porMes[mes] = 0;
+    porMes[mes] += o.custo_total || 0;
+  });
+  const meses  = Object.keys(porMes).sort();
+  const valMes = meses.map(m => parseFloat(porMes[m].toFixed(2)));
+
+  if(chartCustosMes) chartCustosMes.destroy();
+  chartCustosMes = new Chart(
+    document.getElementById("chart-custos-mes"),
+    {
+      type: "line",
+      data: {
+        labels: meses,
+        datasets: [{
+          label: "Custo Total (R$)",
+          data: valMes,
+          borderColor: "var(--blue-500)",
+          backgroundColor: "rgba(61,122,184,0.1)",
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: { responsive:true, plugins:{ legend:{ display:false } } }
+    }
+  );
+
+  // ── GRÁFICO: OS por Tipo ──────────────────
+  const porTipo = {};
+  os.forEach(o => {
+    const t = o.tipo || "Outro";
+    porTipo[t] = (porTipo[t] || 0) + 1;
+  });
+
+  if(chartOsTipo) chartOsTipo.destroy();
+  chartOsTipo = new Chart(
+    document.getElementById("chart-os-tipo"),
+    {
+      type: "doughnut",
+      data: {
+        labels: Object.keys(porTipo),
+        datasets: [{
+          data: Object.values(porTipo),
+          backgroundColor: ["#3d7ab8","#1a7a42","#a06010","#c02020","#5a7a9a"]
+        }]
+      },
+      options: { responsive:true }
+    }
+  );
+
+  // ── GRÁFICO: Custos por Técnico ───────────
+  const porTecnico = {};
+  os.forEach(o => {
+    const t = o.tecnico_nome || "Sem técnico";
+    if(!porTecnico[t]) porTecnico[t] = 0;
+    porTecnico[t] += o.custo_total || 0;
+  });
+  const tecnicos   = Object.keys(porTecnico);
+  const valTecnico = tecnicos.map(t => parseFloat(porTecnico[t].toFixed(2)));
+
+  if(chartCustosTecnico) chartCustosTecnico.destroy();
+  chartCustosTecnico = new Chart(
+    document.getElementById("chart-custos-tecnico"),
+    {
+      type: "bar",
+      data: {
+        labels: tecnicos,
+        datasets: [{
+          label: "Custo Total (R$)",
+          data: valTecnico,
+          backgroundColor: "rgba(61,122,184,0.7)"
+        }]
+      },
+      options: {
+        responsive:true,
+        plugins:{ legend:{ display:false } },
+        scales:{ y:{ beginAtZero:true } }
+      }
+    }
+  );
+
+  // ── GRÁFICO: Custos por Equipamento ───────
+  const porEquip = {};
+  os.forEach(o => {
+    const e = o.equipamento_nome || "Sem equipamento";
+    if(!porEquip[e]) porEquip[e] = 0;
+    porEquip[e] += o.custo_total || 0;
+  });
+  const equips   = Object.keys(porEquip);
+  const valEquip = equips.map(e => parseFloat(porEquip[e].toFixed(2)));
+
+  if(chartCustosEquip) chartCustosEquip.destroy();
+  chartCustosEquip = new Chart(
+    document.getElementById("chart-custos-equip"),
+    {
+      type: "bar",
+      data: {
+        labels: equips,
+        datasets: [{
+          label: "Custo Total (R$)",
+          data: valEquip,
+          backgroundColor: "rgba(26,122,66,0.7)"
+        }]
+      },
+      options: {
+        responsive:true,
+        plugins:{ legend:{ display:false } },
+        scales:{ y:{ beginAtZero:true } },
+        indexAxis: "y"
+      }
+    }
+  );
+
+  // ── TABELA DETALHADA ──────────────────────
+  document.getElementById("custos-tabela-body").innerHTML = os.length === 0
+    ? `<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--sub)">Nenhuma OS concluída no período</td></tr>`
+    : os.map(o => `
+      <tr style="border-bottom:1px solid var(--border);transition:background .12s" onmouseover="this.style.background='var(--blue-50)'" onmouseout="this.style.background=''">
+        <td style="padding:8px;font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--blue-600)">${o.numero}</td>
+        <td style="padding:8px">${o.equipamento_nome||"—"}</td>
+        <td style="padding:8px">${o.tipo||"—"}</td>
+        <td style="padding:8px">${o.tecnico_nome||"—"}</td>
+        <td style="padding:8px;font-family:'IBM Plex Mono',monospace">${o.data_abertura||"—"}</td>
+        <td style="padding:8px;font-family:'IBM Plex Mono',monospace">${o.data_conclusao||"—"}</td>
+        <td style="padding:8px;font-family:'IBM Plex Mono',monospace">${formatarTempo(o.tempo_total||0)}</td>
+        <td style="padding:8px;font-family:'IBM Plex Mono',monospace">R$ ${(o.custo_mao_obra||0).toFixed(2).replace(".",",")}</td>
+        <td style="padding:8px;font-family:'IBM Plex Mono',monospace">R$ ${(o.custo_adicional||0).toFixed(2).replace(".",",")}</td>
+        <td style="padding:8px;font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--blue-700)">R$ ${(o.custo_total||0).toFixed(2).replace(".",",")}</td>
+      </tr>`
+    ).join("");
+}
 
 function abrirModalNovoUsuario(){
   usuarioEditandoId = null;
@@ -3600,6 +3864,10 @@ if(!podeAcessar(tela)){
   if(tela === "tecnicos"){
     renderTecnicos();
   }
+  
+  if(tela === "custos"){
+  renderCustos();
+}
 
   // ════════════════════════════════════════
   // USUÁRIOS
