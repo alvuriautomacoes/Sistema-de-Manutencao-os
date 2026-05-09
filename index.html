@@ -3203,15 +3203,13 @@ console.log("Response status:", response.status);
 const result = await response.json();
 console.log("Result:", result);
 
-  const result = await response.json();
-
-  if(!response.ok){
-    alert(`Erro ao criar usuário: ${result.error}`);
-    return;
-  }
-
-  alert(`✅ Usuário criado com sucesso!\nEmail: ${email}\nSenha: ${senha}`);
+if(!response.ok){
+  alert(`Erro ao criar usuário: ${result.error}`);
+  return;
 }
+
+alert(`✅ Usuário criado com sucesso!\nEmail: ${email}\nSenha: ${senha}`);
+    }
 
     document.getElementById("modal-novo-usuario").classList.remove("aberto");
     renderUsuarios();
