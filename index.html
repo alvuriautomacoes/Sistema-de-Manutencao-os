@@ -3405,6 +3405,13 @@ async function retomarCronometro(){
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+  const salvo = localStorage.getItem("usuario_logado");
+
+if (salvo) {
+  window.usuarioLogado = JSON.parse(salvo);
+} else {
+  window.usuarioLogado = null;
+}
 // 🔗 CONEXÃO SUPABASE
 const supabaseClient = supabase.createClient(
   "https://dbopqmnxpzifbeqobyhl.supabase.co",
