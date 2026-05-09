@@ -995,6 +995,16 @@ function podeAcessar(tela){
   if(!Array.isArray(acesso)) return false;
   return acesso.includes(tela);
 }
+  function normalizarEmpresa(e){
+  return {
+    ...e,
+    cnpj: e.cnpj || "",
+    telefone: e.telefone || "",
+    email: e.email || "",
+    estado: e.estado || "",
+    cidade: e.cidade || ""
+  };
+}
 
 function formatarCPF(input){
   let v = input.value.replace(/\D/g,"").substring(0,11);
