@@ -3149,8 +3149,12 @@ async function renderCustos(){
   if(!document.getElementById("custos-data-fim").value)
     document.getElementById("custos-data-fim").value = fimMes;
 
-  document.getElementById("custos-sub").textContent =
-    `Período: ${dataInicio} até ${dataFim}`;
+  function formatarData(d){
+  const [a,m,dia] = d.split("-");
+  return `${dia}/${m}/${a}`;
+}
+document.getElementById("custos-sub").textContent =
+  `Período: ${formatarData(dataInicio)} até ${formatarData(dataFim)}`;
 
   // 🔥 Busca OS concluídas no período
   const { data: ordens, error } = await supabaseClient
