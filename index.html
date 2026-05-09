@@ -979,7 +979,10 @@ let usuarioLogado = null;
 // ════════════════════════════════════════════
   
 function podeAcessar(tela){
-  return (window.usuarioLogado?.acesso || []).includes(tela);
+  function podeAcessar(tela){
+  const acesso = window.usuarioLogado?.acesso;
+  if(!Array.isArray(acesso)) return false;
+  return acesso.includes(tela);
 }
   
 function formatarCPF(input){
