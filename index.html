@@ -1362,52 +1362,72 @@ function enviarRecuperacao(){
   setTimeout(()=>fecharModalLogin("modal-esqueci"),2000);
 }
 
-// Restaurar CPF no load
-window.addEventListener("load",()=>{
-  // Restaura sessão ativa se existir
-  const sessaoSalva = localStorage.getItem("sessao_usuario");
-  if(sessaoSalva){
-    try{
-      const usuario = JSON.parse(sessaoSalva);
-      // Restaura empresa ANTES de qualquer coisa
-      const empresaId    = localStorage.getItem("empresa_selecionada_id");
-      const empresaNome  = localStorage.getItem("empresa_selecionada_nome");
-      const telaAnterior = localStorage.getItem("tela_atual");
+window.addEventListener("load", async () => {
+
+  const { data: { session } } = await supabaseClient.auth.getSession();
+
+  if(session){
+    const { data: perfil, error } = await supabaseClient
+      .from("perfis")
+      .select("*")
+      .eq("id", session.user.id)
+      .single();
+
+    if(perfil && !error){
+      const usuario = {
+        id:          session.user.id,
+        nome:        perfil.nome,
+        cpf:         perfil.cpf,
+        email:       session.user.email,
+        perfil:      perfil.perfil,
+        empresa_id:  perfil.empresa_id || null,
+        acesso:      gerarAcessoPorPerfil(perfil.perfil),
+        somentePropriaOS:    perfil.perfil === "tecnico",
+        podeEditar:          ["admin_senior","gerente","admin_enc"].includes(perfil.perfil),
+        podeCadastrar:       ["admin_senior","gerente","admin_enc"].includes(perfil.perfil),
+        podeExcluir:         ["admin_senior","gerente"].includes(perfil.perfil),
+        verDashboard:        perfil.perfil !== "tecnico",
+        acessoTodasEmpresas: perfil.perfil === "admin_senior",
+        perfisQuePodeCriar:  getPerfisCriaveis(perfil.perfil)
+      };
+
+      const empresaId   = localStorage.getItem("empresa_selecionada_id");
+      const empresaNome = localStorage.getItem("empresa_selecionada_nome");
       if(empresaId && empresaNome){
         usuario.empresa_id         = empresaId;
         usuario.empresaSelecionada = empresaNome;
       }
-      // ✅ ATRIBUI usuarioLogado ANTES de tudo
-      usuarioLogado = usuario;
 
-      const ld = document.getElementById("app-loading");
+      usuarioLogado        = usuario;
+      window.usuarioLogado = usuario;
+
+      const ld  = document.getElementById("app-loading");
       ld.style.display = "flex";
       document.getElementById("app-login").style.display = "none";
-      document.getElementById("ld-usuario").textContent = usuario.icon+" "+usuario.nome+" · "+usuario.perfilLabel;
       document.getElementById("ld-sub-txt").textContent = "Restaurando sessão...";
-      let p=0;
+
       const bar = document.getElementById("ld-bar");
-      const iv = setInterval(()=>{
-        p += Math.random()*30;
-        if(p>=100){p=100;clearInterval(iv);}
-        bar.style.width=p+"%";
-      },80);
-      setTimeout(()=>{
-        ld.style.display="none";
-        if(telaAnterior) localStorage.setItem("tela_atual", telaAnterior);
+      let p = 0;
+      const iv = setInterval(() => {
+        p += Math.random() * 30;
+        if(p >= 100){ p = 100; clearInterval(iv); }
+        bar.style.width = p + "%";
+      }, 60);
+
+      setTimeout(() => {
+        ld.style.display = "none";
         iniciarSistema(usuario);
       }, 700);
+
       return;
-    } catch(e){
-      localStorage.removeItem("sessao_usuario");
-      localStorage.removeItem("tela_atual");
-      localStorage.removeItem("empresa_selecionada_id");
-      localStorage.removeItem("empresa_selecionada_nome");
     }
   }
-  // Sem sessão — restaura só o CPF salvo
-  const cpfSalvo=localStorage.getItem("cpf-salvo");
-  if(cpfSalvo){ document.getElementById("input-cpf").value=cpfSalvo; document.getElementById("lembrar").checked=true; detectarPerfil(); }
+
+  // Sem sessão válida — mostra login limpo
+  localStorage.removeItem("sessao_usuario");
+  localStorage.removeItem("empresa_selecionada_id");
+  localStorage.removeItem("empresa_selecionada_nome");
+  localStorage.removeItem("tela_atual");
 });
   
 // ════════════════════════════════════════════
