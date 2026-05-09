@@ -979,20 +979,24 @@ let usuarioLogado = null;
 // ════════════════════════════════════════════
   
 function podeAcessar(tela){
-  function podeAcessar(tela){
   const acesso = window.usuarioLogado?.acesso;
   if(!Array.isArray(acesso)) return false;
   return acesso.includes(tela);
 }
-  
-function formatarCPF(input){
-  let v=input.value.replace(/\D/g,"").substring(0,11);
-  if(v.length>9) v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,"$1.$2.$3-$4");
-  else if(v.length>6) v=v.replace(/(\d{3})(\d{3})(\d{0,3})/,"$1.$2.$3");
-  else if(v.length>3) v=v.replace(/(\d{3})(\d{0,3})/,"$1.$2");
-  input.value=v;
-}
 
+function formatarCPF(input){
+  let v = input.value.replace(/\D/g,"").substring(0,11);
+
+  if(v.length > 9)
+    v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,"$1.$2.$3-$4");
+  else if(v.length > 6)
+    v = v.replace(/(\d{3})(\d{3})(\d{0,3})/,"$1.$2.$3");
+  else if(v.length > 3)
+    v = v.replace(/(\d{3})(\d{0,3})/,"$1.$2");
+
+  input.value = v;
+}
+  
 function detectarPerfil(){
   const cpf=document.getElementById("input-cpf").value.trim();
   const el=document.getElementById("perfil-detectado");
