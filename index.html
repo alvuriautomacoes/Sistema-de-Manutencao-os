@@ -643,27 +643,29 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   <div class="grid-stats" id="custos-kpis"></div>
 
   <!-- GRÁFICOS -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-    <div class="card">
-      <div class="section-title">Custos por Mês</div>
-      <canvas id="chart-custos-mes" height="200"></canvas>
-    </div>
-    <div class="card">
-      <div class="section-title">OS por Tipo</div>
-      <canvas id="chart-os-tipo" height="200"></canvas>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+  <div class="card">
+    <div class="section-title">Custos por Mês</div>
+    <canvas id="chart-custos-mes" height="120"></canvas>
+  </div>
+  <div class="card">
+    <div class="section-title">OS por Tipo</div>
+    <div style="max-width:260px;margin:0 auto;">
+      <canvas id="chart-os-tipo" height="120"></canvas>
     </div>
   </div>
+</div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-    <div class="card">
-      <div class="section-title">Custos por Técnico</div>
-      <canvas id="chart-custos-tecnico" height="200"></canvas>
-    </div>
-    <div class="card">
-      <div class="section-title">Custos por Equipamento</div>
-      <canvas id="chart-custos-equip" height="200"></canvas>
-    </div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+  <div class="card">
+    <div class="section-title">Custos por Técnico</div>
+    <canvas id="chart-custos-tecnico" height="120"></canvas>
   </div>
+  <div class="card">
+    <div class="section-title">Custos por Equipamento</div>
+    <canvas id="chart-custos-equip" height="120"></canvas>
+  </div>
+</div>
 
   <!-- TABELA -->
   <div class="card">
@@ -3207,7 +3209,11 @@ async function renderCustos(){
           tension: 0.4
         }]
       },
-      options: { responsive:true, plugins:{ legend:{ display:false } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins:{ legend:{ display:false } }
+      }
     }
   );
 
@@ -3230,7 +3236,10 @@ async function renderCustos(){
           backgroundColor: ["#3d7ab8","#1a7a42","#a06010","#c02020","#5a7a9a"]
         }]
       },
-      options: { responsive:true }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
     }
   );
 
@@ -3258,7 +3267,8 @@ async function renderCustos(){
         }]
       },
       options: {
-        responsive:true,
+        responsive: true,
+        maintainAspectRatio: false,
         plugins:{ legend:{ display:false } },
         scales:{ y:{ beginAtZero:true } }
       }
@@ -3289,14 +3299,15 @@ async function renderCustos(){
         }]
       },
       options: {
-        responsive:true,
+        responsive: true,
+        maintainAspectRatio: false,
         plugins:{ legend:{ display:false } },
-        scales:{ y:{ beginAtZero:true } },
+        scales:{ y:{ beginAtzero:true } },
         indexAxis: "y"
       }
     }
   );
-
+  
   // ── TABELA DETALHADA ──────────────────────
   document.getElementById("custos-tabela-body").innerHTML = os.length === 0
     ? `<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--sub)">Nenhuma OS concluída no período</td></tr>`
