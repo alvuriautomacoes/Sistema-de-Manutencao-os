@@ -3043,6 +3043,7 @@ function abrirModalNovoUsuario(){
   document.getElementById("btn-salvar-usuario").textContent = "Salvar";
   document.getElementById("nu-nome").value = "";
   document.getElementById("nu-cpf").value = "";
+  document.getElementById("nu-email").value = "";
   document.getElementById("nu-senha").value = "";
   document.getElementById("nu-status").value = "true";
 
@@ -3073,7 +3074,8 @@ function abrirEditarUsuario(id){
   document.getElementById("btn-salvar-usuario").textContent = "Salvar alterações";
   document.getElementById("nu-nome").value = u.nome || "";
   document.getElementById("nu-cpf").value = u.cpf || "";
-  document.getElementById("nu-senha").value = u.senha || "";
+  document.getElementById("nu-email").value = u.email || "";
+  document.getElementById("nu-senha").value = ""; // senha nunca pré-preenchida por segurança
   document.getElementById("nu-status").value = u.ativo ? "true" : "false";
 
   const perfis = usuarioLogado?.perfisQuePodeCriar || [];
