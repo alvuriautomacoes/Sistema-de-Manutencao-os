@@ -3111,6 +3111,7 @@ function abrirEditarUsuario(id){
 }
 
 async function salvarUsuario(){
+  console.log("salvarUsuario chamado");
   const nome   = document.getElementById("nu-nome").value.trim();
   const cpf    = document.getElementById("nu-cpf").value.trim();
   const email  = document.getElementById("nu-email").value.trim();
