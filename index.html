@@ -966,6 +966,18 @@ let usuarioLogado = null;
 // LOGIN
 // ════════════════════════════════════════════
   
+  function gerarAcessoPorPerfil(perfil){
+
+  const ACESSO = {
+    admin_senior: ["empresas","dashboard","os","equip","planos","tecnicos","usuarios"],
+    gerente: ["dashboard","os","equip","planos","tecnicos","usuarios"],
+    admin_enc: ["dashboard","os","equip","planos","tecnicos","usuarios"],
+    tecnico: ["os"]
+  };
+
+  return ACESSO[perfil] || [];
+}
+  
 function podeAcessar(tela){
   return (window.usuarioLogado?.acesso || []).includes(tela);
 }
