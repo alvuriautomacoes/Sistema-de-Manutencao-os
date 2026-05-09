@@ -1304,27 +1304,24 @@ function mostrarMenuNav(){
 }
   
 function fazerLogout(){
-  if(!confirm("Deseja sair do sistema?"))return;
-  usuarioLogado=null;
-  localStorage.removeItem("sessao_usuario");
-  localStorage.removeItem("tela_atual");
-  localStorage.removeItem("empresa_selecionada_id");
-  localStorage.removeItem("empresa_selecionada_nome");
-  // Reset
-  document.getElementById("app-sistema").style.display="none";
-  document.getElementById("app-login").style.display="flex";
-  document.getElementById("input-senha").value="";
-  document.getElementById("perfil-detectado").classList.remove("visivel");
-  document.getElementById("msg-erro").classList.remove("visivel");
-  document.getElementById("btn-entrar").disabled=false;
-  document.getElementById("spinner").style.display="none";
-  document.getElementById("btn-entrar-txt").textContent="Entrar no sistema";
-  document.getElementById("ld-bar").style.width="0%";
-  filtroOS="todos";
-  // Restaura CPF salvo se houver
-  const cpfSalvo=localStorage.getItem("cpf-salvo");
-  if(cpfSalvo){ document.getElementById("input-cpf").value=cpfSalvo; document.getElementById("lembrar").checked=true; detectarPerfil(); }
-  else document.getElementById("input-cpf").value="";
+
+  // limpa sessão
+  window.usuarioLogado = null;
+  localStorage.removeItem("usuario_logado");
+
+  // 🔒 protege inputs (evita erro null)
+  const email = document.getElementById("input-email");
+  const senha = document.getElementById("input-senha");
+
+  if(email) email.value = "";
+  if(senha) senha.value = "";
+
+  // volta tela login (se existir)
+  const login = document.getElementById("tela-login");
+  if(login) login.style.display = "block";
+
+  const sistema = document.getElementById("tela-sistema");
+  if(sistema) sistema.style.display = "none";
 }
 
 // Modal login (esqueci senha)
