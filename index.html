@@ -3238,32 +3238,25 @@ if(senha){
 }
 
 async function excluirUsuario(id, nome){
-
-  // 🔒 Verifica permissão
   if(!usuarioLogado?.podeExcluir){
     alert("Você não possui permissão para excluir usuários.");
     return;
   }
 
-  // Confirma exclusão
   if(!confirm(`Deseja excluir o usuário "${nome}"? Esta ação é irreversível.`)){
     return;
   }
 
-  // Exclui usuário
-  const { error } = await supabaseClient
-    .from("usuarios")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabaseClient.rpc("excluir_usuario_auth", {
+    p_user_id: id
+  });
 
-  // Trata erro
   if(error){
     console.error("Erro ao excluir usuário:", error);
-    alert("Erro ao excluir usuário.");
+    alert("Erro ao excluir usuário: " + error.message);
     return;
   }
 
-  // Atualiza lista
   renderUsuarios();
 }
   
