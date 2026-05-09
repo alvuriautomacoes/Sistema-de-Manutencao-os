@@ -2020,23 +2020,32 @@ async function avancarStatus(id){
   const novoStatus = STATUS_SEQ[idx + 1];
   const conclusao = novoStatus === "concluida" ? hoje() : null;
 
-  // 🔥 Lógica do cronômetro
   let dadosCronometro = {};
+
   if(novoStatus === "andamento"){
-    // Inicia o cronômetro
     dadosCronometro = {
       cronometro_status: "rodando",
       cronometro_inicio: new Date().toISOString(),
       tempo_total: o.tempo_total || 0
     };
   } else if(novoStatus === "concluida"){
-    // Para o cronômetro e salva o total
     const totalFinal = calcularTempoAtual(o);
+
+    // 🔥 Calcula e congela custos no banco
+    const tecnico = (window.tecnicosData||[]).find(t => t.nome === o.tecnico_nome);
+    const custoHora = (tecnico?.salario || 0) / 220;
+    const totalHoras = totalFinal / 3600;
+    const custoMaoObra = totalHoras * custoHora;
+    const custoTotal = custoMaoObra + (o.custo_adicional || 0);
+
     dadosCronometro = {
       cronometro_status: "parado",
       cronometro_inicio: null,
-      tempo_total: totalFinal
+      tempo_total:       totalFinal,
+      custo_mao_obra:    custoMaoObra,   // ← congelado no banco
+      custo_total:       custoTotal       // ← congelado no banco
     };
+
     if(cronometroInterval) clearInterval(cronometroInterval);
   }
 
@@ -3342,18 +3351,26 @@ function renderCronometro(o){
   if(!box) return;
   box.style.display = "block";
 
-  // Busca o técnico para pegar o salário
-  const tecnico = (window.tecnicosData || []).find(t => t.nome === o.tecnico_nome);
-  const salario = tecnico?.salario || 0;
-  const custoHora = salario / 220;
-  const totalHoras = calcularTempoAtual(o) / 3600;
-  const custoMaoObra = totalHoras * custoHora;
-  const custoAdicional = o.custo_adicional || 0;
-  const custoTotal = custoMaoObra + custoAdicional;
-
   const podVerSalario = ["admin_senior","gerente"].includes(usuarioLogado?.perfil);
+  const isConcluida = o.status === "concluida";
 
-  // Exibe custo mão de obra só para admin/gerente
+  let custoMaoObra, custoTotal;
+
+  if(isConcluida){
+    // 🔥 OS concluída — usa valores congelados no banco
+    custoMaoObra = o.custo_mao_obra || 0;
+    custoTotal   = o.custo_total    || 0;
+  } else {
+    // OS em aberto — calcula dinamicamente no frontend
+    const tecnico = (window.tecnicosData||[]).find(t => t.nome === o.tecnico_nome);
+    const custoHora = (tecnico?.salario || 0) / 220;
+    const totalHoras = calcularTempoAtual(o) / 3600;
+    custoMaoObra = totalHoras * custoHora;
+    custoTotal   = custoMaoObra + (o.custo_adicional || 0);
+  }
+
+  const custoAdicional = o.custo_adicional || 0;
+
   document.getElementById("det-custo-mao-obra").textContent = podVerSalario
     ? `R$ ${custoMaoObra.toFixed(2).replace(".",",")}`
     : "—";
@@ -3365,37 +3382,46 @@ function renderCronometro(o){
     ? `R$ ${custoTotal.toFixed(2).replace(".",",")}`
     : `R$ ${custoAdicional.toFixed(2).replace(".",",")}`;
 
-  // Preenche campos de edição
   document.getElementById("det-custo-adicional-input").value = custoAdicional || "";
   document.getElementById("det-obs-custo-input").value = o.obs_custo_adicional || "";
 
-  // Oculta edição para técnico
   const isTecnico = usuarioLogado?.perfil === "tecnico";
   document.getElementById("det-custo-edit").style.display = isTecnico ? "none" : "";
 }
 
 async function salvarCustoAdicional(){
   const custo = parseFloat(document.getElementById("det-custo-adicional-input").value) || 0;
-  const obs = document.getElementById("det-obs-custo-input").value.trim();
+  const obs   = document.getElementById("det-obs-custo-input").value.trim();
+
+  const o = (window.ordensData||[]).find(x => String(x.id) === String(osDetalheId));
+  if(!o) return;
+
+  // 🔥 Se concluída, recalcula custo_total com custo_mao_obra congelado
+  const novoCustoTotal = (o.custo_mao_obra || 0) + custo;
 
   const { error } = await supabaseClient
     .from("ordens_servico")
-    .update({ custo_adicional: custo, obs_custo_adicional: obs })
+    .update({
+      custo_adicional:     custo,
+      obs_custo_adicional: obs,
+      custo_total:         novoCustoTotal
+    })
     .eq("id", osDetalheId);
 
   if(error){ alert("Erro ao salvar custos: " + error.message); return; }
 
   // Atualiza cache local
-  const idx = (window.ordensData || []).findIndex(x => String(x.id) === String(osDetalheId));
+  const idx = (window.ordensData||[]).findIndex(x => String(x.id) === String(osDetalheId));
   if(idx !== -1){
-    window.ordensData[idx].custo_adicional = custo;
+    window.ordensData[idx].custo_adicional     = custo;
     window.ordensData[idx].obs_custo_adicional = obs;
+    window.ordensData[idx].custo_total         = novoCustoTotal;
   }
 
   renderDetalheOS(osDetalheId);
   alert("✅ Custos salvos com sucesso!");
 }
-
+  
 async function pausarCronometro(){
   const o = (window.ordensData || []).find(x => String(x.id) === String(osDetalheId));
   if(!o) return;
