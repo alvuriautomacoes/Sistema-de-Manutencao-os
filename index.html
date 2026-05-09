@@ -2979,7 +2979,7 @@ async function renderUsuarios(){
   const filtroPerfil = document.getElementById("usuarios-filtro-perfil")?.value || "";
 
   let query = supabaseClient
-    .from("usuarios")
+    .from("perfis")                          // ← tabela alterada
     .select("*, empresas(nome)")
     .eq("ativo", true)
     .order("nome");
