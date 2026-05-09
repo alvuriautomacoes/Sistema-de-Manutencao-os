@@ -1294,16 +1294,17 @@ function iniciarSistema(u){
   const temEmpresa   = !!localStorage.getItem("empresa_selecionada_id");
 
   if(u.perfil === "admin_senior"){
-    if(temEmpresa && telaAnterior && telaAnterior !== "empresas"){
-      mostrarMenuNav();
-      document.getElementById("btn-voltar-empresas").style.display = "block";
-      irPara(telaAnterior);
-    } else {
-      ocultarMenuNav();
-      irPara("empresas");
-      renderEmpresas();
-    }
+  if(temEmpresa && telaAnterior && telaAnterior !== "empresas"){
+    mostrarMenuNav();
+    document.getElementById("btn-voltar-empresas").style.display = "block";
+    irPara(telaAnterior);
   } else {
+    ocultarMenuNav();
+    irPara("empresas");
+    renderEmpresas();
+  }
+}
+  else {
     mostrarMenuNav();
     const tela = (telaAnterior && u.acesso.includes(telaAnterior))
       ? telaAnterior
