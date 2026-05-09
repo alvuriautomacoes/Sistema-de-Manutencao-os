@@ -644,7 +644,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     </div>
     <div class="field"><label>Email * (usado para login)</label><input id="nu-email" type="email" placeholder="Ex: joao@empresa.com"/></div>
     <div class="grid2">
-      <div class="field"><label>Senha *</label><input id="nu-senha" type="password" placeholder="Mínimo 6 caracteres"/></div>
+      <div class="field"><label>Senha *</label><input id="nu-senha" type="password" placeholder="Mín. 8 caracteres com letras e números"/></div>
       <div class="field"><label>Status</label><select id="nu-status"><option value="true">Ativo</option><option value="false">Inativo</option></select></div>
     </div>
     <div class="field" id="nu-empresa-field" style="display:none">
@@ -3126,10 +3126,21 @@ async function salvarUsuario(){
     alert("Informe uma senha para o novo usuário.");
     return;
   }
-  if(senha && senha.length < 6){
-    alert("A senha deve ter no mínimo 6 caracteres.");
+  // ✅ DEPOIS
+if(senha){
+  if(senha.length < 8){
+    alert("A senha deve ter no mínimo 8 caracteres.");
     return;
   }
+  if(!/[A-Za-z]/.test(senha)){
+    alert("A senha deve conter pelo menos uma letra.");
+    return;
+  }
+  if(!/[0-9]/.test(senha)){
+    alert("A senha deve conter pelo menos um número.");
+    return;
+  }
+}
 
   const isAdmin = usuarioLogado?.perfil === "admin_senior";
   const empresa_id = isAdmin
