@@ -1318,34 +1318,20 @@ function mostrarMenuNav(){
   }
 }
   
-function fazerLogout(){
+async function fazerLogout(){
+  if(!confirm("Deseja sair do sistema?")) return;
 
-  // 1. trava estado imediatamente
+  await supabaseClient.auth.signOut();
+
+  usuarioLogado = null;
   window.usuarioLogado = null;
+  localStorage.removeItem("sessao_usuario");
+  localStorage.removeItem("tela_atual");
+  localStorage.removeItem("empresa_selecionada_id");
+  localStorage.removeItem("empresa_selecionada_nome");
   localStorage.removeItem("usuario_logado");
 
-  // 2. evita funções rodando depois do logout
-  window.ordens = [];
-  window.empresas = [];
-
-  // 3. limpa inputs com segurança
-  const email = document.getElementById("input-email");
-  const senha = document.getElementById("input-senha");
-
-  if(email) email.value = "";
-  if(senha) senha.value = "";
-
-  // 4. UI segura
-  const login = document.getElementById("tela-login");
-  const sistema = document.getElementById("tela-sistema");
-
-  if(login) login.style.display = "block";
-  if(sistema) sistema.style.display = "none";
-
-  // 5. força reinicialização limpa (ESSENCIAL no seu caso)
-  setTimeout(() => {
-    location.reload();
-  }, 100);
+  setTimeout(() => location.reload(), 100);
 }
   
 // Modal login (esqueci senha)
