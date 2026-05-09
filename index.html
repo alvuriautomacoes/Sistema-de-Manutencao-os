@@ -367,7 +367,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     <span class="input-icon">📧</span>
     <input
       type="email"
-      id="input-cpf"
+      id="input-email"
       placeholder="seuemail@empresa.com"
       autocomplete="email"
     />
@@ -1011,12 +1011,22 @@ function preencherDemo(tipo){
   
 async function fazerLogin(){
 
-  const email = document.getElementById("input-email").value.trim();
-  const senha = document.getElementById("input-senha").value;
+  const emailEl = document.getElementById("input-email");
+  const senhaEl = document.getElementById("input-senha");
 
   const btn = document.getElementById("btn-entrar");
   const spn = document.getElementById("spinner");
   const txt = document.getElementById("btn-entrar-txt");
+
+  // 🔒 proteção contra null (evita tela branca)
+  if(!emailEl || !senhaEl){
+    console.error("Inputs de login não encontrados no DOM");
+    mostrarErroLogin("Erro interno: campos de login não encontrados.");
+    return;
+  }
+
+  const email = emailEl.value.trim();
+  const senha = senhaEl.value;
 
   if(!email || !senha){
     mostrarErroLogin("Preencha email e senha.");
