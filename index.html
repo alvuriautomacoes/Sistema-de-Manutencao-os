@@ -3203,7 +3203,12 @@ document.getElementById("custos-sub").textContent =
     porMes[mes] += o.custo_total || 0;
   });
   const meses  = Object.keys(porMes).sort();
-  const valMes = meses.map(m => parseFloat(porMes[m].toFixed(2)));
+const valMes = meses.map(m => parseFloat(porMes[m].toFixed(2)));
+const mesesFormatados = meses.map(m => {
+  const [ano, mes] = m.split("-");
+  const nomes = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+  return `${nomes[parseInt(mes)-1]}/${ano.substring(2)}`;
+});
 
   if(chartCustosMes) chartCustosMes.destroy();
   chartCustosMes = new Chart(
@@ -3211,7 +3216,7 @@ document.getElementById("custos-sub").textContent =
     {
       type: "line",
       data: {
-        labels: meses,
+        labels: mesesFormatados,
         datasets: [{
           label: "Custo Total (R$)",
           data: valMes,
