@@ -2043,8 +2043,8 @@ async function avancarStatus(id){
     const tecnico = (window.tecnicosData||[]).find(t => t.nome === o.tecnico_nome);
     const custoHora = (tecnico?.salario || 0) / 220;
     const totalHoras = totalFinal / 3600;
-    const custoMaoObra = totalHoras * custoHora;
-    const custoTotal = custoMaoObra + (o.custo_adicional || 0);
+    const custoMaoObra = Math.round(totalHoras * custoHora * 100) / 100;
+    const custoTotal   = Math.round((custoMaoObra + (o.custo_adicional || 0)) * 100) / 100;
 
     dadosCronometro = {
       cronometro_status: "parado",
