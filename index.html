@@ -402,12 +402,12 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     </div>
     <p style="font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:18px;">Informe seu CPF cadastrado. O administrador receberá uma solicitação de redefinição.</p>
     <div class="field-login">
-      <label>CPF</label>
-      <div class="input-wrap">
-        <span class="input-icon">👤</span>
-        <input type="text" id="rec-cpf" placeholder="000.000.000-00" maxlength="14" oninput="formatarCPF(this)"/>
-      </div>
-    </div>
+  <label>Email cadastrado</label>
+  <div class="input-wrap">
+    <span class="input-icon">📧</span>
+    <input type="email" id="rec-cpf" placeholder="seuemail@empresa.com"/>
+  </div>
+</div>
     <div id="rec-msg" style="display:none;background:#edfaf3;border:1px solid #9ae8bf;border-left:3px solid #1a7a42;padding:10px 14px;font-size:12.5px;color:#1a7a42;margin-bottom:14px;">✅ Solicitação enviada! O administrador foi notificado.</div>
     <div style="display:flex;gap:10px;">
       <button onclick="fecharModalLogin('modal-esqueci')" style="flex:1;padding:10px;background:transparent;border:1px solid var(--border2);cursor:pointer;font-family:inherit;font-size:12.5px;color:var(--sub);font-weight:600;">Cancelar</button>
@@ -1298,18 +1298,20 @@ async function fazerLogout(){
   setTimeout(() => location.reload(), 100);
 }
   
-// Modal login (esqueci senha)
 function abrirModalEsqueci(){
-  document.getElementById("rec-msg").style.display="none";
-  document.getElementById("rec-cpf").value=document.getElementById("input-cpf").value;
+  document.getElementById("rec-msg").style.display = "none";
+  const emailAtual = document.getElementById("input-email")?.value || "";
+  document.getElementById("rec-cpf").value = emailAtual;
   document.getElementById("modal-esqueci").classList.add("aberto");
 }
-function fecharModalLogin(id){ document.getElementById(id).classList.remove("aberto"); }
-function enviarRecuperacao(){
-  const cpf=document.getElementById("rec-cpf").value.trim();
-  if(!cpf||cpf.length<14){alert("Informe um CPF válido.");return;}
-  document.getElementById("rec-msg").style.display="block";
-  setTimeout(()=>fecharModalLogin("modal-esqueci"),2000);
+
+async function enviarRecuperacao(){
+  const email = document.getElementById("rec-cpf").value.trim();
+  if(!email){ alert("Informe seu email."); return; }
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
+  if(error){ alert("Erro ao enviar: " + error.message); return; }
+  document.getElementById("rec-msg").style.display = "block";
+  setTimeout(() => fecharModalLogin("modal-esqueci"), 2500);
 }
 
 window.addEventListener("load", async () => {
