@@ -956,6 +956,18 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 
 <script>
   
+  function getPerfisCriaveis(perfil){
+
+  const REGRAS = {
+    admin_senior: ["gerente","admin_enc","tecnico"],
+    gerente: ["admin_enc","tecnico"],
+    admin_enc: ["tecnico"],
+    tecnico: []
+  };
+
+  return REGRAS[perfil] || [];
+}
+  
   function gerarAcessoPorPerfil(perfil){
 
   const ACESSO = {
