@@ -436,7 +436,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <button class="nav-btn" onclick="irPara('os')" id="nav-os"><span class="nav-icon"><i class="fa-solid fa-screwdriver-wrench"></i></span> Ordens de Serviço<span class="badge-urgente" id="badge-urgente" style="display:none">0</span></button>
 <button class="nav-btn" onclick="irPara('equip')" id="nav-equip"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span> Equipamentos</button>
 <button class="nav-btn" onclick="irPara('planos')" id="nav-planos"><span class="nav-icon"><i class="fa-solid fa-calendar-check"></i></span> Planos de Manutenção</button>
-<button class="nav-btn" onclick="irPara('tecnicos')" id="nav-tecnicos"><span class="nav-icon"><i class="fa-solid fa-helmet-safety"></i></span> Técnicos</button>
+<button class="nav-btn" onclick="irPara('tecnicos')" id="nav-tecnicos" style="display:none"></button>
 <button class="nav-btn" onclick="irPara('usuarios')" id="nav-usuarios"><span class="nav-icon"><i class="fa-solid fa-users-gear"></i></span> Usuários</button>
 </nav>
     <div class="user-area">
@@ -3103,7 +3103,6 @@ async function salvarUsuario(){
   const perfil = document.getElementById("nu-perfil").value;
   const ativo  = document.getElementById("nu-status").value === "true";
 
-  // 🔒 VALIDAÇÕES
   if(!nome || !cpf || !email || !perfil){
     alert("Preencha todos os campos obrigatórios!");
     return;
@@ -3129,24 +3128,20 @@ async function salvarUsuario(){
     return;
   }
 
-  // 🔒 VERIFICA SE O PERFIL É PERMITIDO
   const perfisPermitidos = usuarioLogado?.perfisQuePodeCriar || [];
   if(!perfisPermitidos.includes(perfil)){
     alert("Você não tem permissão para criar este perfil.");
     return;
   }
 
-  // 🔒 BLOQUEIA BOTÃO
   const btn = document.getElementById("btn-salvar-usuario");
   btn.disabled = true;
   btn.textContent = usuarioEditandoId ? "Salvando..." : "Criando...";
 
   try {
 
-    // ✏️ EDITAR usuário existente
+    // ✏️ EDITAR
     if(usuarioEditandoId){
-
-      // Atualiza perfil
       const { error: erroPerfil } = await supabaseClient
         .from("perfis")
         .update({ nome, cpf, perfil, empresa_id, ativo, email })
@@ -3157,51 +3152,50 @@ async function salvarUsuario(){
         return;
       }
 
+      // Se é técnico, atualiza também na tabela tecnicos
+      if(perfil === "tecnico"){
+        await supabaseClient
+          .from("tecnicos")
+          .update({ nome, empresa_id, status: ativo ? "ativo" : "inativo" })
+          .eq("nome", nome);
+      }
+
       usuarioEditandoId = null;
       alert("✅ Usuário atualizado com sucesso!");
 
+    // ➕ CRIAR
     } else {
 
-      // ➕ CRIAR novo usuário
-
-      // 🔒 Verifica CPF duplicado na tabela perfis
+      // Verifica CPF duplicado
       const { data: cpfExistente } = await supabaseClient
-        .from("perfis")
-        .select("id")
-        .eq("cpf", cpf)
-        .limit(1);
-
-      if(cpfExistente && cpfExistente.length > 0){
+        .from("perfis").select("id").eq("cpf", cpf).limit(1);
+      if(cpfExistente?.length > 0){
         alert("Já existe um usuário com este CPF.");
         return;
       }
 
-      // 🔒 Verifica email duplicado no Auth
+      // Verifica email duplicado
       const { data: emailExistente } = await supabaseClient
-        .from("perfis")
-        .select("id")
-        .eq("email", email)
-        .limit(1);
-
-      if(emailExistente && emailExistente.length > 0){
+        .from("perfis").select("id").eq("email", email).limit(1);
+      if(emailExistente?.length > 0){
         alert("Já existe um usuário com este email.");
         return;
       }
 
       // 1️⃣ Cria no Supabase Auth
-      const { data: authData, error: erroAuth } = await supabaseClient.auth.admin.createUser({
-        email,
-        password: senha,
-        email_confirm: true
-      });
+      const { data: authData, error: erroAuth } =
+        await supabaseClient.auth.admin.createUser({
+          email,
+          password: senha,
+          email_confirm: true
+        });
 
       if(erroAuth){
-        console.error("Erro ao criar no Auth:", erroAuth);
         alert(`Erro ao criar acesso: ${erroAuth.message}`);
         return;
       }
 
-      // 2️⃣ Cria na tabela perfis
+      // 2️⃣ Insere em perfis
       const { error: erroPerfil } = await supabaseClient
         .from("perfis")
         .insert([{
@@ -3215,15 +3209,40 @@ async function salvarUsuario(){
         }]);
 
       if(erroPerfil){
-        console.error("Erro ao criar perfil:", erroPerfil);
         alert(`Usuário criado no Auth mas erro ao salvar perfil: ${erroPerfil.message}`);
         return;
       }
 
-      alert(`✅ Usuário criado com sucesso!\nEmail: ${email}\nSenha: ${senha}`);
+      // 3️⃣ Se for técnico, cria automaticamente na tabela tecnicos
+      if(perfil === "tecnico"){
+        const { error: erroTecnico } = await supabaseClient
+          .from("tecnicos")
+          .insert([{
+            empresa_id,
+            nome,
+            cargo:          "Técnico de Manutenção",
+            matricula:      "",
+            turno:          "Integral",
+            status:         "ativo",
+            telefone:       "",
+            especialidades: [],
+            observacoes:    "",
+            salario:        0,
+            valor_hora:     0
+          }]);
+
+        if(erroTecnico){
+          console.error("Erro ao criar técnico:", erroTecnico);
+          // Não bloqueia — usuário foi criado, técnico pode ser ajustado depois
+          alert(`✅ Usuário criado!\n⚠️ Aviso: erro ao criar registro de técnico: ${erroTecnico.message}`);
+        } else {
+          alert(`✅ Usuário técnico criado com sucesso!\nEmail: ${email}\nSenha: ${senha}\n\nRegistro de técnico criado automaticamente.`);
+        }
+      } else {
+        alert(`✅ Usuário criado com sucesso!\nEmail: ${email}\nSenha: ${senha}`);
+      }
     }
 
-    // ✅ FECHA MODAL E RECARREGA
     document.getElementById("modal-novo-usuario").classList.remove("aberto");
     renderUsuarios();
 
