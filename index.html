@@ -3175,19 +3175,21 @@ async function renderCustos(){
   const taxaConclusao = os.length;
 
   document.getElementById("custos-kpis").innerHTML = [
-    { label:"Custo Total",          val:`R$ ${custoTotal.toFixed(2).replace(".",",")}`,          icon:"💰", cls:"accent-urgente" },
-    { label:"Custo Mão de Obra",    val:`R$ ${custoMaoObra.toFixed(2).replace(".",",")}`,        icon:"👷", cls:"" },
-    { label:"Custo Adicional",      val:`R$ ${custoAdicional.toFixed(2).replace(".",",")}`,      icon:"🔩", cls:"" },
-    { label:"OS Concluídas",        val: os.length,                                              icon:"✅", cls:"accent-ok" },
-    { label:"Tempo Médio por OS",   val: formatarTempo(Math.round(tempoMedio)),                  icon:"⏱", cls:"" },
-    { label:"Tempo Total",          val: formatarTempo(tempoTotal),                              icon:"🕐", cls:"" },
-  ].map(s => `
-    <div class="stat-card ${s.cls}">
+  { label:"Custo Total",        val:`R$ ${custoTotal.toFixed(2).replace(".",",")}`,       icon:"💰", cls:"accent-urgente" },
+  { label:"Custo Mão de Obra",  val:`R$ ${custoMaoObra.toFixed(2).replace(".",",")}`,     icon:"👷", cls:"" },
+  { label:"Custo Adicional",    val:`R$ ${custoAdicional.toFixed(2).replace(".",",")}`,   icon:"🔩", cls:"" },
+  { label:"OS Concluídas",      val: os.length,                                           icon:"✅", cls:"accent-ok" },
+  { label:"Tempo Médio por OS", val: formatarTempo(Math.round(tempoMedio)),               icon:"⏱", cls:"" },
+  { label:"Tempo Total",        val: formatarTempo(tempoTotal),                           icon:"🕐", cls:"" },
+].map(s => `
+  <div class="stat-card ${s.cls}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
       <div class="stat-icon">${s.icon}</div>
-      <div class="stat-num" style="font-size:22px">${s.val}</div>
-      <div class="stat-label">${s.label}</div>
-    </div>`
-  ).join("");
+    </div>
+    <div class="stat-label" style="font-size:11px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">${s.label}</div>
+    <div class="stat-num" style="font-size:20px;line-height:1.2;">${s.val}</div>
+  </div>`
+).join("");
 
   // ── GRÁFICO: Custos por Mês ───────────────
   const porMes = {};
