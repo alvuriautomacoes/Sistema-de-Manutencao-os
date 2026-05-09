@@ -1339,7 +1339,7 @@ function ocultarMenuNav(){
 function mostrarMenuNav(){
   document.getElementById("sidebar").style.display = "flex";
   document.getElementById("conteudo").style.marginLeft = "232px";
-  const todosNavs = ["dashboard","os","equip","planos","tecnicos","usuarios"];
+  const todosNavs = ["dashboard","os","equip","planos","tecnicos","usuarios","custos"]; // ← adicione custos
   todosNavs.forEach(id => {
     const btn = document.getElementById("nav-"+id);
     if(!btn) return;
