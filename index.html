@@ -642,16 +642,18 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   <!-- KPIs -->
   <div class="grid-stats" id="custos-kpis"></div>
 
-  <!-- GRÁFICOS -->
+<!-- GRÁFICOS -->
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
   <div class="card">
     <div class="section-title">Custos por Mês</div>
-    <canvas id="chart-custos-mes" height="120"></canvas>
+    <div style="height:200px;position:relative;">
+      <canvas id="chart-custos-mes"></canvas>
+    </div>
   </div>
   <div class="card">
     <div class="section-title">OS por Tipo</div>
-    <div style="max-width:260px;margin:0 auto;">
-      <canvas id="chart-os-tipo" height="120"></canvas>
+    <div style="height:200px;position:relative;">
+      <canvas id="chart-os-tipo"></canvas>
     </div>
   </div>
 </div>
@@ -659,14 +661,18 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
   <div class="card">
     <div class="section-title">Custos por Técnico</div>
-    <canvas id="chart-custos-tecnico" height="120"></canvas>
+    <div style="height:200px;position:relative;">
+      <canvas id="chart-custos-tecnico"></canvas>
+    </div>
   </div>
   <div class="card">
     <div class="section-title">Custos por Equipamento</div>
-    <canvas id="chart-custos-equip" height="120"></canvas>
+    <div style="height:200px;position:relative;">
+      <canvas id="chart-custos-equip"></canvas>
+    </div>
   </div>
 </div>
-
+  
   <!-- TABELA -->
   <div class="card">
     <div class="section-title">Detalhamento de OS</div>
