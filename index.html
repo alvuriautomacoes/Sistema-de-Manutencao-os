@@ -1155,96 +1155,108 @@ function mostrarErroLogin(msg){
   el.classList.add("visivel");
 }
 
+const PERFIL_CONFIG = {
+  admin_senior: { icon:"👑", label:"Administrador Sênior" },
+  gerente:      { icon:"📊", label:"Gerente" },
+  admin_enc:    { icon:"📋", label:"Administrativo / Encarregado" },
+  tecnico:      { icon:"🔧", label:"Técnico de Manutenção" },
+};
+
 function entrarNoSistema(usuario){
-  usuarioLogado=usuario;
-  // Salva sessão no localStorage
+  usuarioLogado = usuario;
+  window.usuarioLogado = usuario;
   localStorage.setItem("sessao_usuario", JSON.stringify(usuario));
-  // Mostra loading
-  const ld=document.getElementById("app-loading");
-  ld.style.display="flex";
-  document.getElementById("app-login").style.display="none";
-  document.getElementById("ld-usuario").textContent=usuario.icon+" "+usuario.nome+" · "+usuario.perfilLabel;
-  document.getElementById("ld-sub-txt").textContent="Carregando "+usuario.empresa+"...";
-  // Anima barra
-  let p=0;
-  const bar=document.getElementById("ld-bar");
-  const iv=setInterval(()=>{
-    p+=Math.random()*24;
-    if(p>=100){p=100;clearInterval(iv);}
-    bar.style.width=p+"%";
-  },150);
-  setTimeout(()=>{
-    ld.style.display="none";
+
+  const cfg = PERFIL_CONFIG[usuario.perfil] || { icon:"👤", label: usuario.perfil };
+
+  const ld = document.getElementById("app-loading");
+  ld.style.display = "flex";
+  document.getElementById("app-login").style.display = "none";
+  document.getElementById("ld-usuario").textContent = cfg.icon + " " + usuario.nome + " · " + cfg.label;
+  document.getElementById("ld-sub-txt").textContent = "Carregando sistema...";
+
+  let p = 0;
+  const bar = document.getElementById("ld-bar");
+  const iv = setInterval(() => {
+    p += Math.random() * 24;
+    if(p >= 100){ p = 100; clearInterval(iv); }
+    bar.style.width = p + "%";
+  }, 150);
+
+  setTimeout(() => {
+    ld.style.display = "none";
     iniciarSistema(usuario);
-  },1600);
+  }, 1400);
 }
 
 function iniciarSistema(u){
-  if(u.perfil === "admin"){
-    u.empresaSelecionada = null;
-  } else {
-    u.empresaSelecionada = u.empresa;
-  }
-  // Configura sidebar com dados do usuário
-  const ini=u.nome.split(" ").slice(0,2).map(p=>p[0]).join("").toUpperCase();
-const iniciaisSpan = document.getElementById("sidebar-avatar-iniciais");
-if(iniciaisSpan) iniciaisSpan.textContent=ini;
-  document.getElementById("sidebar-nome").textContent=u.nome;
-  document.getElementById("sidebar-perfil").textContent=u.icon+" "+u.perfilLabel;
-  // Restaura empresa selecionada na sidebar se existir
+  const cfg = PERFIL_CONFIG[u.perfil] || { icon:"👤", label: u.perfil };
+
+  // Sidebar — iniciais
+  const ini = u.nome.split(" ").slice(0,2).map(p => p[0]).join("").toUpperCase();
+  const iniciaisSpan = document.getElementById("sidebar-avatar-iniciais");
+  if(iniciaisSpan) iniciaisSpan.textContent = ini;
+
+  document.getElementById("sidebar-nome").textContent = u.nome;
+  document.getElementById("sidebar-perfil").textContent = cfg.icon + " " + cfg.label;
+
+  // Empresa na sidebar
   const empresaNomeSalvo = localStorage.getItem("empresa_selecionada_nome");
   const empresaIdSalvo   = localStorage.getItem("empresa_selecionada_id");
- if(empresaNomeSalvo && empresaIdSalvo){
-  u.empresa_id          = empresaIdSalvo;
-  u.empresaSelecionada  = empresaNomeSalvo;
-  document.getElementById("sidebar-empresa").textContent = empresaNomeSalvo;
-  const empresa = window.empresasData?.find(e => String(e.id) === String(empresaIdSalvo));
-  const logoEl = document.getElementById("sidebar-logo-empresa");
-  const iniciaisEl = document.getElementById("sidebar-avatar-iniciais");
-  if(empresa?.logo_url){
-    logoEl.src = empresa.logo_url;
-    logoEl.style.display = "block";
-    iniciaisEl.style.display = "none";
+  if(empresaNomeSalvo && empresaIdSalvo){
+    u.empresa_id         = empresaIdSalvo;
+    u.empresaSelecionada = empresaNomeSalvo;
+    document.getElementById("sidebar-empresa").textContent = empresaNomeSalvo;
+    const empresa    = window.empresasData?.find(e => String(e.id) === String(empresaIdSalvo));
+    const logoEl     = document.getElementById("sidebar-logo-empresa");
+    const iniciaisEl = document.getElementById("sidebar-avatar-iniciais");
+    if(empresa?.logo_url){
+      logoEl.src = empresa.logo_url;
+      logoEl.style.display = "block";
+      iniciaisEl.style.display = "none";
+    } else {
+      logoEl.style.display = "none";
+      iniciaisEl.style.display = "block";
+    }
   } else {
-    logoEl.style.display = "none";
-    iniciaisEl.style.display = "block";
+    document.getElementById("sidebar-empresa").textContent = "—";
   }
-} 
- else {
-  document.getElementById("sidebar-empresa").textContent = u.empresa || "—";
-}
-  // Aplica visibilidade dos itens do menu conforme perfil
-  const todosNavs=["dashboard","os","equip","planos","tecnicos","usuarios"];
-  todosNavs.forEach(id=>{
-    const btn=document.getElementById("nav-"+id);
-    if(!btn)return;
+
+  // Menu — visibilidade por perfil
+  const todosNavs = ["dashboard","os","equip","planos","tecnicos","usuarios"];
+  todosNavs.forEach(id => {
+    const btn = document.getElementById("nav-" + id);
+    if(!btn) return;
     if(u.acesso.includes(id)){
       btn.classList.remove("bloqueado");
-      btn.style.display="";
-      btn.onclick=()=>irPara(id);
+      btn.style.display = "";
+      btn.onclick = () => irPara(id);
     } else {
-      btn.style.display="none";
-      btn.onclick=null;
+      btn.style.display = "none";
+      btn.onclick = null;
     }
   });
-  // Banner de perfil no dashboard
-  document.getElementById("perfil-banner").style.display="flex";
-  document.getElementById("pb-icon").textContent=u.icon;
-  document.getElementById("pb-txt").textContent=u.nome+" · "+u.perfilLabel;
-  document.getElementById("pb-sub").textContent=u.empresa;
-  document.getElementById("dash-subtitulo").textContent="Acompanhe o status da operação";
-  // Controle de botões criar/editar conforme perfil
-  const podeC=u.podeCadastrar;
-  const btnIds=["btn-nova-os","btn-novo-equip","btn-novo-plano","btn-novo-prof"];
-  btnIds.forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.style.display=podeC?"":"none";
+
+  // Banner dashboard
+  document.getElementById("perfil-banner").style.display = "flex";
+  document.getElementById("pb-icon").textContent  = cfg.icon;
+  document.getElementById("pb-txt").textContent   = u.nome + " · " + cfg.label;
+  document.getElementById("pb-sub").textContent   = u.empresaSelecionada || "—";
+  document.getElementById("dash-subtitulo").textContent = "Acompanhe o status da operação";
+
+  // Botões cadastrar
+  const podeC = u.podeCadastrar;
+  ["btn-nova-os","btn-novo-equip","btn-novo-plano","btn-novo-prof"].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = podeC ? "" : "none";
   });
-  // Mostra o sistema
-  document.getElementById("app-sistema").style.display="block";
-  // Verifica se há tela e empresa salvas (restauração de sessão)
+
+  document.getElementById("app-sistema").style.display = "block";
+
+  // Navegação inicial
   const telaAnterior = localStorage.getItem("tela_atual");
   const temEmpresa   = !!localStorage.getItem("empresa_selecionada_id");
+
   if(u.perfil === "admin_senior"){
     if(temEmpresa && telaAnterior && telaAnterior !== "empresas"){
       mostrarMenuNav();
@@ -1262,10 +1274,9 @@ if(iniciaisSpan) iniciaisSpan.textContent=ini;
       : (u.acesso[0] || "os");
     irPara(tela);
   }
-  // Atualizações gerais
+
   atualizarBadgeUrgente();
 }
-
 // Esconde itens de navegação
 function ocultarMenuNav(){
   if(usuarioLogado?.perfil === "admin_senior"){
