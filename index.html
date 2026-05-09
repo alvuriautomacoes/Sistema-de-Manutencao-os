@@ -3187,13 +3187,15 @@ const { data: { session } } = await supabaseClient.auth.getSession();
 console.log("Sessão:", session?.access_token ? "OK" : "SEM TOKEN");
 
 console.log("Chamando Edge Function...");
+const { data: { session } } = await supabaseClient.auth.getSession();
 const response = await fetch(
   "https://dbopqmnxpzifbeqobyhl.supabase.co/functions/v1/criar-usuario",
   {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${session.access_token}`
+      "Authorization": `Bearer ${session.access_token}`,
+      "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRib3BxbW54cHppZmJlcW9ieWhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzOTI5NjcsImV4cCI6MjA2MTk2ODk2N30.oriA-9ToMTu8XLJK7KCSIhFNGu5k3SrQCVGPeTWJPmQ"
     },
     body: JSON.stringify({ nome, cpf, email, senha, perfil, empresa_id, ativo })
   }
