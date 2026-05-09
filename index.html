@@ -1405,19 +1405,57 @@ const STATUS_PROF={
   ativo:  {label:"Ativo",  bg:"var(--e-ativo-bg)",  txt:"var(--e-ativo-txt)",  bd:"var(--e-ativo-bd)"},
   inativo:{label:"Inativo",bg:"var(--e-inativo-bg)",txt:"var(--e-inativo-txt)",bd:"var(--e-inativo-bd)"},
 };
-const STATUS_SEQ=["aberta","andamento","aguardando","concluida"];
-let filtroOS="todos", osDetalheId=null, profDetalheId=null, profEditandoId=null, osEditandoId=null, equipDetalheId=null, planoDetalheId=null;
+const STATUS_SEQ = ["aberta","andamento","aguardando","concluida"];
 
-function badge(label,bg,txt,bd){return `<span class="badge" style="background:${bg};color:${txt};border-color:${bd}">${label}</span>`;}
-function badgeTipo(label){return `<span class="badge tipo-badge">${label}</span>`;}
-function abrirModal(id){ document.getElementById(id).classList.add("aberto"); }
-function fecharModal(id){ document.getElementById(id).classList.remove("aberto"); }
-function hoje(){return new Date().toISOString().split("T")[0];}
-function iniciais(nome){return nome.split(" ").slice(0,2).map(p=>p[0]).join("").toUpperCase();}
+let filtroOS = "todos",
+    osDetalheId = null,
+    profDetalheId = null,
+    profEditandoId = null,
+    osEditandoId = null,
+    equipDetalheId = null,
+    planoDetalheId = null;
+
+function badge(label,bg,txt,bd){
+  return `<span class="badge" style="background:${bg};color:${txt};border-color:${bd}">${label}</span>`;
+}
+
+function badgeTipo(label){
+  return `<span class="badge tipo-badge">${label}</span>`;
+}
+
+function abrirModal(id){
+  document.getElementById(id).classList.add("aberto");
+}
+
+function fecharModal(id){
+  document.getElementById(id).classList.remove("aberto");
+}
+
+function hoje(){
+  return new Date().toISOString().split("T")[0];
+}
+
+function iniciais(nome){
+  return nome.split(" ").slice(0,2).map(p=>p[0]).join("").toUpperCase();
+}
+
 function atualizarBadgeUrgente(){
-  const u=ordens.filter(o=>o.prio==="urgente"&&o.status!=="concluida"&&o.status!=="cancelada").length;
-  const el=document.getElementById("badge-urgente");
-  if(el){el.style.display=u>0?"inline-block":"none";el.textContent=u;}
+
+  // 🔒 proteção contra erro "ordens is not defined"
+  const lista = window.ordens || [];
+
+  const u = lista.filter(o =>
+    o.prio === "urgente" &&
+    o.status !== "concluida" &&
+    o.status !== "cancelada"
+  ).length;
+
+  const el = document.getElementById("badge-urgente");
+
+  if(el){
+    el.style.display = u > 0 ? "inline-block" : "none";
+    el.textContent = u;
+  }
 }
 
 // ════════════════════════════════════════════
