@@ -594,7 +594,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     <!-- TÉCNICOS -->
     <div id="tela-tecnicos" class="tela">
       <div class="page-header">
-        <div><div class="page-title">tecnicos de Manutenção</div><div class="page-sub" id="prof-count"></div></div>
+        <div><div class="page-title">Técnicos de Manutenção</div><div class="page-sub" id="prof-count"></div></div>
         <button class="btn btn-primary" id="btn-novo-prof" onclick="abrirModalNovoProf()">+ Novo Técnico</button>
       </div>
       <div class="busca-wrap">
@@ -1445,7 +1445,7 @@ function iniciais(nome){
 function atualizarBadgeUrgente(){
 
   // 🔒 proteção contra erro "ordens is not defined"
-  const lista = window.ordens || [];
+  const lista = window.ordensData || [];
 
   const u = lista.filter(o =>
     o.prio === "urgente" &&
@@ -2212,9 +2212,16 @@ function exportarCSV(){
   if(dados.length===0){alert("Nenhuma OS para exportar.");return;}
   const cab=["Número","Equipamento","Tipo","Prioridade","Status","Técnico","Data Abertura","Data Conclusão","Peças","Descrição"];
   const linhas=dados.map(o=>[
-    o.id,o.equip,o.tipo,PRIO_OS[o.prio]?.label||o.prio,STATUS_OS[o.status]?.label||o.status,
-    o.tecnico,o.abertura,o.conclusao||"",
-    (o.pecas||"").replace(/,/g,";"),o.desc.replace(/,/g,";").replace(/\n/g," ")
+    o.numero||"",
+    o.equipamento_nome||"",
+    o.tipo||"",
+    PRIO_OS[o.prioridade]?.label||o.prioridade||"",
+    STATUS_OS[o.status]?.label||o.status||"",
+    o.tecnico_nome||"",
+    o.data_abertura||"",
+    o.data_conclusao||"",
+    (o.pecas_materiais||"").replace(/,/g,";"),
+    (o.descricao||"").replace(/,/g,";").replace(/\n/g," ")
   ]);
   const csv="\uFEFF"+[cab,...linhas].map(r=>r.map(c=>`"${c}"`).join(",")).join("\n");
   const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
