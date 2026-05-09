@@ -3178,30 +3178,41 @@ async function salvarUsuario(){
     // ➕ CRIAR — via Edge Function
     } else {
 
-      const { data: { session } } = await supabaseClient.auth.getSession();
+  // 🔥 Cria usuário via função PostgreSQL
+  const { data, error } = await supabaseClient.rpc("criar_usuario_auth", {
+    p_email:      email,
+    p_senha:      senha,
+    p_nome:       nome,
+    p_cpf:        cpf,
+    p_perfil:     perfil,
+    p_empresa_id: empresa_id || null,
+    p_ativo:      ativo
+  });
 
-      const response = await fetch(
-        "https://dbopqmnxpzifbeqobyhl.supabase.co/functions/v1/criar-usuario",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session.access_token}`,
-            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRib3BxbW54cHppZmJlcW9ieWhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzOTI5NjcsImV4cCI6MjA2MTk2ODk2N30.oriA-9ToMTu8XLJK7KCSIhFNGu5k3SrQCVGPeTWJPmQ"
-          },
-          body: JSON.stringify({ nome, cpf, email, senha, perfil, empresa_id, ativo })
-        }
-      );
+  if(error){
+    alert(`Erro ao criar usuário: ${error.message}`);
+    return;
+  }
 
-      const result = await response.json();
+  // 🔥 Se técnico, cria em tecnicos também
+  if(perfil === "tecnico"){
+    await supabaseClient.from("tecnicos").insert([{
+      empresa_id,
+      nome,
+      cargo:          "Técnico de Manutenção",
+      matricula:      "",
+      turno:          "Integral",
+      status:         "ativo",
+      telefone:       "",
+      especialidades: [],
+      observacoes:    "",
+      salario:        0,
+      valor_hora:     0
+    }]);
+  }
 
-      if(!response.ok){
-        alert(`Erro ao criar usuário: ${result.error}`);
-        return;
-      }
-
-      alert(`✅ Usuário criado com sucesso!\nEmail: ${email}\nSenha: ${senha}`);
-    }
+  alert(`✅ Usuário criado com sucesso!\nEmail: ${email}\nSenha: ${senha}`);
+}
 
     document.getElementById("modal-novo-usuario").classList.remove("aberto");
     renderUsuarios();
