@@ -3111,7 +3111,6 @@ function abrirEditarUsuario(id){
 }
 
 async function salvarUsuario(){
-  console.log("salvarUsuario chamado");
   const nome   = document.getElementById("nu-nome").value.trim();
   const cpf    = document.getElementById("nu-cpf").value.trim();
   const email  = document.getElementById("nu-email").value.trim();
@@ -3123,12 +3122,10 @@ async function salvarUsuario(){
     alert("Preencha todos os campos obrigatórios!");
     return;
   }
-
   if(!usuarioEditandoId && !senha){
     alert("Informe uma senha para o novo usuário.");
     return;
   }
-
   if(senha && senha.length < 6){
     alert("A senha deve ter no mínimo 6 caracteres.");
     return;
@@ -3179,38 +3176,31 @@ async function salvarUsuario(){
       alert("✅ Usuário atualizado com sucesso!");
 
     // ➕ CRIAR — via Edge Function
-} else {
+    } else {
 
-  // 🔥 Chama Edge Function direto
-console.log("Buscando sessão...");
-const { data: { session } } = await supabaseClient.auth.getSession();
-console.log("Sessão:", session?.access_token ? "OK" : "SEM TOKEN");
+      const { data: { session } } = await supabaseClient.auth.getSession();
 
-console.log("Chamando Edge Function...");
-const { data: { session } } = await supabaseClient.auth.getSession();
-const response = await fetch(
-  "https://dbopqmnxpzifbeqobyhl.supabase.co/functions/v1/criar-usuario",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${session.access_token}`,
-      "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRib3BxbW54cHppZmJlcW9ieWhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzOTI5NjcsImV4cCI6MjA2MTk2ODk2N30.oriA-9ToMTu8XLJK7KCSIhFNGu5k3SrQCVGPeTWJPmQ"
-    },
-    body: JSON.stringify({ nome, cpf, email, senha, perfil, empresa_id, ativo })
-  }
-);
+      const response = await fetch(
+        "https://dbopqmnxpzifbeqobyhl.supabase.co/functions/v1/criar-usuario",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.access_token}`,
+            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRib3BxbW54cHppZmJlcW9ieWhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzOTI5NjcsImV4cCI6MjA2MTk2ODk2N30.oriA-9ToMTu8XLJK7KCSIhFNGu5k3SrQCVGPeTWJPmQ"
+          },
+          body: JSON.stringify({ nome, cpf, email, senha, perfil, empresa_id, ativo })
+        }
+      );
 
-console.log("Response status:", response.status);
-const result = await response.json();
-console.log("Result:", result);
+      const result = await response.json();
 
-if(!response.ok){
-  alert(`Erro ao criar usuário: ${result.error}`);
-  return;
-}
+      if(!response.ok){
+        alert(`Erro ao criar usuário: ${result.error}`);
+        return;
+      }
 
-alert(`✅ Usuário criado com sucesso!\nEmail: ${email}\nSenha: ${senha}`);
+      alert(`✅ Usuário criado com sucesso!\nEmail: ${email}\nSenha: ${senha}`);
     }
 
     document.getElementById("modal-novo-usuario").classList.remove("aberto");
