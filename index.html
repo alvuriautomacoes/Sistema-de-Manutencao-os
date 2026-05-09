@@ -3164,7 +3164,7 @@ document.getElementById("custos-sub").textContent =
     .eq("status", "concluida")
     .gte("data_conclusao", dataInicio)
     .lte("data_conclusao", dataFim)
-    .order("data_conclusao");
+    .order("data_conclusao", { ascending: false });
 
   if(error){ console.error(error); return; }
 
@@ -3224,11 +3224,12 @@ document.getElementById("custos-sub").textContent =
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins:{ legend:{ display:false } }
+        plugins:{ legend:{ display:false } },
+        scales:{ y:{ beginAtZero: true } }  // ← linha adicionada
       }
     }
   );
-
+  
   // ── GRÁFICO: OS por Tipo ──────────────────
   const porTipo = {};
   os.forEach(o => {
