@@ -955,16 +955,6 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 </div>
 
 <script>
-// ════════════════════════════════════════════
-// USUÁRIOS E PERFIS
-// ════════════════════════════════════════════
-
-// Usuário logado (preenchido após login)
-let usuarioLogado = null;
-
-// ════════════════════════════════════════════
-// LOGIN
-// ════════════════════════════════════════════
   
   function gerarAcessoPorPerfil(perfil){
 
@@ -977,6 +967,16 @@ let usuarioLogado = null;
 
   return ACESSO[perfil] || [];
 }
+// ════════════════════════════════════════════
+// USUÁRIOS E PERFIS
+// ════════════════════════════════════════════
+
+// Usuário logado (preenchido após login)
+let usuarioLogado = null;
+
+// ════════════════════════════════════════════
+// LOGIN
+// ════════════════════════════════════════════
   
 function podeAcessar(tela){
   return (window.usuarioLogado?.acesso || []).includes(tela);
