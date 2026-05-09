@@ -965,6 +965,11 @@ let usuarioLogado = null;
 // ════════════════════════════════════════════
 // LOGIN
 // ════════════════════════════════════════════
+  
+function podeAcessar(tela){
+  return (window.usuarioLogado?.acesso || []).includes(tela);
+}
+  
 function formatarCPF(input){
   let v=input.value.replace(/\D/g,"").substring(0,11);
   if(v.length>9) v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,"$1.$2.$3-$4");
@@ -1003,9 +1008,10 @@ function preencherDemo(tipo){
   detectarPerfil();
 }
 
-  async function fazerLogin(){
+  
+async function fazerLogin(){
 
-  const email = document.getElementById("input-cpf").value.trim();
+  const email = document.getElementById("input-email").value.trim();
   const senha = document.getElementById("input-senha").value;
 
   const btn = document.getElementById("btn-entrar");
@@ -1045,18 +1051,17 @@ function preencherDemo(tipo){
       .eq("id", authData.user.id)
       .single();
 
-  btn.disabled = false;
-  spn.style.display = "none";
-  txt.textContent = "Entrar no sistema";
-
   if(perfilError || !perfil){
+
+    btn.disabled = false;
+    spn.style.display = "none";
+    txt.textContent = "Entrar no sistema";
+
     mostrarErroLogin("Perfil não encontrado.");
     return;
   }
 
-  // 🔥 CONFIGURA PERFIL COMPLETO (EVITA TELA BRANCA)
-  const perfilConfig = PERFIS[perfil.perfil];
-
+  // 🔥 CONFIGURA USUÁRIO
   const usuario = {
     id: authData.user.id,
     nome: perfil.nome,
@@ -1065,23 +1070,25 @@ function preencherDemo(tipo){
     perfil: perfil.perfil,
     empresa_id: perfil.empresa_id || null,
 
-    // 🔒 ESSENCIAL (corrige erro includes)
-    acesso: perfilConfig?.acesso || [],
+    acesso: gerarAcessoPorPerfil(perfil.perfil) || [],
 
-    somentePropriaOS: perfilConfig?.somentePropriaOS || false,
-    podeEditar: perfilConfig?.podeEditar || false,
-    podeCadastrar: perfilConfig?.podeCadastrar || false,
-    podeExcluir: perfilConfig?.podeExcluir || false,
-    verDashboard: perfilConfig?.verDashboard || false,
-    acessoTodasEmpresas: perfilConfig?.acessoTodasEmpresas || false,
-    perfisQuePodeCriar: perfilConfig?.perfisQuePodeCriar || []
+    somentePropriaOS: perfil.perfil === "tecnico",
+    podeEditar: ["admin_senior", "gerente", "admin_enc"].includes(perfil.perfil),
+    podeCadastrar: ["admin_senior", "gerente", "admin_enc"].includes(perfil.perfil),
+    podeExcluir: ["admin_senior", "gerente"].includes(perfil.perfil),
+    verDashboard: perfil.perfil !== "tecnico",
+    acessoTodasEmpresas: perfil.perfil === "admin_senior",
+    perfisQuePodeCriar: getPerfisCriaveis(perfil.perfil)
   };
 
-  // 💾 salva global (IMPORTANTE)
+  // 💾 salva global
   window.usuarioLogado = usuario;
-
-  // 💾 salva sessão
   localStorage.setItem("usuario_logado", JSON.stringify(usuario));
+
+  // 🔓 libera UI
+  btn.disabled = false;
+  spn.style.display = "none";
+  txt.textContent = "Entrar no sistema";
 
   // 🚀 entra no sistema
   entrarNoSistema(usuario);
@@ -3399,10 +3406,10 @@ async function irPara(tela){
   if(!usuarioLogado) return;
 
   // 🔒 Verifica acesso corretamente
-  if(!usuarioLogado.acesso.includes(tela)){
-    alert("Você não possui acesso a esta área.");
-    return;
-  }
+if(!podeAcessar(tela)){
+  alert("Você não possui acesso a esta área.");
+  return;
+}
 
   // Troca telas
   document.querySelectorAll(".tela").forEach(t => 
