@@ -3186,13 +3186,13 @@ document.getElementById("custos-sub").textContent =
   { label:"OS Concluídas",      val: os.length,                                         icon:'<i class="fa-solid fa-clipboard-check"></i>',       cls:"accent-ok" },
   { label:"Tempo Médio por OS", val: formatarTempo(Math.round(tempoMedio)),             icon:'<i class="fa-solid fa-stopwatch"></i>',             cls:"" },
   { label:"Tempo Total",        val: formatarTempo(tempoTotal),                         icon:'<i class="fa-solid fa-clock"></i>',                 cls:"" },
-].map(s => `
+.map(s => `
   <div class="stat-card ${s.cls}">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-      <div class="stat-icon" style="font-size:16px;color:var(--blue-400)">${s.icon}</div>
+    <div style="text-align:center;margin-bottom:8px;">
+      <div class="stat-icon" style="font-size:20px;color:var(--blue-400)">${s.icon}</div>
     </div>
-    <div class="stat-label" style="font-size:11px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">${s.label}</div>
-    <div class="stat-num" style="font-size:20px;line-height:1.2;">${s.val}</div>
+    <div class="stat-label" style="font-size:11px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;text-align:center;">${s.label}</div>
+    <div class="stat-num" style="font-size:20px;line-height:1.2;text-align:center;">${s.val}</div>
   </div>`
 ).join("");
 
