@@ -2478,6 +2478,7 @@ async function salvarEquip(){
     modelo:         document.getElementById("ne-modelo").value.trim(),
     serie:          document.getElementById("ne-serie").value.trim(),
     setor:          document.getElementById("ne-setor").value,
+    status:         document.getElementById("ne-status").value,
     dados_tecnicos: document.getElementById("ne-dados-tecnicos").value.trim()
   };
 
@@ -2492,7 +2493,6 @@ async function salvarEquip(){
     }
     equipEditandoId = null;
   } else {
-    dados.status = "ativo";
 
     // 🔥 Gera NI sequencial por empresa
     const { data: ultimos } = await supabaseClient
