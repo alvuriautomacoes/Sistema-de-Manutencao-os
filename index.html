@@ -3180,16 +3180,16 @@ document.getElementById("custos-sub").textContent =
   const taxaConclusao = os.length;
 
   document.getElementById("custos-kpis").innerHTML = [
-  { label:"Custo Total",        val:`R$ ${custoTotal.toFixed(2).replace(".",",")}`,       icon:"💰", cls:"accent-urgente" },
-  { label:"Custo Mão de Obra",  val:`R$ ${custoMaoObra.toFixed(2).replace(".",",")}`,     icon:"👷", cls:"" },
-  { label:"Custo Adicional",    val:`R$ ${custoAdicional.toFixed(2).replace(".",",")}`,   icon:"🔩", cls:"" },
-  { label:"OS Concluídas",      val: os.length,                                           icon:"✅", cls:"accent-ok" },
-  { label:"Tempo Médio por OS", val: formatarTempo(Math.round(tempoMedio)),               icon:"⏱", cls:"" },
-  { label:"Tempo Total",        val: formatarTempo(tempoTotal),                           icon:"🕐", cls:"" },
+  { label:"Custo Total",        val:`R$ ${custoTotal.toFixed(2).replace(".",",")}`,     icon:'<i class="fa-solid fa-circle-dollar-to-slot"></i>', cls:"accent-urgente" },
+  { label:"Custo Mão de Obra",  val:`R$ ${custoMaoObra.toFixed(2).replace(".",",")}`,   icon:'<i class="fa-solid fa-user-gear"></i>',             cls:"" },
+  { label:"Custo Adicional",    val:`R$ ${custoAdicional.toFixed(2).replace(".",",")}`, icon:'<i class="fa-solid fa-screwdriver-wrench"></i>',    cls:"" },
+  { label:"OS Concluídas",      val: os.length,                                         icon:'<i class="fa-solid fa-clipboard-check"></i>',       cls:"accent-ok" },
+  { label:"Tempo Médio por OS", val: formatarTempo(Math.round(tempoMedio)),             icon:'<i class="fa-solid fa-stopwatch"></i>',             cls:"" },
+  { label:"Tempo Total",        val: formatarTempo(tempoTotal),                         icon:'<i class="fa-solid fa-clock"></i>',                 cls:"" },
 ].map(s => `
   <div class="stat-card ${s.cls}">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-      <div class="stat-icon">${s.icon}</div>
+      <div class="stat-icon" style="font-size:16px;color:var(--blue-400)">${s.icon}</div>
     </div>
     <div class="stat-label" style="font-size:11px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">${s.label}</div>
     <div class="stat-num" style="font-size:20px;line-height:1.2;">${s.val}</div>
