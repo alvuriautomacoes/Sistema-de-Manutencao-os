@@ -3122,15 +3122,15 @@ async function renderUsuarios(){
   const filtroPerfil = document.getElementById("usuarios-filtro-perfil")?.value || "";
 
   let query = supabaseClient
-    .from("perfis")                          // ← tabela alterada
-    .select("*, empresas(nome)")
-    .eq("ativo", true)
-    .order("nome");
+  .from("perfis")
+  .select("*, empresas(nome)")
+  .eq("ativo", true)
+  .order("nome");
 
-  // admin_senior vê todos — gerente e admin_enc veem só da sua empresa
-  if(usuarioLogado?.perfil !== "admin_senior"){
-    query = query.eq("empresa_id", empresa_id);
-  }
+// todos os perfis filtram pela empresa selecionada
+if(empresa_id){
+  query = query.eq("empresa_id", empresa_id);
+}
 
   // Filtra perfis que pode ver
   const perfisVisiveis = usuarioLogado?.perfisQuePodeCriar || [];
