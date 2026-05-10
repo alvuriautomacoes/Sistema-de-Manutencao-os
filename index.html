@@ -850,6 +850,15 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     </div>
     <div class="field"><label>Número de Série</label><input id="ne-serie" placeholder="Ex: SN-44521"/></div>
     <div class="field"><label>Setor</label><select id="ne-setor"><option>Produção</option><option>Usinagem</option><option>Logística</option><option>Manutenção</option><option>Qualidade</option></select></div>
+    <div class="field">
+      <label>Status</label>
+      <select id="ne-status">
+        <option value="ativo">Ativo</option>
+        <option value="alerta">Alerta</option>
+        <option value="critico">Crítico</option>
+        <option value="inativo">Inativo</option>
+      </select>
+    </div>
     <div class="field"><label>Dados Técnicos</label><textarea id="ne-dados-tecnicos" rows="3" placeholder="Ex: Potência: 15kW, Tensão: 380V, Pressão máx: 10 bar..."></textarea></div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="document.getElementById('modal-novo-equip').classList.remove('aberto')">Cancelar</button><button class="btn btn-primary" onclick="salvarEquip()">Salvar</button></div>
   </div>
