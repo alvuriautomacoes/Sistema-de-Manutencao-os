@@ -1667,6 +1667,50 @@ document.getElementById("dash-stats").innerHTML = stats.map(s => `
     <div class="stat-sub" style="text-align:center;">${s.sub}</div>
   </div>`).join("");
 
+  // 🔥 ALERTAS
+const osUrgentes  = ordensVisiveis.filter(o => o.prioridade === "urgente" && o.status !== "concluida" && o.status !== "cancelada");
+const equipCrit   = equipDB.filter(e => e.status === "critico");
+const planosVenc  = planosDB.filter(p => p.status === "vencido");
+
+const temAlertas = osUrgentes.length > 0 || equipCrit.length > 0 || planosVenc.length > 0;
+
+// Cria ou limpa container de alertas
+let alertasEl = document.getElementById("dash-alertas");
+if(!alertasEl){
+  alertasEl = document.createElement("div");
+  alertasEl.id = "dash-alertas";
+  document.getElementById("dash-stats").insertAdjacentElement("afterend", alertasEl);
+}
+
+alertasEl.innerHTML = !temAlertas ? "" : `
+  <div style="margin-bottom:16px;">
+    <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px;">⚠️ Alertas que requerem atenção</div>
+    ${osUrgentes.map(o => `
+      <div class="alerta-bar" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="irPara('os')">
+        <div>
+          <span style="font-weight:700">${o.numero}</span> — ${o.equipamento_nome||"—"}
+          <span style="font-size:11px;margin-left:8px;color:var(--sub)">${o.tecnico_nome||"Sem técnico"}</span>
+        </div>
+        <span class="badge" style="background:var(--p-urgente-bg);color:var(--p-urgente-txt);border-color:var(--p-urgente-bd)">🚨 Urgente</span>
+      </div>`).join("")}
+    ${equipCrit.map(e => `
+      <div class="alerta-bar" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:#fff8ec;border-color:#f0c870;color:#b05010;" onclick="irPara('equip')">
+        <div>
+          <span style="font-weight:700">${e.nome}</span> — ${e.setor||"—"}
+        </div>
+        <span class="badge" style="background:var(--e-critico-bg);color:var(--e-critico-txt);border-color:var(--e-critico-bd)">⚠️ Crítico</span>
+      </div>`).join("")}
+    ${planosVenc.map(p => `
+      <div class="alerta-bar" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:#fff8ec;border-color:#f0c870;color:#b05010;" onclick="irPara('planos')">
+        <div>
+          <span style="font-weight:700">${p.nome}</span> — ${p.equipamento_nome||"—"}
+          <span style="font-size:11px;margin-left:8px;color:var(--sub)">Venceu em ${p.proxima_execucao}</span>
+        </div>
+        <span class="badge" style="background:var(--s-cancelada-bg);color:var(--s-cancelada-txt);border-color:var(--s-cancelada-bd)">📅 Vencido</span>
+      </div>`).join("")}
+  </div>
+`;
+
   // 🔥 OS Recentes
   document.getElementById("dash-os-recentes").innerHTML = ordensVisiveis.slice(0,4).map(o => `
     <div class="mini-item">
