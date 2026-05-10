@@ -1650,20 +1650,22 @@ async function renderDashboard(){
   const vencidos  = planosDB.filter(p => p.status === "vencido").length;
 
   const stats = [
-    { label:"OS em Aberto",     val: abertas,       icon:"🔧", sub:"ordens ativas",      cls:"" },
-    { label:"Urgentes",         val: urgentes,      icon:"🚨", sub:"requerem atenção",   cls: urgentes > 0 ? "accent-urgente" : "accent-ok" },
-    { label:"Equip. Críticos",  val: criticos,      icon:"⚠️", sub:"precisam de OS",     cls: criticos > 0 ? "accent-alerta"  : "accent-ok" },
-    { label:"Planos Vencidos",  val: vencidos,      icon:"📅", sub:"agendamentos",       cls: vencidos > 0 ? "accent-urgente" : "accent-ok" },
-    { label:"Técnicos",    val: profDB.length, icon:"👷", sub:"ativos",             cls:"accent-ok" },
-  ];
+  { label:"OS em Aberto",     val: abertas,       icon:'<i class="fa-solid fa-screwdriver-wrench"></i>',  sub:"ordens ativas",      cls:"" },
+  { label:"Urgentes",         val: urgentes,      icon:'<i class="fa-solid fa-triangle-exclamation"></i>', sub:"requerem atenção",   cls: urgentes > 0 ? "accent-urgente" : "accent-ok" },
+  { label:"Equip. Críticos",  val: criticos,      icon:'<i class="fa-solid fa-gear"></i>',                sub:"precisam de OS",     cls: criticos > 0 ? "accent-alerta"  : "accent-ok" },
+  { label:"Planos Vencidos",  val: vencidos,      icon:'<i class="fa-solid fa-calendar-xmark"></i>',      sub:"agendamentos",       cls: vencidos > 0 ? "accent-urgente" : "accent-ok" },
+  { label:"Técnicos",         val: profDB.length, icon:'<i class="fa-solid fa-helmet-safety"></i>',       sub:"ativos",             cls:"accent-ok" },
+];
 
-  document.getElementById("dash-stats").innerHTML = stats.map(s => `
-    <div class="stat-card ${s.cls}">
-      <div class="stat-icon">${s.icon}</div>
-      <div class="stat-num">${s.val}</div>
-      <div class="stat-label">${s.label}</div>
-      <div class="stat-sub">${s.sub}</div>
-    </div>`).join("");
+document.getElementById("dash-stats").innerHTML = stats.map(s => `
+  <div class="stat-card ${s.cls}">
+    <div style="text-align:center;margin-bottom:8px;">
+      <div class="stat-icon" style="font-size:20px;color:var(--blue-400)">${s.icon}</div>
+    </div>
+    <div class="stat-num" style="text-align:center;">${s.val}</div>
+    <div class="stat-label" style="text-align:center;">${s.label}</div>
+    <div class="stat-sub" style="text-align:center;">${s.sub}</div>
+  </div>`).join("");
 
   // 🔥 OS Recentes
   document.getElementById("dash-os-recentes").innerHTML = ordensVisiveis.slice(0,4).map(o => `
