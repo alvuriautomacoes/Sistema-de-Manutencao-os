@@ -1199,6 +1199,17 @@ function mostrarErroLogin(msg){
   document.getElementById("msg-erro-txt").textContent=msg;
   el.classList.add("visivel");
 }
+  function toggleSenha(){
+  const input = document.getElementById("input-senha");
+  const btn = document.getElementById("btn-toggle-senha");
+  if(input.type === "password"){
+    input.type = "text";
+    btn.textContent = "🙈";
+  } else {
+    input.type = "password";
+    btn.textContent = "👁";
+  }
+}
 
 const PERFIL_CONFIG = {
   admin_senior: { icon:"👑", label:"Administrador Sênior" },
