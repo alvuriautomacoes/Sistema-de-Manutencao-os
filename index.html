@@ -2724,31 +2724,48 @@ async function renderAgenda(){
   const empresa_id = usuarioLogado?.empresa_id;
   if(!empresa_id) return;
 
-  const [resOS, resPlanos] = await Promise.all([
-    supabaseClient
-      .from("ordens_servico")
-      .select("*")
-      .eq("empresa_id", empresa_id)
-      .eq("status", "andamento"),
-    supabaseClient
-      .from("planos_manutencao")
-      .select("*")
-      .eq("empresa_id", empresa_id)
-  ]);
+  const isTecnico = usuarioLogado?.somentePropriaOS;
 
+  // ── OS ──────────────────────────────────────────────────────
+  let queryOS = supabaseClient
+    .from("ordens_servico")
+    .select("*")
+    .eq("empresa_id", empresa_id)
+    .in("status", ["aberta", "andamento"]);
+
+  if(isTecnico){
+    queryOS = queryOS.eq("tecnico_nome", usuarioLogado.nome);
+  }
+
+  // ── PLANOS ──────────────────────────────────────────────────
+  let queryPlanos = supabaseClient
+    .from("planos_manutencao")
+    .select("*")
+    .eq("empresa_id", empresa_id);
+
+  // Técnico NÃO vê planos — só vê as próprias OS
+  if(isTecnico){
+    agendaEventos = [];
+    const { data: os } = await queryOS;
+    agendaEventos = (os || []).map(o => ({
+      id:     o.id,
+      titulo: `${o.numero} — ${o.equipamento_nome||"—"}`,
+      sub:    o.tecnico_nome||"—",
+      data:   o.data_abertura,
+      tipo:   "os",
+      obj:    o
+    }));
+    renderAgendaView();
+    return;
+  }
+
+  // Demais perfis veem tudo
+  const [resOS, resPlanos] = await Promise.all([queryOS, queryPlanos]);
   const os     = resOS.data     || [];
   const planos = resPlanos.data || [];
 
-  const osFiltradas = usuarioLogado?.somentePropriaOS
-    ? os.filter(o => o.tecnico_nome === usuarioLogado.nome)
-    : os;
-
-  const planosFiltrados = usuarioLogado?.somentePropriaOS
-    ? planos.filter(p => p.tecnico_nome === usuarioLogado.nome)
-    : planos;
-
   agendaEventos = [
-    ...osFiltradas.map(o => ({
+    ...os.map(o => ({
       id:     o.id,
       titulo: `${o.numero} — ${o.equipamento_nome||"—"}`,
       sub:    o.tecnico_nome||"—",
@@ -2756,7 +2773,7 @@ async function renderAgenda(){
       tipo:   "os",
       obj:    o
     })),
-    ...planosFiltrados.map(p => ({
+    ...planos.map(p => ({
       id:     p.id,
       titulo: p.nome,
       sub:    p.equipamento_nome||"—",
@@ -2768,6 +2785,7 @@ async function renderAgenda(){
 
   renderAgendaView();
 }
+  
 function renderAgendaView(){
   if(agendaView === "mes")    renderAgendaMes();
   if(agendaView === "semana") renderAgendaSemana();
