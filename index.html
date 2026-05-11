@@ -1567,9 +1567,9 @@ let filtroOS = "todos",
     equipDetalheId = null,
     planoDetalheId = null;
 
-let agendaView = "mes";
-let agendaData = new Date();
-let agendaEventos = [];
+var agendaView = "mes";
+var agendaData = new Date();
+var agendaEventos = [];
 
 function badge(label,bg,txt,bd){
   return `<span class="badge" style="background:${bg};color:${txt};border-color:${bd}">${label}</span>`;
@@ -4131,9 +4131,6 @@ async function retomarCronometro(){
   o.cronometro_inicio = agora;
   renderCronometro(o);
 }
-  let agendaView = "mes";
-let agendaData = new Date();
-let agendaEventos = [];
 
 </script> <!-- ✅ FECHA O SCRIPT PRINCIPAL -->
   
