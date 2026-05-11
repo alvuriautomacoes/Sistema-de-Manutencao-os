@@ -1199,6 +1199,10 @@ function mostrarErroLogin(msg){
   document.getElementById("msg-erro-txt").textContent=msg;
   el.classList.add("visivel");
 }
+  function fecharModalLogin(id){
+  document.getElementById(id).classList.remove("aberto");
+}
+  
   function toggleSenha(){
   const input = document.getElementById("input-senha");
   const btn = document.getElementById("btn-toggle-senha");
