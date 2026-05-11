@@ -2710,13 +2710,6 @@ async function renderPlanos(){
   }).join("");
 }
   
-  // ════════════════════════════════════════════
-// AGENDA
-// ════════════════════════════════════════════
-let agendaView = "mes";
-let agendaData = new Date();
-let agendaEventos = [];
-
 async function renderAgenda(){
   const empresa_id = usuarioLogado?.empresa_id;
   if(!empresa_id) return;
@@ -2733,36 +2726,38 @@ async function renderAgenda(){
       .eq("empresa_id", empresa_id)
   ]);
 
+  const os     = resOS.data     || [];
+  const planos = resPlanos.data || [];
+
   const osFiltradas = usuarioLogado?.somentePropriaOS
-  ? os.filter(o => o.tecnico_nome === usuarioLogado.nome)
-  : os;
+    ? os.filter(o => o.tecnico_nome === usuarioLogado.nome)
+    : os;
 
-const planosFiltrados = usuarioLogado?.somentePropriaOS
-  ? planos.filter(p => p.tecnico_nome === usuarioLogado.nome)
-  : planos;
+  const planosFiltrados = usuarioLogado?.somentePropriaOS
+    ? planos.filter(p => p.tecnico_nome === usuarioLogado.nome)
+    : planos;
 
-agendaEventos = [
-  ...osFiltradas.map(o => ({
-    id:     o.id,
-    titulo: `${o.numero} — ${o.equipamento_nome||"—"}`,
-    sub:    o.tecnico_nome||"—",
-    data:   o.data_abertura,
-    tipo:   "os",
-    obj:    o
-  })),
-  ...planosFiltrados.map(p => ({
-    id:     p.id,
-    titulo: p.nome,
-    sub:    p.equipamento_nome||"—",
-    data:   p.proxima_execucao,
-    tipo:   "plano",
-    obj:    p
-  }))
-];
-  
+  agendaEventos = [
+    ...osFiltradas.map(o => ({
+      id:     o.id,
+      titulo: `${o.numero} — ${o.equipamento_nome||"—"}`,
+      sub:    o.tecnico_nome||"—",
+      data:   o.data_abertura,
+      tipo:   "os",
+      obj:    o
+    })),
+    ...planosFiltrados.map(p => ({
+      id:     p.id,
+      titulo: p.nome,
+      sub:    p.equipamento_nome||"—",
+      data:   p.proxima_execucao,
+      tipo:   "plano",
+      obj:    p
+    }))
+  ];
+
   renderAgendaView();
 }
-
 function renderAgendaView(){
   if(agendaView === "mes")    renderAgendaMes();
   if(agendaView === "semana") renderAgendaSemana();
