@@ -1294,11 +1294,12 @@ function entrarNoSistema(usuario){
     bar.style.width = p + "%";
   }, 150);
 
-  setTimeout(async () => {
+   setTimeout(async () => {
     ld.style.display = "none";
     await iniciarSistema(usuario);
   }, 1400);
-
+}
+  
 async function iniciarSistema(u){
   const cfg = PERFIL_CONFIG[u.perfil] || { icon:"👤", label: u.perfil };
   // Sidebar — iniciais
