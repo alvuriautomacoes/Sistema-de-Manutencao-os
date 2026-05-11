@@ -1309,24 +1309,30 @@ async function iniciarSistema(u){
   document.getElementById("sidebar-perfil").textContent = cfg.icon + " " + cfg.label;
   // Empresa na sidebar
   const empresaNomeSalvo = localStorage.getItem("empresa_selecionada_nome");
-  const empresaIdSalvo   = localStorage.getItem("empresa_selecionada_id");
-  if(empresaNomeSalvo && empresaIdSalvo){
-    u.empresa_id         = empresaIdSalvo;
-    u.empresaSelecionada = empresaNomeSalvo;
-    document.getElementById("sidebar-empresa").textContent = empresaNomeSalvo;
-    const logoEl     = document.getElementById("sidebar-logo-empresa");
-    const iniciaisEl = document.getElementById("sidebar-avatar-iniciais");
-    // 🔥 Busca empresa no banco se não estiver no cache
-    let empresa = window.empresasData?.find(e => String(e.id) === String(empresaIdSalvo));
-    if(!empresa){
-      const { data } = await supabaseClient
-        .from("empresas")
-        .select("logo_url")
-        .eq("id", empresaIdSalvo)
-        .single();
-      empresa = data;
-    }
-    if(empresa?.logo_url){
+const empresaIdSalvo   = localStorage.getItem("empresa_selecionada_id");
+
+// 🔥 Gerente e outros perfis fixos usam empresa_id do próprio perfil
+const empresaId = empresaIdSalvo || u.empresa_id;
+
+if(empresaId){
+  u.empresa_id = empresaId;
+  if(empresaNomeSalvo) u.empresaSelecionada = empresaNomeSalvo;
+
+  const logoEl     = document.getElementById("sidebar-logo-empresa");
+  const iniciaisEl = document.getElementById("sidebar-avatar-iniciais");
+
+  // Busca empresa no banco sempre que tiver empresa_id
+  const { data: empresa } = await supabaseClient
+    .from("empresas")
+    .select("nome, logo_url")
+    .eq("id", empresaId)
+    .single();
+
+  if(empresa){
+    u.empresaSelecionada = u.empresaSelecionada || empresa.nome;
+    document.getElementById("sidebar-empresa").textContent = empresa.nome;
+
+    if(empresa.logo_url){
       logoEl.src = empresa.logo_url;
       logoEl.style.display = "block";
       iniciaisEl.style.display = "none";
@@ -1334,9 +1340,10 @@ async function iniciarSistema(u){
       logoEl.style.display = "none";
       iniciaisEl.style.display = "block";
     }
-  } else {
-    document.getElementById("sidebar-empresa").textContent = "—";
   }
+} else {
+  document.getElementById("sidebar-empresa").textContent = "—";
+}
   // Menu — visibilidade por perfil
   const todosNavs = ["dashboard","os","equip","planos","tecnicos","usuarios"];
   todosNavs.forEach(id => {
