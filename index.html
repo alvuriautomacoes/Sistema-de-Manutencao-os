@@ -2984,6 +2984,9 @@ async function excluirPlano(id, nome){
     obsWrap.style.display = "none";
   }
 
+  const podeEditar  = usuarioLogado?.podeEditar;
+  const podeExcluir = usuarioLogado?.podeExcluir;
+
   document.getElementById("dpl-acoes").innerHTML = `
     <button class="btn btn-ghost" id="dpl-editar-btn" onclick="editarPlanoAtual()" style="flex:1;${!podeEditar?'display:none;':''}">✏️ Editar</button>
     ${v ? `<button class="btn btn-primary" onclick="gerarOSdoPlano('${p.id}')" style="flex:1">🔧 Gerar OS</button>` : ""}
