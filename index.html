@@ -1567,6 +1567,10 @@ let filtroOS = "todos",
     equipDetalheId = null,
     planoDetalheId = null;
 
+let agendaView = "mes";
+let agendaData = new Date();
+let agendaEventos = [];
+
 function badge(label,bg,txt,bd){
   return `<span class="badge" style="background:${bg};color:${txt};border-color:${bd}">${label}</span>`;
 }
