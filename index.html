@@ -3032,6 +3032,10 @@ function excluirPlanoDoModal(){
   const empresa_id = usuarioLogado?.empresa_id;
   if(!empresa_id){ alert("Nenhuma empresa selecionada."); return; }
 
+  // 🔥 Bloqueia clique duplo — atualiza cache local imediatamente
+  const idxPlano = window.planosData.findIndex(x => String(x.id) === String(planoId));
+  if(idxPlano !== -1) window.planosData[idxPlano]._gerando = true;
+
   const prioMap = {
     "Preventiva": "media",
     "Preditiva":  "media",
@@ -3071,7 +3075,7 @@ function excluirPlanoDoModal(){
     return;
   }
 
-  // 🔥 Calcula próxima execução baseado na frequência
+  // 🔥 Calcula próxima execução
   const freqMap = {
     "Mensal":     1,
     "Trimestral": 3,
@@ -3083,23 +3087,40 @@ function excluirPlanoDoModal(){
   proxima.setMonth(proxima.getMonth() + meses);
   const proximaStr = proxima.toISOString().split("T")[0];
 
-  // 🔥 Atualiza o plano no banco
-  await supabaseClient
+  // 🔥 Atualiza banco E aguarda confirmação
+  const { error: errPlano } = await supabaseClient
     .from("planos_manutencao")
     .update({
-      status: "ok",
+      status:           "ok",
       proxima_execucao: proximaStr
     })
     .eq("id", planoId);
 
+  if(errPlano){
+    alert("OS gerada mas erro ao atualizar plano: " + errPlano.message);
+  }
+
+  // 🔥 Atualiza cache local do plano imediatamente
+  if(idxPlano !== -1){
+    window.planosData[idxPlano].status           = "ok";
+    window.planosData[idxPlano].proxima_execucao = proximaStr;
+    window.planosData[idxPlano]._gerando         = false;
+  }
+
   // Fecha modal se estiver aberto
   document.getElementById("modal-detalhe-plano")?.classList.remove("aberto");
 
-  // 🔥 Limpa cache e atualiza dashboard antes de redirecionar
-  window.planosData = [];
+  // 🔥 Força rebusca completa do banco antes de renderizar
+  const { data: planosAtualizados } = await supabaseClient
+    .from("planos_manutencao")
+    .select("*")
+    .eq("empresa_id", empresa_id);
+  window.planosData = planosAtualizados || [];
+
+  // 🔥 Renderiza dashboard com dados frescos
   await renderDashboard();
 
-  alert(`✅ ${numero} gerada com sucesso!\nRedirecionando para Ordens de Serviço...`);
+  alert(`✅ ${numero} gerada!\nPlano atualizado para: ${proximaStr}\nRedirecionando...`);
   await irPara("os");
 }
   
