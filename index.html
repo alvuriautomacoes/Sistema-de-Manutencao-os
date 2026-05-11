@@ -3032,7 +3032,6 @@ function excluirPlanoDoModal(){
   const empresa_id = usuarioLogado?.empresa_id;
   if(!empresa_id){ alert("Nenhuma empresa selecionada."); return; }
 
-  // Define prioridade baseada no tipo
   const prioMap = {
     "Preventiva": "media",
     "Preditiva":  "media",
@@ -3040,13 +3039,9 @@ function excluirPlanoDoModal(){
   };
   const prioridade = prioMap[p.tipo] || "media";
 
-  // Busca equipamento
   const eq = (window.equipamentosData||[]).find(e => String(e.id) === String(p.equipamento_id));
-
-  // Busca técnico
   const tecnico = (window.tecnicosData||[]).find(t => t.nome === p.tecnico_nome);
 
-  // Gera número da OS
   const { data: todasOS } = await supabaseClient
     .from("ordens_servico")
     .select("id")
@@ -3076,15 +3071,36 @@ function excluirPlanoDoModal(){
     return;
   }
 
-  alert(`✅ OS ${numero} gerada com sucesso!\nEquipamento: ${p.equipamento_nome}\nTécnico: ${p.tecnico_nome||"—"}`);
+  // 🔥 Calcula próxima execução baseado na frequência
+  const freqMap = {
+    "Mensal":     1,
+    "Trimestral": 3,
+    "Semestral":  6,
+    "Anual":      12
+  };
+  const meses = freqMap[p.frequencia] || 1;
+  const proxima = new Date();
+  proxima.setMonth(proxima.getMonth() + meses);
+  const proximaStr = proxima.toISOString().split("T")[0];
+
+  // 🔥 Atualiza o plano no banco
+  await supabaseClient
+    .from("planos_manutencao")
+    .update({
+      status: "ok",
+      proxima_execucao: proximaStr
+    })
+    .eq("id", planoId);
 
   // Fecha modal se estiver aberto
   document.getElementById("modal-detalhe-plano")?.classList.remove("aberto");
 
-  // Recarrega dados
-  renderPlanos();
-  renderDashboard();
-  atualizarBadgeUrgente();
+  // 🔥 Limpa cache e atualiza dashboard antes de redirecionar
+  window.planosData = [];
+  await renderDashboard();
+
+  alert(`✅ ${numero} gerada com sucesso!\nRedirecionando para Ordens de Serviço...`);
+  await irPara("os");
 }
   
 async function confirmarExcluirPlanoModal(){
