@@ -1300,17 +1300,14 @@ function entrarNoSistema(usuario){
   }, 1400);
 }
 
-function iniciarSistema(u){
+async function iniciarSistema(u){
   const cfg = PERFIL_CONFIG[u.perfil] || { icon:"👤", label: u.perfil };
-
   // Sidebar — iniciais
   const ini = u.nome.split(" ").slice(0,2).map(p => p[0]).join("").toUpperCase();
   const iniciaisSpan = document.getElementById("sidebar-avatar-iniciais");
   if(iniciaisSpan) iniciaisSpan.textContent = ini;
-
   document.getElementById("sidebar-nome").textContent = u.nome;
   document.getElementById("sidebar-perfil").textContent = cfg.icon + " " + cfg.label;
-
   // Empresa na sidebar
   const empresaNomeSalvo = localStorage.getItem("empresa_selecionada_nome");
   const empresaIdSalvo   = localStorage.getItem("empresa_selecionada_id");
@@ -1318,9 +1315,18 @@ function iniciarSistema(u){
     u.empresa_id         = empresaIdSalvo;
     u.empresaSelecionada = empresaNomeSalvo;
     document.getElementById("sidebar-empresa").textContent = empresaNomeSalvo;
-    const empresa    = window.empresasData?.find(e => String(e.id) === String(empresaIdSalvo));
     const logoEl     = document.getElementById("sidebar-logo-empresa");
     const iniciaisEl = document.getElementById("sidebar-avatar-iniciais");
+    // 🔥 Busca empresa no banco se não estiver no cache
+    let empresa = window.empresasData?.find(e => String(e.id) === String(empresaIdSalvo));
+    if(!empresa){
+      const { data } = await supabaseClient
+        .from("empresas")
+        .select("logo_url")
+        .eq("id", empresaIdSalvo)
+        .single();
+      empresa = data;
+    }
     if(empresa?.logo_url){
       logoEl.src = empresa.logo_url;
       logoEl.style.display = "block";
@@ -1332,7 +1338,6 @@ function iniciarSistema(u){
   } else {
     document.getElementById("sidebar-empresa").textContent = "—";
   }
-
   // Menu — visibilidade por perfil
   const todosNavs = ["dashboard","os","equip","planos","tecnicos","usuarios"];
   todosNavs.forEach(id => {
@@ -1347,46 +1352,39 @@ function iniciarSistema(u){
       btn.onclick = null;
     }
   });
-
   // Banner dashboard
   document.getElementById("perfil-banner").style.display = "flex";
   document.getElementById("pb-icon").textContent  = cfg.icon;
   document.getElementById("pb-txt").textContent   = u.nome + " · " + cfg.label;
   document.getElementById("pb-sub").textContent   = u.empresaSelecionada || "—";
   document.getElementById("dash-subtitulo").textContent = "Acompanhe o status da operação";
-
   // Botões cadastrar
   const podeC = u.podeCadastrar;
   ["btn-nova-os","btn-novo-equip","btn-novo-plano","btn-novo-prof"].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.style.display = podeC ? "" : "none";
   });
-
   document.getElementById("app-sistema").style.display = "block";
-
   // Navegação inicial
   const telaAnterior = localStorage.getItem("tela_atual");
   const temEmpresa   = !!localStorage.getItem("empresa_selecionada_id");
-
   if(u.perfil === "admin_senior"){
-  if(temEmpresa && telaAnterior && telaAnterior !== "empresas"){
-    mostrarMenuNav();
-    document.getElementById("btn-voltar-empresas").style.display = "block";
-    irPara(telaAnterior);
+    if(temEmpresa && telaAnterior && telaAnterior !== "empresas"){
+      mostrarMenuNav();
+      document.getElementById("btn-voltar-empresas").style.display = "block";
+      irPara(telaAnterior);
+    } else {
+      ocultarMenuNav();
+      irPara("empresas");
+      renderEmpresas();
+    }
   } else {
-    ocultarMenuNav();
-    irPara("empresas");
-    renderEmpresas();
-  }
-}
-  else {
     mostrarMenuNav();
     const tela = (telaAnterior && u.acesso.includes(telaAnterior))
       ? telaAnterior
       : (u.acesso[0] || "os");
     irPara(tela);
   }
-
   atualizarBadgeUrgente();
 }
  
