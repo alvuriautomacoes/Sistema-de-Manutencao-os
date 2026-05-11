@@ -431,7 +431,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
       <div class="modal-login-title">🔑 Recuperar Senha</div>
       <button class="modal-login-close" onclick="fecharModalLogin('modal-esqueci')">✕</button>
     </div>
-    <p style="font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:18px;">Informe seu CPF cadastrado. O administrador receberá uma solicitação de redefinição.</p>
+    <p style="font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:18px;">Informe seu Email cadastrado. O administrador receberá uma solicitação de redefinição.</p>
     <div class="field-login">
   <label>Email cadastrado</label>
   <div class="input-wrap">
@@ -1469,6 +1469,18 @@ async function enviarRecuperacao(){
 
 window.addEventListener("load", async () => {
 
+  // 🔥 RECUPERAÇÃO DE SENHA — captura token da URL
+  const hash = window.location.hash;
+  const params = new URLSearchParams(hash.replace("#", "?"));
+  const tipo = params.get("type");
+
+  if(tipo === "recovery"){
+    document.getElementById("app-login").style.display = "flex";
+    document.getElementById("modal-nova-senha").classList.add("aberto");
+    return;
+  }
+
+  // SESSÃO EXISTENTE
   const { data: { session } } = await supabaseClient.auth.getSession();
 
   if(session){
@@ -1520,10 +1532,10 @@ window.addEventListener("load", async () => {
       }, 60);
 
       setTimeout(async () => {
-    ld.style.display = "none";
-    await iniciarSistema(usuario);
-  }, 700);
-      
+        ld.style.display = "none";
+        await iniciarSistema(usuario);
+      }, 700);
+
       return;
     }
   }
@@ -2083,6 +2095,7 @@ function imprimirOSIndividual(id){
         <span>Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</span>
       </div>
       <script>window.onload=()=>window.print();<\/script>
+      
     </body>
     </html>
   `);
@@ -4564,6 +4577,83 @@ async function confirmarExcluirEmpresa(){
   document.getElementById("demp-confirm-del").style.display = "none";
   renderEmpresas();
 }
+  async function salvarNovaSenha(){
+  const senha   = document.getElementById("nova-senha-input").value;
+  const confirm = document.getElementById("nova-senha-confirm").value;
+  const msgEl   = document.getElementById("nova-senha-msg");
+
+  if(!senha || senha.length < 8){
+    msgEl.style.display = "block";
+    msgEl.style.background = "#fff0f0";
+    msgEl.style.color = "#c02020";
+    msgEl.style.border = "1px solid #f0a0a0";
+    msgEl.textContent = "⚠️ A senha deve ter no mínimo 8 caracteres.";
+    return;
+  }
+
+  if(senha !== confirm){
+    msgEl.style.display = "block";
+    msgEl.style.background = "#fff0f0";
+    msgEl.style.color = "#c02020";
+    msgEl.style.border = "1px solid #f0a0a0";
+    msgEl.textContent = "⚠️ As senhas não coincidem.";
+    return;
+  }
+
+  const { error } = await supabaseClient.auth.updateUser({ password: senha });
+
+  if(error){
+    msgEl.style.display = "block";
+    msgEl.style.background = "#fff0f0";
+    msgEl.style.color = "#c02020";
+    msgEl.style.border = "1px solid #f0a0a0";
+    msgEl.textContent = "⚠️ Erro: " + error.message;
+    return;
+  }
+
+  msgEl.style.display = "block";
+  msgEl.style.background = "#edfaf3";
+  msgEl.style.color = "#1a7a42";
+  msgEl.style.border = "1px solid #9ae8bf";
+  msgEl.textContent = "✅ Senha alterada! Redirecionando para o login...";
+
+  setTimeout(async () => {
+    await supabaseClient.auth.signOut();
+    window.history.replaceState(null, "", window.location.pathname);
+    document.getElementById("modal-nova-senha").classList.remove("aberto");
+  }, 2000);
+}
 </script>
+  
+  !-- MODAL NOVA SENHA -->
+<div class="modal-login" id="modal-nova-senha">
+  <div class="modal-login-box">
+    <div class="modal-login-header">
+      <div class="modal-login-title">🔑 Criar Nova Senha</div>
+    </div>
+    <p style="font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:18px;">
+      Digite sua nova senha abaixo.
+    </p>
+    <div class="field-login">
+      <label>Nova Senha</label>
+      <div class="input-wrap">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="nova-senha-input" placeholder="Mínimo 8 caracteres"/>
+      </div>
+    </div>
+    <div class="field-login">
+      <label>Confirmar Nova Senha</label>
+      <div class="input-wrap">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="nova-senha-confirm" placeholder="Repita a senha"/>
+      </div>
+    </div>
+    <div id="nova-senha-msg" style="display:none;padding:10px 14px;font-size:12.5px;margin-bottom:14px;"></div>
+    <button onclick="salvarNovaSenha()" style="width:100%;padding:12px;background:var(--blue-600);color:#fff;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;">
+      Salvar nova senha
+    </button>
+  </div>
+</div>
+  
 </body>
 </html>
