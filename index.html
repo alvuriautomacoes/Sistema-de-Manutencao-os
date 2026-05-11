@@ -1724,7 +1724,8 @@ async function renderDashboard(){
   const abertas   = ordensVisiveis.filter(o => o.status !== "concluida" && o.status !== "cancelada").length;
   const urgentes  = ordensVisiveis.filter(o => o.prioridade === "urgente" && o.status !== "concluida").length;
   const criticos  = equipDB.filter(e => e.status === "critico").length;
-  const vencidos  = planosDB.filter(p => p.status === "vencido").length;
+  const hoje_str = hoje();
+  const vencidos  = planosDB.filter(p => p.proxima_execucao && p.proxima_execucao < hoje_str).length;
 
   const stats = [
   { label:"OS em Aberto",     val: abertas,       icon:'<i class="fa-solid fa-screwdriver-wrench"></i>',  sub:"ordens ativas",      cls:"" },
@@ -1747,7 +1748,7 @@ document.getElementById("dash-stats").innerHTML = stats.map(s => `
   // 🔥 ALERTAS
 const osUrgentes  = ordensVisiveis.filter(o => o.prioridade === "urgente" && o.status !== "concluida" && o.status !== "cancelada");
 const equipCrit   = equipDB.filter(e => e.status === "critico");
-const planosVenc  = planosDB.filter(p => p.status === "vencido");
+const planosVenc = planosDB.filter(p => p.proxima_execucao && p.proxima_execucao < hoje_str);
 
 const temAlertas = osUrgentes.length > 0 || equipCrit.length > 0 || planosVenc.length > 0;
 
@@ -1777,14 +1778,19 @@ alertasEl.innerHTML = !temAlertas ? "" : `
         </div>
         <span class="badge" style="background:var(--e-critico-bg);color:var(--e-critico-txt);border-color:var(--e-critico-bd)">⚠️ Crítico</span>
       </div>`).join("")}
-    ${planosVenc.map(p => `
+    ${planosVenc.map(p => {
+  const diasVencido = Math.floor((new Date(hoje_str) - new Date(p.proxima_execucao)) / 86400000);
+  return `
   <div class="alerta-bar" style="display:flex;justify-content:space-between;align-items:center;background:#fff8ec;border-color:#f0c870;color:#b05010;">
     <div>
       <span style="font-weight:700">${p.nome}</span> — ${p.equipamento_nome||"—"}
-      <span style="font-size:11px;margin-left:8px;color:var(--sub)">Venceu em ${p.proxima_execucao}</span>
+      <span style="font-size:11px;margin-left:8px;color:var(--sub)">
+        Técnico: ${p.tecnico_nome||"—"} · Venceu há ${diasVencido} dia${diasVencido !== 1 ? "s" : ""}
+      </span>
     </div>
     <button class="btn btn-primary btn-sm" onclick="gerarOSdoPlano('${p.id}')">🔧 Gerar OS</button>
-  </div>`).join("")}
+  </div>`;
+}).join("")}
   </div>
 `;
 
