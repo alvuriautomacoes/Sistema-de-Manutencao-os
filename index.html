@@ -4249,10 +4249,8 @@ async function renderEmpresas(){
     container.innerHTML = '<div class="empty"><div class="empty-icon">🏢</div>Nenhuma empresa cadastrada. Clique em + Nova Empresa para começar.</div>';
     return;
   }
-  // salva global
   window.empresasData = data;
 
-  // 🔥 Busca estatísticas de todas as empresas em paralelo
   const ids = data.map(e => e.id);
   const [resEquip, resOS, resProf] = await Promise.all([
     supabaseClient.from("equipamentos").select("id, empresa_id").in("empresa_id", ids),
@@ -4263,8 +4261,7 @@ async function renderEmpresas(){
   const ordens = resOS.data || [];
   const profs  = resProf.data || [];
 
-  // renderiza cards
-container.innerHTML = `<div class="equip-grid">${data.map(e => {
+  container.innerHTML = `<div class="equip-grid">${data.map(e => {
     const totalAtivos = equips.filter(x => String(x.empresa_id) === String(e.id)).length;
     const totalOS     = ordens.filter(x => String(x.empresa_id) === String(e.id) && x.status !== "concluida" && x.status !== "cancelada").length;
     const totalProf   = profs.filter(x => String(x.empresa_id) === String(e.id) && x.status === "ativo").length;
@@ -4273,7 +4270,7 @@ container.innerHTML = `<div class="equip-grid">${data.map(e => {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
         <div style="width:52px;height:52px;border-radius:50%;background:#fff;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.10);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
           ${e.logo_url
-            ? `<img src="${e.logo_url}" style="width:100%;height:100%;object-fit:cover;padding:0;" onerror="this.parentElement.innerHTML='<span style=\\'font-size:22px\\'>🏢</span>'">`
+            ? `<img src="${e.logo_url}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<span style=\\'font-size:22px\\'>🏢</span>'">`
             : `<span style="font-size:22px">🏢</span>`
           }
         </div>
@@ -4286,22 +4283,25 @@ container.innerHTML = `<div class="equip-grid">${data.map(e => {
       <div class="equip-sub">${e.cnpj || '—'}</div>
       <div class="equip-info" style="margin-top:8px;">Responsável: <span>${e.responsavel || '—'}</span></div>
       <div class="equip-info">Criada em: <span>${new Date(e.created_at).toLocaleDateString('pt-BR')}</span></div>
-      <div style="display:flex;gap:10px;margin-top:10px;padding:8px 0;border-top:1px solid var(--border);">
-        <div style="flex:1;text-align:center;">
-          <div style="font-size:15px;font-weight:700;color:var(--blue-700);font-family:'IBM Plex Mono',monospace;">${totalAtivos}</div>
-          <div style="font-size:10px;color:var(--sub);">⚙️ ativos</div>
+
+      <!-- 🔥 INDICADORES ALINHADOS: número em cima, label embaixo -->
+      <div style="display:flex;gap:10px;margin-top:12px;padding:10px 0;border-top:1px solid var(--border);">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div style="font-size:22px;font-weight:800;color:var(--blue-700);font-family:'IBM Plex Mono',monospace;line-height:1;">${totalAtivos}</div>
+          <div style="font-size:10px;color:var(--sub);text-align:center;font-weight:600;">⚙️ Ativos</div>
         </div>
         <div style="width:1px;background:var(--border);"></div>
-        <div style="flex:1;text-align:center;">
-          <div style="font-size:15px;font-weight:700;color:var(--blue-700);font-family:'IBM Plex Mono',monospace;">${totalOS}</div>
-          <div style="font-size:10px;color:var(--sub);">🔧 OS abertas</div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div style="font-size:22px;font-weight:800;color:var(--blue-700);font-family:'IBM Plex Mono',monospace;line-height:1;">${totalOS}</div>
+          <div style="font-size:10px;color:var(--sub);text-align:center;font-weight:600;">🔧 OS Abertas</div>
         </div>
         <div style="width:1px;background:var(--border);"></div>
-        <div style="flex:1;text-align:center;">
-          <div style="font-size:15px;font-weight:700;color:var(--blue-700);font-family:'IBM Plex Mono',monospace;">${totalProf}</div>
-          <div style="font-size:10px;color:var(--sub);">👷 técnicos</div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div style="font-size:22px;font-weight:800;color:var(--blue-700);font-family:'IBM Plex Mono',monospace;line-height:1;">${totalProf}</div>
+          <div style="font-size:10px;color:var(--sub);text-align:center;font-weight:600;">👷 Técnicos</div>
         </div>
       </div>
+
       <div class="prof-actions" style="margin-top:12px;">
         <button class="btn btn-ghost btn-sm" style="flex:1" onclick="event.stopPropagation();abrirDetalheEmpresa('${e.id}')">🔍 Detalhes</button>
         <button class="btn btn-primary btn-sm" style="flex:1" onclick="event.stopPropagation();entrarEmpresa('${e.id}')">Acessar →</button>
