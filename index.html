@@ -1294,11 +1294,10 @@ function entrarNoSistema(usuario){
     bar.style.width = p + "%";
   }, 150);
 
-  setTimeout(() => {
+  setTimeout(async () => {
     ld.style.display = "none";
-    iniciarSistema(usuario);
+    await iniciarSistema(usuario);
   }, 1400);
-}
 
 async function iniciarSistema(u){
   const cfg = PERFIL_CONFIG[u.perfil] || { icon:"👤", label: u.perfil };
@@ -1513,11 +1512,11 @@ window.addEventListener("load", async () => {
         bar.style.width = p + "%";
       }, 60);
 
-      setTimeout(() => {
-        ld.style.display = "none";
-        iniciarSistema(usuario);
-      }, 700);
-
+      setTimeout(async () => {
+    ld.style.display = "none";
+    await iniciarSistema(usuario);
+  }, 700);
+      
       return;
     }
   }
