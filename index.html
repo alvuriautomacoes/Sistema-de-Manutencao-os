@@ -316,6 +316,37 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   #print-header{display:block!important;border-bottom:2px solid #1e4d82;padding-bottom:10px;margin-bottom:12px;}
   #print-info{display:flex!important;gap:24px;font-size:10px;color:#555;margin-bottom:14px;font-family:monospace;flex-wrap:wrap;}
 }
+  
+/* ── AGENDA ── */
+.agenda-grid-mes{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;background:var(--border);}
+.agenda-header-dia{background:var(--blue-800);color:#fff;text-align:center;padding:8px;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.agenda-cel{background:#fff;min-height:100px;padding:4px;position:relative;border:1px solid var(--border);}
+.agenda-cel.outro-mes{background:var(--bg2);opacity:.6;}
+.agenda-cel.hoje{background:var(--blue-50);border-color:var(--blue-400);}
+.agenda-cel-num{font-size:11px;font-weight:700;color:var(--sub);margin-bottom:4px;}
+.agenda-cel.hoje .agenda-cel-num{color:var(--blue-600);}
+.agenda-evento{padding:3px 6px;font-size:10.5px;font-weight:600;margin-bottom:2px;cursor:pointer;border-left:3px solid;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .13s;}
+.agenda-evento:hover{opacity:.8;}
+.agenda-evento.tipo-os{background:var(--s-andamento-bg);color:var(--s-andamento-txt);border-color:var(--s-andamento-txt);}
+.agenda-evento.tipo-plano{background:var(--blue-50);color:var(--blue-700);border-color:var(--blue-400);}
+
+/* Semana */
+.agenda-grid-semana{display:grid;grid-template-columns:60px repeat(7,1fr);gap:0;border:1px solid var(--border);}
+.agenda-semana-header{background:var(--blue-800);color:#fff;text-align:center;padding:8px 4px;font-size:11px;font-weight:700;}
+.agenda-semana-hora{background:var(--card2);border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:4px;font-size:10px;color:var(--muted);text-align:right;font-family:'IBM Plex Mono',monospace;}
+.agenda-semana-cel{border-right:1px solid var(--border);border-bottom:1px solid var(--border);min-height:40px;padding:2px;position:relative;}
+.agenda-semana-cel.hoje{background:var(--blue-50);}
+
+/* Dia */
+.agenda-dia-wrap{border:1px solid var(--border);}
+.agenda-dia-header{background:var(--blue-800);color:#fff;padding:12px 16px;font-size:13px;font-weight:700;}
+.agenda-dia-item{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .13s;}
+.agenda-dia-item:hover{background:var(--blue-50);}
+.agenda-dia-hora{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);min-width:50px;padding-top:2px;}
+.agenda-dia-info{flex:1;}
+.agenda-dia-titulo{font-size:13px;font-weight:600;color:var(--txt);}
+.agenda-dia-sub{font-size:11px;color:var(--sub);margin-top:2px;}
+  
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -433,7 +464,8 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
     <nav>
      <div class="nav-section">Menu</div>
 <button class="nav-btn ativo" onclick="irPara('dashboard')" id="nav-dashboard"><span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span> Dashboard</button>
-<button class="nav-btn" onclick="irPara('custos')" id="nav-custos"><span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span> Custos e Indicadores</button>      
+<button class="nav-btn" onclick="irPara('custos')" id="nav-custos"><span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span> Custos e Indicadores</button>
+<button class="nav-btn" onclick="irPara('agenda')" id="nav-agenda"><span class="nav-icon"><i class="fa-solid fa-calendar-days"></i></span> Agenda</button>
 <button class="nav-btn" onclick="irPara('os')" id="nav-os"><span class="nav-icon"><i class="fa-solid fa-screwdriver-wrench"></i></span> Ordens de Serviço<span class="badge-urgente" id="badge-urgente" style="display:none">0</span></button>
 <button class="nav-btn" onclick="irPara('equip')" id="nav-equip"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span> Equipamentos</button>
 <button class="nav-btn" onclick="irPara('planos')" id="nav-planos"><span class="nav-icon"><i class="fa-solid fa-calendar-check"></i></span> Planos de Manutenção</button>
@@ -590,6 +622,25 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
       <div id="planos-alerta" class="alerta-bar" style="display:none"></div>
       <div class="planos-grid" id="planos-grid"></div>
     </div>
+    
+    <!-- AGENDA -->
+<div id="tela-agenda" class="tela">
+  <div class="page-header">
+    <div><div class="page-title">📅 Agenda</div><div class="page-sub" id="agenda-sub">Planos de manutenção e OS em andamento</div></div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn btn-ghost btn-sm" id="agenda-btn-anterior" onclick="agendaNavegar(-1)">‹</button>
+      <div id="agenda-periodo" style="font-size:13px;font-weight:600;color:var(--txt);min-width:200px;text-align:center;"></div>
+      <button class="btn btn-ghost btn-sm" id="agenda-btn-proximo" onclick="agendaNavegar(1)">›</button>
+      <button class="btn btn-ghost btn-sm" onclick="agendaHoje()">Hoje</button>
+      <div style="display:flex;gap:4px;">
+        <button class="filtro-aba" id="agenda-view-dia" onclick="setAgendaView('dia')">Dia</button>
+        <button class="filtro-aba" id="agenda-view-semana" onclick="setAgendaView('semana')">Semana</button>
+        <button class="filtro-aba ativo" id="agenda-view-mes" onclick="setAgendaView('mes')">Mês</button>
+      </div>
+    </div>
+  </div>
+  <div id="agenda-container"></div>
+</div>
 
     <!-- TÉCNICOS -->
     <div id="tela-tecnicos" class="tela">
@@ -1047,12 +1098,12 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   function gerarAcessoPorPerfil(perfil){
 
   const ACESSO = {
-  admin_senior: ["empresas","dashboard","os","equip","planos","tecnicos","usuarios","custos"],
-  gerente:      ["dashboard","os","equip","planos","tecnicos","usuarios","custos"],
-  admin_enc:    ["dashboard","os","equip","planos","tecnicos","usuarios"],
-  tecnico:      ["os"]
+  admin_senior: ["empresas","dashboard","os","equip","planos","agenda","tecnicos","usuarios","custos"],
+  gerente:      ["dashboard","os","equip","planos","agenda","tecnicos","usuarios","custos"],
+  admin_enc:    ["dashboard","os","equip","planos","agenda","tecnicos","usuarios"],
+  tecnico:      ["os","agenda"]
 };
-
+    
   return ACESSO[perfil] || [];
 }
 // ════════════════════════════════════════════
@@ -1338,6 +1389,7 @@ function iniciarSistema(u){
 
   atualizarBadgeUrgente();
 }
+ 
 // Esconde itens de navegação
 function ocultarMenuNav(){
   if(usuarioLogado?.perfil === "admin_senior"){
@@ -2657,6 +2709,222 @@ async function renderPlanos(){
   }).join("");
 }
   
+  // ════════════════════════════════════════════
+// AGENDA
+// ════════════════════════════════════════════
+let agendaView = "mes";
+let agendaData = new Date();
+let agendaEventos = [];
+
+async function renderAgenda(){
+  const empresa_id = usuarioLogado?.empresa_id;
+  if(!empresa_id) return;
+
+  const [resOS, resPlanos] = await Promise.all([
+    supabaseClient
+      .from("ordens_servico")
+      .select("*")
+      .eq("empresa_id", empresa_id)
+      .eq("status", "andamento"),
+    supabaseClient
+      .from("planos_manutencao")
+      .select("*")
+      .eq("empresa_id", empresa_id)
+  ]);
+
+  const os     = resOS.data    || [];
+  const planos = resPlanos.data|| [];
+
+  const osFiltradas = usuarioLogado?.somentePropriaOS
+    ? os.filter(o => o.tecnico_nome === usuarioLogado.nome)
+    : os;
+
+  agendaEventos = [
+    ...osFiltradas.map(o => ({
+      id:     o.id,
+      titulo: `${o.numero} — ${o.equipamento_nome||"—"}`,
+      sub:    o.tecnico_nome||"—",
+      data:   o.data_abertura,
+      tipo:   "os",
+      obj:    o
+    })),
+    ...planos.map(p => ({
+      id:     p.id,
+      titulo: p.nome,
+      sub:    p.equipamento_nome||"—",
+      data:   p.proxima_execucao,
+      tipo:   "plano",
+      obj:    p
+    }))
+  ];
+
+  renderAgendaView();
+}
+
+function renderAgendaView(){
+  if(agendaView === "mes")    renderAgendaMes();
+  if(agendaView === "semana") renderAgendaSemana();
+  if(agendaView === "dia")    renderAgendaDia();
+}
+
+function setAgendaView(view){
+  agendaView = view;
+  ["dia","semana","mes"].forEach(v => {
+    document.getElementById(`agenda-view-${v}`)?.classList.toggle("ativo", v === view);
+  });
+  renderAgendaView();
+}
+
+function agendaNavegar(dir){
+  if(agendaView === "mes"){
+    agendaData.setMonth(agendaData.getMonth() + dir);
+  } else if(agendaView === "semana"){
+    agendaData.setDate(agendaData.getDate() + (dir * 7));
+  } else {
+    agendaData.setDate(agendaData.getDate() + dir);
+  }
+  renderAgendaView();
+}
+
+function agendaHoje(){
+  agendaData = new Date();
+  renderAgendaView();
+}
+
+function getEventosDia(dataStr){
+  return agendaEventos.filter(e => e.data === dataStr);
+}
+
+function dataStr(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+function renderAgendaMes(){
+  const ano = agendaData.getFullYear();
+  const mes = agendaData.getMonth();
+  const hoje = dataStr(new Date());
+
+  const mesesNome = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  document.getElementById("agenda-periodo").textContent = `${mesesNome[mes]} ${ano}`;
+
+  const primeiroDia = new Date(ano, mes, 1);
+  const inicioCal   = new Date(primeiroDia);
+  inicioCal.setDate(inicioCal.getDate() - primeiroDia.getDay());
+
+  const dias = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+  let html = `<div class="agenda-grid-mes">
+    ${dias.map(d => `<div class="agenda-header-dia">${d}</div>`).join("")}`;
+
+  for(let i = 0; i < 42; i++){
+    const d = new Date(inicioCal);
+    d.setDate(d.getDate() + i);
+    const ds = dataStr(d);
+    const outroMes = d.getMonth() !== mes;
+    const isHoje = ds === hoje;
+    const eventos = getEventosDia(ds);
+
+    html += `<div class="agenda-cel${outroMes?" outro-mes":""}${isHoje?" hoje":""}">
+      <div class="agenda-cel-num">${d.getDate()}</div>
+      ${eventos.slice(0,3).map(e => `
+        <div class="agenda-evento tipo-${e.tipo}" onclick="agendaAbrirDetalhe('${e.id}','${e.tipo}')" title="${e.titulo}">
+          ${e.tipo === "os" ? "🔧" : "📅"} ${e.titulo}
+        </div>`).join("")}
+      ${eventos.length > 3 ? `<div style="font-size:10px;color:var(--sub);padding:2px 4px;">+${eventos.length-3} mais</div>` : ""}
+    </div>`;
+  }
+
+  html += "</div>";
+  document.getElementById("agenda-container").innerHTML = html;
+}
+
+function renderAgendaSemana(){
+  const hoje = dataStr(new Date());
+  const inicioSemana = new Date(agendaData);
+  inicioSemana.setDate(inicioSemana.getDate() - inicioSemana.getDay());
+
+  const dias = [];
+  for(let i = 0; i < 7; i++){
+    const d = new Date(inicioSemana);
+    d.setDate(d.getDate() + i);
+    dias.push(d);
+  }
+
+  const diasNome  = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+  const mesesAbrev = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+
+  const inicioStr = `${dias[0].getDate()} ${mesesAbrev[dias[0].getMonth()]}`;
+  const fimStr    = `${dias[6].getDate()} ${mesesAbrev[dias[6].getMonth()]} ${dias[6].getFullYear()}`;
+  document.getElementById("agenda-periodo").textContent = `${inicioStr} — ${fimStr}`;
+
+  let html = `<div class="agenda-grid-semana">
+    <div class="agenda-semana-header" style="background:var(--blue-900)"></div>
+    ${dias.map((d,i) => `
+      <div class="agenda-semana-header" style="${dataStr(d)===hoje?"background:var(--blue-500)":""}">
+        ${diasNome[i]} ${d.getDate()}
+      </div>`).join("")}`;
+
+  for(let h = 0; h < 24; h++){
+    html += `<div class="agenda-semana-hora">${String(h).padStart(2,"0")}:00</div>`;
+    dias.forEach(d => {
+      const ds = dataStr(d);
+      const isHoje = ds === hoje;
+      const eventos = h === 8 ? getEventosDia(ds) : [];
+      html += `<div class="agenda-semana-cel${isHoje?" hoje":""}">
+        ${eventos.map(e => `
+          <div class="agenda-evento tipo-${e.tipo}" onclick="agendaAbrirDetalhe('${e.id}','${e.tipo}')" title="${e.titulo}">
+            ${e.tipo === "os" ? "🔧" : "📅"} ${e.titulo}
+          </div>`).join("")}
+      </div>`;
+    });
+  }
+
+  html += "</div>";
+  document.getElementById("agenda-container").innerHTML = html;
+}
+
+function renderAgendaDia(){
+  const hoje = dataStr(new Date());
+  const ds   = dataStr(agendaData);
+  const diasNome  = ["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
+  const mesesNome = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+
+  document.getElementById("agenda-periodo").textContent =
+    `${diasNome[agendaData.getDay()]}, ${agendaData.getDate()} de ${mesesNome[agendaData.getMonth()]} de ${agendaData.getFullYear()}`;
+
+  const eventos = getEventosDia(ds);
+
+  let html = `<div class="agenda-dia-wrap">
+    <div class="agenda-dia-header">${ds === hoje ? "📅 Hoje" : "📅 " + agendaData.getDate() + "/" + String(agendaData.getMonth()+1).padStart(2,"0") + "/" + agendaData.getFullYear()}</div>`;
+
+  if(eventos.length === 0){
+    html += `<div class="empty"><div class="empty-icon">📅</div>Nenhum evento para este dia</div>`;
+  } else {
+    html += eventos.map(e => `
+      <div class="agenda-dia-item" onclick="agendaAbrirDetalhe('${e.id}','${e.tipo}')">
+        <div class="agenda-dia-hora">${e.tipo === "os" ? "Em andamento" : "Previsto"}</div>
+        <div class="agenda-dia-info">
+          <div class="agenda-dia-titulo">${e.tipo === "os" ? "🔧" : "📅"} ${e.titulo}</div>
+          <div class="agenda-dia-sub">${e.sub}</div>
+        </div>
+        <div>${e.tipo === "os"
+          ? `<span class="badge" style="background:var(--s-andamento-bg);color:var(--s-andamento-txt);border-color:var(--s-andamento-bd)">Em Andamento</span>`
+          : `<span class="badge tipo-badge">Manutenção</span>`}
+        </div>
+      </div>`).join("");
+  }
+
+  html += "</div>";
+  document.getElementById("agenda-container").innerHTML = html;
+}
+
+function agendaAbrirDetalhe(id, tipo){
+  if(tipo === "os"){
+    abrirDetalheOS(id);
+  } else {
+    abrirDetalhePlano(id);
+  }
+}
+  
 // ── EXCLUIR PLANO ─────────────────────────────────────────────
 async function excluirPlano(id, nome){
   if(!confirm(`Deseja excluir o plano "${nome}"? Esta ação é irreversível.`)) return;
@@ -3956,6 +4224,13 @@ if(!podeAcessar(tela)){
   // ════════════════════════════════════════
   if(tela === "planos"){
     renderPlanos();
+  }
+
+  // ════════════════════════════════════════
+  // AGENDA
+  // ════════════════════════════════════════
+  if(tela === "agenda"){
+    renderAgenda();
   }
 
   // ════════════════════════════════════════
