@@ -4269,6 +4269,9 @@ function voltarEmpresas(){
   usuarioLogado.empresa_id = null;
   localStorage.removeItem("empresa_selecionada_id");
   localStorage.removeItem("empresa_selecionada_nome");
+
+ document.getElementById("btn-voltar-empresas").style.display = "none";
+  
   // Esconde sidebar ao voltar para tela de empresas
   ocultarMenuNav();
   irPara("empresas");
