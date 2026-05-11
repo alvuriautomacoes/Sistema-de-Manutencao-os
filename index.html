@@ -419,7 +419,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
         <span id="btn-entrar-txt">Entrar no sistema</span>
       </button>
 
-      <div class="login-footer">ManutençãoOS v1.0 · by ALVURI · suporte@alvuri.com.br</div>
+      <div class="login-footer">NEZUR v1.0 · by ALVURI · suporte@alvuri.com.br</div>
     </div>
   </div>
 </div>
@@ -454,7 +454,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   <div id="sidebar">
     <div class="logo-area">
       <div class="logo-icon">🔩</div>
-      <div><div class="logo-name">ManutençãoOS</div><div class="logo-sub">by ALVURI</div></div>
+      <div><div class="logo-name">NEZUR</div><div class="logo-sub">by ALVURI</div></div>
     </div>
     <div id="btn-voltar-empresas" style="display:none;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.10);">
       <button onclick="voltarEmpresas()" style="width:100%;padding:7px 10px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:11.5px;font-family:inherit;cursor:pointer;text-align:left;display:flex;align-items:center;gap:7px;">
@@ -577,7 +577,7 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
         <div><div class="page-title">Ordens de Serviço</div><div class="page-sub" id="os-count"></div></div>
         <button class="btn btn-primary" id="btn-nova-os" onclick="abrirModalNovaOS()">+ Nova OS</button>
       </div>
-      <div id="print-header"><div style="font-size:18px;font-weight:700;color:#0e2a47;margin-bottom:3px;">ManutençãoOS — Relatório de Ordens de Serviço</div><div style="font-size:11px;color:#5a7a9a;">by ALVURI · Sistema de Gestão de Manutenção</div></div>
+      <div id="print-header"><div style="font-size:18px;font-weight:700;color:#0e2a47;margin-bottom:3px;">NEZUR — Relatório de Ordens de Serviço</div><div style="font-size:11px;color:#5a7a9a;">by ALVURI · Sistema de Gestão de Manutenção</div></div>
       <div id="print-info"><span id="print-data"></span><span id="print-filtros-label"></span><span id="print-total"></span></div>
       <div class="busca-wrap">
         <input class="busca-input" id="os-busca" placeholder="Buscar por número, equipamento, técnico, tipo, peças..." oninput="renderOS()" style="min-width:240px;"/>
@@ -2016,7 +2016,7 @@ function imprimirOSIndividual(id){
     <html lang="pt-BR">
     <head>
       <meta charset="UTF-8"/>
-      <title>OS ${o.numero} — ManutençãoOS</title>
+      <title>OS ${o.numero} — NEZUR</title>
       <style>
         *{box-sizing:border-box;margin:0;padding:0;}
         body{font-family:'Segoe UI',sans-serif;font-size:13px;color:#0e2a47;padding:32px 40px;}
@@ -2040,7 +2040,7 @@ function imprimirOSIndividual(id){
     <body>
       <div class="header">
         <div>
-          <div class="logo">🔩 ManutençãoOS</div>
+          <div class="logo">🔩 NEZUR</div>
           <div class="logo-sub">by ALVURI · Sistema de Gestão de Manutenção</div>
         </div>
         <div style="text-align:right">
@@ -2091,7 +2091,7 @@ function imprimirOSIndividual(id){
       </div>
 
       <div class="footer">
-        <span>ManutençãoOS by ALVURI</span>
+        <span>NEZUR by ALVURI</span>
         <span>Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</span>
       </div>
       <script>window.onload=()=>window.print();<\/script>
