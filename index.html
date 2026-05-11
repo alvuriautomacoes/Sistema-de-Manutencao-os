@@ -1395,7 +1395,7 @@ function ocultarMenuNav(){
   if(usuarioLogado?.perfil === "admin_senior"){
     document.getElementById("sidebar").style.display = "flex";
     document.getElementById("conteudo").style.marginLeft = "232px";
-    ["dashboard","os","equip","planos","tecnicos","custos"].forEach(id => {  // ← adicione "custos"
+    ["dashboard","os","equip","planos","tecnicos","custos","agenda"].forEach(id => {  // ← adicione "custos"
       const btn = document.getElementById("nav-"+id);
       if(btn) btn.style.display = "none";
     });
@@ -1415,7 +1415,7 @@ function ocultarMenuNav(){
 function mostrarMenuNav(){
   document.getElementById("sidebar").style.display = "flex";
   document.getElementById("conteudo").style.marginLeft = "232px";
-  const todosNavs = ["dashboard","os","equip","planos","tecnicos","usuarios","custos"]; // ← adicione custos
+  const todosNavs = ["dashboard","os","equip","planos","tecnicos","usuarios","custos","agenda"]; // ← adicione custos
   todosNavs.forEach(id => {
     const btn = document.getElementById("nav-"+id);
     if(!btn) return;
