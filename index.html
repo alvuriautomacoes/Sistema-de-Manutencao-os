@@ -2920,8 +2920,22 @@ function renderAgendaDia(){
 
 function agendaAbrirDetalhe(id, tipo){
   if(tipo === "os"){
+    const os = agendaEventos.find(e => String(e.id) === String(id) && e.tipo === "os");
+    if(!os){ alert("OS não encontrada."); return; }
+    // garante que está no cache
+    if(!window.ordensData) window.ordensData = [];
+    if(!window.ordensData.find(x => String(x.id) === String(id))){
+      window.ordensData.push(os.obj);
+    }
     abrirDetalheOS(id);
   } else {
+    const plano = agendaEventos.find(e => String(e.id) === String(id) && e.tipo === "plano");
+    if(!plano){ alert("Plano não encontrado."); return; }
+    // garante que está no cache
+    if(!window.planosData) window.planosData = [];
+    if(!window.planosData.find(x => String(x.id) === String(id))){
+      window.planosData.push(plano.obj);
+    }
     abrirDetalhePlano(id);
   }
 }
