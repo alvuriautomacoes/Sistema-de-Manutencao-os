@@ -1777,13 +1777,13 @@ alertasEl.innerHTML = !temAlertas ? "" : `
         <span class="badge" style="background:var(--e-critico-bg);color:var(--e-critico-txt);border-color:var(--e-critico-bd)">⚠️ Crítico</span>
       </div>`).join("")}
     ${planosVenc.map(p => `
-      <div class="alerta-bar" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:#fff8ec;border-color:#f0c870;color:#b05010;" onclick="irPara('planos')">
-        <div>
-          <span style="font-weight:700">${p.nome}</span> — ${p.equipamento_nome||"—"}
-          <span style="font-size:11px;margin-left:8px;color:var(--sub)">Venceu em ${p.proxima_execucao}</span>
-        </div>
-        <span class="badge" style="background:var(--s-cancelada-bg);color:var(--s-cancelada-txt);border-color:var(--s-cancelada-bd)">📅 Vencido</span>
-      </div>`).join("")}
+  <div class="alerta-bar" style="display:flex;justify-content:space-between;align-items:center;background:#fff8ec;border-color:#f0c870;color:#b05010;">
+    <div>
+      <span style="font-weight:700">${p.nome}</span> — ${p.equipamento_nome||"—"}
+      <span style="font-size:11px;margin-left:8px;color:var(--sub)">Venceu em ${p.proxima_execucao}</span>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="gerarOSdoPlano('${p.id}')">🔧 Gerar OS</button>
+  </div>`).join("")}
   </div>
 `;
 
@@ -2702,9 +2702,10 @@ async function renderPlanos(){
         ${p.proxima_execucao||"—"}</span>
       </div>
       ${v?`<div class="plano-vencido">⚠️ Plano vencido — crie uma OS corretiva.</div>`:""}
-      <div class="prof-actions" style="margin-top:12px;">
-        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="abrirDetalhePlano('${p.id}')">Ver detalhes</button>
-      </div>
+<div class="prof-actions" style="margin-top:12px;">
+  <button class="btn btn-ghost btn-sm" style="flex:1" onclick="abrirDetalhePlano('${p.id}')">Ver detalhes</button>
+  ${v ? `<button class="btn btn-primary btn-sm" style="flex:1" onclick="gerarOSdoPlano('${p.id}')">🔧 Gerar OS</button>` : ""}
+</div>
     </div>`;
   }).join("");
 }
@@ -2979,28 +2980,90 @@ async function excluirPlano(id, nome){
   if(p.observacoes){
     obsWrap.style.display = "block";
     document.getElementById("dpl-observacoes").textContent = p.observacoes;
-  } else {
+} else {
     obsWrap.style.display = "none";
   }
 
-  const podeEditar  = usuarioLogado?.podeEditar;
-  const podeExcluir = usuarioLogado?.podeExcluir;
-  document.getElementById("dpl-editar-btn").style.display  = podeEditar  ? "" : "none";
-  document.getElementById("dpl-excluir-btn").style.display = podeExcluir ? "" : "none";
-  document.getElementById("dpl-acoes").style.display = (podeEditar || podeExcluir) ? "flex" : "none";
+  document.getElementById("dpl-acoes").innerHTML = `
+    <button class="btn btn-ghost" id="dpl-editar-btn" onclick="editarPlanoAtual()" style="flex:1;${!podeEditar?'display:none;':''}">✏️ Editar</button>
+    ${v ? `<button class="btn btn-primary" onclick="gerarOSdoPlano('${p.id}')" style="flex:1">🔧 Gerar OS</button>` : ""}
+    <button class="btn btn-danger" id="dpl-excluir-btn" onclick="excluirPlanoDoModal()" style="flex:1;${!podeExcluir?'display:none;':''}">🗑 Excluir</button>
+  `;
+
   document.getElementById("dpl-confirm-del").style.display = "none";
   document.getElementById("modal-detalhe-plano").classList.add("aberto");
 }
+// ← fecha abrirDetalhePlano aqui
 
 function editarPlanoAtual(){
   document.getElementById("modal-detalhe-plano").classList.remove("aberto");
   setTimeout(() => abrirEditarPlano(planoDetalheId), 120);
-}
-
+}    
 function excluirPlanoDoModal(){
   document.getElementById("dpl-confirm-del").style.display = "block";
 }
+  async function gerarOSdoPlano(planoId){
+  const p = window.planosData?.find(x => String(x.id) === String(planoId));
+  if(!p){ alert("Plano não encontrado."); return; }
 
+  const empresa_id = usuarioLogado?.empresa_id;
+  if(!empresa_id){ alert("Nenhuma empresa selecionada."); return; }
+
+  // Define prioridade baseada no tipo
+  const prioMap = {
+    "Preventiva": "media",
+    "Preditiva":  "media",
+    "Inspeção":   "baixa"
+  };
+  const prioridade = prioMap[p.tipo] || "media";
+
+  // Busca equipamento
+  const eq = (window.equipamentosData||[]).find(e => String(e.id) === String(p.equipamento_id));
+
+  // Busca técnico
+  const tecnico = (window.tecnicosData||[]).find(t => t.nome === p.tecnico_nome);
+
+  // Gera número da OS
+  const { data: todasOS } = await supabaseClient
+    .from("ordens_servico")
+    .select("id")
+    .eq("empresa_id", empresa_id);
+  const total = todasOS?.length || 0;
+  const numero = `OS-${String(total + 1).padStart(3, "0")}`;
+
+  const { error } = await supabaseClient
+    .from("ordens_servico")
+    .insert([{
+      empresa_id,
+      numero,
+      equipamento_id:   eq?.id || null,
+      equipamento_nome: p.equipamento_nome || "",
+      tipo:             p.tipo || "Preventiva",
+      prioridade,
+      status:           "aberta",
+      tecnico_id:       tecnico?.id || null,
+      tecnico_nome:     p.tecnico_nome || "",
+      descricao:        `OS gerada automaticamente a partir do plano: ${p.nome}`,
+      pecas_materiais:  "",
+      data_abertura:    hoje()
+    }]);
+
+  if(error){
+    alert("Erro ao gerar OS: " + error.message);
+    return;
+  }
+
+  alert(`✅ OS ${numero} gerada com sucesso!\nEquipamento: ${p.equipamento_nome}\nTécnico: ${p.tecnico_nome||"—"}`);
+
+  // Fecha modal se estiver aberto
+  document.getElementById("modal-detalhe-plano")?.classList.remove("aberto");
+
+  // Recarrega dados
+  renderPlanos();
+  renderDashboard();
+  atualizarBadgeUrgente();
+}
+  
 async function confirmarExcluirPlanoModal(){
   const { error } = await supabaseClient
     .from("planos_manutencao")
