@@ -4125,8 +4125,7 @@ function renderCronometro(o){
   document.getElementById("det-custo-adicional-input").value = custoAdicional || "";
   document.getElementById("det-obs-custo-input").value = o.obs_custo_adicional || "";
 
-  const isTecnico = usuarioLogado?.perfil === "tecnico";
-  document.getElementById("det-custo-edit").style.display = isTecnico ? "none" : "";
+  document.getElementById("det-custo-edit").style.display = "";
 }
 
 async function salvarCustoAdicional(){
