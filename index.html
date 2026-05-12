@@ -1750,6 +1750,7 @@ function entrarNoSistema(usuario){
    setTimeout(async () => {
     ld.style.display = "none";
     await iniciarSistema(usuario);
+    verificarMobile();
   }, 1400);
 }
   
@@ -4683,9 +4684,12 @@ function verificarMobile(){
   const topbar = document.getElementById("mobile-topbar");
   if(!topbar) return;
   
-  // Só mostra topbar se o sistema estiver ativo
-  const sistemaAtivo = document.getElementById("app-sistema").style.display !== "none";
-  topbar.style.display = (isMobile && sistemaAtivo) ? "flex" : "none";
+  const loginVisivel = document.getElementById("app-login").style.display !== "none";
+  const loadingVisivel = document.getElementById("app-loading").style.display !== "none";
+  const sistemaVisivel = document.getElementById("app-sistema").style.display !== "none";
+  
+  // Só mostra topbar no mobile quando o sistema estiver ativo
+  topbar.style.display = (isMobile && sistemaVisivel && !loginVisivel && !loadingVisivel) ? "flex" : "none";
 }
 
 window.addEventListener("resize", verificarMobile);
