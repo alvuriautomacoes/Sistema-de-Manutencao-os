@@ -4689,9 +4689,15 @@ function verificarMobile(){
   if(!topbar) return;
   
   const sistemaAtivo = document.getElementById("app-sistema")?.style.display === "block";
-  topbar.style.display = (isMobile && sistemaAtivo) ? "flex" : "none";
+  
+  if(isMobile && sistemaAtivo){
+    topbar.style.removeProperty("display");
+    topbar.style.setProperty("display", "flex", "important");
+  } else {
+    topbar.style.setProperty("display", "none", "important");
+  }
 }
-
+  
 window.addEventListener("resize", verificarMobile);
 document.addEventListener("DOMContentLoaded", verificarMobile);
 
