@@ -346,6 +346,150 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 .agenda-dia-info{flex:1;}
 .agenda-dia-titulo{font-size:13px;font-weight:600;color:var(--txt);}
 .agenda-dia-sub{font-size:11px;color:var(--sub);margin-top:2px;}
+
+  /* ════════════════════════════════════════════
+   RESPONSIVIDADE
+════════════════════════════════════════════ */
+
+/* ── TABLET (até 1024px) ── */
+@media(max-width:1024px){
+  #sidebar{width:200px;}
+  #conteudo{margin-left:200px;padding:20px;}
+  .grid-stats{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));}
+  .equip-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));}
+  .prof-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));}
+  .dash-grid2{grid-template-columns:1fr;}
+}
+
+/* ── MOBILE (até 768px) ── */
+@media(max-width:768px){
+
+  /* Topbar mobile */
+  #mobile-topbar{ display:flex!important; }
+
+  /* Sidebar oculta por padrão */
+  #sidebar{
+    transform:translateX(-100%);
+    transition:transform .25s ease;
+    z-index:200;
+    width:280px;
+    top:0;
+  }
+  #sidebar.aberto{ transform:translateX(0); }
+  #sidebar-overlay.visivel{ display:block!important; }
+
+  /* Conteúdo ocupa tela toda */
+  #conteudo{
+    margin-left:0!important;
+    padding:16px 12px;
+  }
+
+  /* App sistema sem altura mínima rígida */
+  #app-sistema{ min-height:unset; }
+
+  /* Grids empilham */
+  .grid-stats{ grid-template-columns:repeat(2,1fr); }
+  .grid2{ grid-template-columns:1fr; }
+  .dash-grid2{ grid-template-columns:1fr; }
+  .equip-grid{ grid-template-columns:1fr; }
+  .prof-grid{ grid-template-columns:1fr; }
+  .planos-grid{ grid-template-columns:1fr; }
+
+  /* Page header empilha */
+  .page-header{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .page-header > div:last-child{ width:100%; }
+  .page-header button{ width:100%; }
+
+  /* Busca em coluna */
+  .busca-wrap{ flex-direction:column; }
+  .busca-input,.busca-select{ width:100%!important;min-width:unset!important; }
+
+  /* Filtros scroll horizontal */
+  .filtro-abas{ flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch; }
+  .filtro-aba{ flex-shrink:0; }
+
+  /* OS item empilha */
+  .os-item{ flex-direction:column;gap:10px; }
+  .os-actions{ flex-direction:row;width:100%; }
+  .os-actions .btn{ flex:1; }
+
+  /* Modais tela cheia bottom sheet */
+  .modal-overlay{ padding:0;align-items:flex-end; }
+  .modal-box{
+    max-width:100%!important;
+    width:100%!important;
+    max-height:92vh;
+    border-radius:16px 16px 0 0;
+    padding:20px 16px;
+  }
+
+  /* Custos — header empilha */
+  #tela-custos .page-header > div:last-child{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    width:100%;
+  }
+  #custos-data-inicio,
+  #custos-data-fim{ width:100%!important; }
+  #tela-custos .page-header button{ width:100%; }
+
+  /* Custos KPIs 2 colunas */
+  #custos-kpis{ grid-template-columns:repeat(2,1fr)!important; }
+
+  /* Gráficos custos em coluna */
+  #tela-custos > div[style*="grid-template-columns:1fr 1fr"]{
+    grid-template-columns:1fr!important;
+  }
+
+  /* Tabela custos scroll */
+  #custos-tabela{ font-size:11px; }
+
+  /* Agenda */
+  .agenda-grid-mes{ font-size:9px; }
+  .agenda-cel{ min-height:55px;padding:2px; }
+  .agenda-cel-num{ font-size:10px; }
+  .agenda-evento{ font-size:9px;padding:2px 4px; }
+  .agenda-header-dia{ padding:5px 2px;font-size:9px; }
+  .agenda-grid-semana{ grid-template-columns:36px repeat(7,1fr); }
+  .agenda-semana-hora{ font-size:9px;padding:2px; }
+
+  /* Agenda header empilha */
+  #tela-agenda .page-header{
+    flex-direction:column;
+    gap:10px;
+  }
+  #tela-agenda .page-header > div:last-child{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    width:100%;
+    align-items:center;
+  }
+
+  /* Login */
+  .login-left{ display:none; }
+  .login-right{ padding:24px 16px; }
+
+  /* Stat num menor no mobile */
+  .stat-num{ font-size:24px!important; }
+
+  /* Botões de ação da OS detalhe */
+  #det-acoes{ flex-wrap:wrap; }
+  #det-acoes .btn{ flex:1;min-width:120px; }
+}
+
+/* ── MOBILE PEQUENO (até 480px) ── */
+@media(max-width:480px){
+  .grid-stats{ grid-template-columns:1fr; }
+  #custos-kpis{ grid-template-columns:1fr!important; }
+  .stat-num{ font-size:22px!important; }
+  .modal-box{ padding:16px 12px; }
+}
   
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
@@ -353,6 +497,17 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
 </head>
 <body>
 
+  <!-- TOPBAR MOBILE -->
+<div id="mobile-topbar" style="display:none;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--blue-800);position:sticky;top:0;z-index:198;box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+  <div style="font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;">
+    <span>🔩</span> NEZUR
+  </div>
+  <button onclick="toggleSidebar()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px 8px;">☰</button>
+</div>
+
+<!-- OVERLAY SIDEBAR -->
+<div id="sidebar-overlay" onclick="fecharSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199;"></div>
+  
 <!-- ══════════════════════════════════════════
      TELA DE LOADING
 ══════════════════════════════════════════ -->
@@ -4280,6 +4435,27 @@ async function retomarCronometro(){
   o.cronometro_inicio = agora;
   renderCronometro(o);
 }
+  // ════════════════════════════════════════════
+// MOBILE — SIDEBAR HAMBURGUER
+// ════════════════════════════════════════════
+function toggleSidebar(){
+  document.getElementById("sidebar").classList.toggle("aberto");
+  document.getElementById("sidebar-overlay").classList.toggle("visivel");
+}
+
+function fecharSidebar(){
+  document.getElementById("sidebar").classList.remove("aberto");
+  document.getElementById("sidebar-overlay").classList.remove("visivel");
+}
+
+function verificarMobile(){
+  const isMobile = window.innerWidth <= 768;
+  const topbar = document.getElementById("mobile-topbar");
+  if(topbar) topbar.style.display = isMobile ? "flex" : "none";
+}
+
+window.addEventListener("resize", verificarMobile);
+document.addEventListener("DOMContentLoaded", verificarMobile);
 
 </script> <!-- ✅ FECHA O SCRIPT PRINCIPAL -->
   
@@ -4384,7 +4560,7 @@ window._empresasProfs  = profs;
   
 // 🚀 ENTRAR NA EMPRESA
 async function irPara(tela){
-
+fecharSidebar();
   if(!usuarioLogado) return;
 
   // 🔒 Verifica acesso corretamente
