@@ -458,18 +458,63 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   .agenda-grid-semana{ grid-template-columns:36px repeat(7,1fr); }
   .agenda-semana-hora{ font-size:9px;padding:2px; }
 
-  /* Agenda header empilha */
-  #tela-agenda .page-header{
-    flex-direction:column;
-    gap:10px;
-  }
-  #tela-agenda .page-header > div:last-child{
-    display:flex;
-    flex-wrap:wrap;
-    gap:6px;
-    width:100%;
-    align-items:center;
-  }
+  /* ── AGENDA MOBILE — header reorganizado ── */
+#tela-agenda .page-header {
+  flex-direction: column;
+  gap: 10px;
+}
+
+#tela-agenda .page-header > div:last-child {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px;
+  width: 100%;
+}
+
+/* Linha 1: seta ‹ + período + seta › na mesma linha */
+#tela-agenda .page-header > div:last-child {
+  display: grid !important;
+  grid-template-columns: 36px 1fr 36px auto !important;
+  grid-template-rows: auto auto !important;
+  align-items: center;
+  gap: 6px;
+}
+
+#agenda-btn-anterior {
+  grid-column: 1;
+  grid-row: 1;
+  width: 36px !important;
+  padding: 6px !important;
+}
+
+#agenda-periodo {
+  grid-column: 2;
+  grid-row: 1;
+  text-align: center;
+  min-width: unset !important;
+  font-size: 13px !important;
+}
+
+#agenda-btn-proximo {
+  grid-column: 3;
+  grid-row: 1;
+  width: 36px !important;
+  padding: 6px !important;
+}
+
+/* Linha 2: botões Hoje/Semana/Mês ocupam largura toda */
+#tela-agenda .page-header > div:last-child > div:last-child {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex !important;
+  width: 100%;
+}
+
+#tela-agenda .page-header > div:last-child > div:last-child .filtro-aba {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+}
 
   /* Login */
   .login-left{ display:none; }
