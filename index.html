@@ -490,6 +490,118 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   .stat-num{ font-size:22px!important; }
   .modal-box{ padding:16px 12px; }
 }
+  /* ════════════════════════════════════════════
+   FIXES RESPONSIVIDADE MOBILE
+════════════════════════════════════════════ */
+
+/* 1. Impede overflow horizontal em toda a página */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+* {
+  min-width: 0; /* evita que flex/grid items forcem largura */
+}
+
+/* 2. Impede zoom automático do iOS/Android em inputs e selects
+      (precisa de font-size: 16px no elemento focado) */
+input, select, textarea {
+  font-size: 16px !important;
+}
+
+/* Mas mantém o visual menor fora do foco */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important; /* nunca abaixo de 16px no mobile */
+  }
+
+  /* Corrige o zoom no campo de busca de empresas */
+  .busca-input, .busca-select {
+    font-size: 16px !important;
+  }
+
+  /* 3. Agenda — header dos botões em coluna no mobile */
+  #tela-agenda .page-header > div:last-child {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px;
+    width: 100%;
+  }
+
+  /* Navegação da agenda (< > e período) em linha única */
+  #tela-agenda .page-header > div:last-child > div:first-child,
+  #tela-agenda .page-header > div:last-child > :not(:last-child) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Botões de view (Hoje/Semana/Mês) ocupam largura toda */
+  #tela-agenda .page-header > div:last-child > div:last-child {
+    display: flex;
+    width: 100%;
+  }
+
+  #tela-agenda .page-header > div:last-child > div:last-child .filtro-aba {
+    flex: 1;
+    text-align: center;
+  }
+
+  /* Período da agenda centralizado */
+  #agenda-periodo {
+    min-width: unset !important;
+    font-size: 12px !important;
+  }
+
+  /* 4. Conteúdo nunca vaza da tela */
+  #conteudo {
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* 5. Cards da agenda no mobile */
+  .agenda-grid-mes {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .agenda-cel {
+    overflow: hidden;
+  }
+
+  /* 6. OS list — texto não vaza */
+  .os-desc, .os-equip, .os-meta {
+    word-break: break-word;
+    white-space: normal !important;
+  }
+
+  /* 7. Tabela de custos scroll horizontal correto */
+  #custos-tabela {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* 8. Fix para a sidebar não empurrar conteúdo no mobile */
+@media (max-width: 768px) {
+  #app-sistema {
+    overflow-x: hidden;
+    width: 100vw;
+  }
+
+  /* Sidebar fechada não interfere no layout */
+  #sidebar:not(.aberto) {
+    visibility: hidden;
+  }
+
+  #sidebar.aberto {
+    visibility: visible;
+  }
+}
   
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
