@@ -4319,20 +4319,20 @@ async function renderEmpresas(){
     return;
   }
   window.empresasData = data;
-  window._empresasEquips = equips;
-  window._empresasOrdens = ordens;
-  window._empresasProfs  = profs;
 
-  const ids = data.map(e => e.id);
-  const [resEquip, resOS, resProf] = await Promise.all([
-    supabaseClient.from("equipamentos").select("id, empresa_id").in("empresa_id", ids),
-    supabaseClient.from("ordens_servico").select("id, empresa_id, status").in("empresa_id", ids),
-    supabaseClient.from("tecnicos").select("id, empresa_id, status").in("empresa_id", ids),
-  ]);
-  const equips = resEquip.data || [];
-  const ordens = resOS.data || [];
-  const profs  = resProf.data || [];
+const ids = data.map(e => e.id);
+const [resEquip, resOS, resProf] = await Promise.all([
+  supabaseClient.from("equipamentos").select("id, empresa_id").in("empresa_id", ids),
+  supabaseClient.from("ordens_servico").select("id, empresa_id, status").in("empresa_id", ids),
+  supabaseClient.from("tecnicos").select("id, empresa_id, status").in("empresa_id", ids),
+]);
+const equips = resEquip.data || [];
+const ordens = resOS.data || [];
+const profs  = resProf.data || [];
 
+window._empresasEquips = equips;
+window._empresasOrdens = ordens;
+window._empresasProfs  = profs;
   container.innerHTML = `<div class="equip-grid">${data.map(e => {
     const totalAtivos = equips.filter(x => String(x.empresa_id) === String(e.id)).length;
     const totalOS     = ordens.filter(x => String(x.empresa_id) === String(e.id) && x.status !== "concluida" && x.status !== "cancelada").length;
