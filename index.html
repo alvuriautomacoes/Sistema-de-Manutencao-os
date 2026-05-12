@@ -4681,7 +4681,11 @@ function fecharSidebar(){
 function verificarMobile(){
   const isMobile = window.innerWidth <= 768;
   const topbar = document.getElementById("mobile-topbar");
-  if(topbar) topbar.style.display = isMobile ? "flex" : "none";
+  if(!topbar) return;
+  
+  // Só mostra topbar se o sistema estiver ativo
+  const sistemaAtivo = document.getElementById("app-sistema").style.display !== "none";
+  topbar.style.display = (isMobile && sistemaAtivo) ? "flex" : "none";
 }
 
 window.addEventListener("resize", verificarMobile);
