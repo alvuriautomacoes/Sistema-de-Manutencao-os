@@ -394,6 +394,40 @@ nav{flex:1;padding:16px 10px;overflow-y:auto;}
   /* Topbar mobile */
   #mobile-topbar{ display:flex!important; }
 
+  /* ── LOGIN MOBILE — esconde topbar e centraliza ── */
+#app-login #mobile-topbar,
+#app-login ~ #mobile-topbar {
+  display: none !important;
+}
+  /* ── LOGIN MOBILE — centralizado com logo ── */
+.login-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 32px 24px;
+}
+
+.login-box {
+  width: 100%;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.login-header::before {
+  content: '🔩';
+  display: block;
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.login-title {
+  font-size: 24px;
+}
+
   /* Sidebar oculta por padrão */
   #sidebar{
     transform:translateX(-100%);
