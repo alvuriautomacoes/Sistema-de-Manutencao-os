@@ -1826,6 +1826,8 @@ if(empresaId){
     if(el) el.style.display = podeC ? "" : "none";
   });
   document.getElementById("app-sistema").style.display = "block";
+  verificarMobile();
+  
   // Navegação inicial
   const telaAnterior = localStorage.getItem("tela_atual");
   const temEmpresa   = !!localStorage.getItem("empresa_selecionada_id");
@@ -1902,6 +1904,8 @@ async function fazerLogout(){
   localStorage.removeItem("empresa_selecionada_id");
   localStorage.removeItem("empresa_selecionada_nome");
   localStorage.removeItem("usuario_logado");
+
+  document.getElementById("mobile-topbar").style.display = "none"; // ← só isso
 
   setTimeout(() => location.reload(), 100);
 }
@@ -4684,12 +4688,8 @@ function verificarMobile(){
   const topbar = document.getElementById("mobile-topbar");
   if(!topbar) return;
   
-  const loginVisivel = document.getElementById("app-login").style.display !== "none";
-  const loadingVisivel = document.getElementById("app-loading").style.display !== "none";
-  const sistemaVisivel = document.getElementById("app-sistema").style.display !== "none";
-  
-  // Só mostra topbar no mobile quando o sistema estiver ativo
-  topbar.style.display = (isMobile && sistemaVisivel && !loginVisivel && !loadingVisivel) ? "flex" : "none";
+  const sistemaAtivo = document.getElementById("app-sistema")?.style.display === "block";
+  topbar.style.display = (isMobile && sistemaAtivo) ? "flex" : "none";
 }
 
 window.addEventListener("resize", verificarMobile);
