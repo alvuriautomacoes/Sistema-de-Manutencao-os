@@ -1726,6 +1726,7 @@ const PERFIL_CONFIG = {
 };
 
 function entrarNoSistema(usuario){
+  document.getElementById("mobile-topbar").style.display = "none";
   usuarioLogado = usuario;
   window.usuarioLogado = usuario;
   localStorage.setItem("sessao_usuario", JSON.stringify(usuario));
