@@ -86,10 +86,9 @@ body{font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:var(--txt);back
 }
 
 /* Painel esquerdo login */
-.login-left{width:420px;flex-shrink:0;background:var(--blue-800);display:flex;flex-direction:column;justify-content:space-between;padding:48px 44px;position:relative;overflow:hidden;}
-.login-left::before{content:'';position:absolute;top:-80px;right:-80px;width:320px;height:320px;background:rgba(255,255,255,0.03);border-radius:50%;}
-.login-left::after{content:'';position:absolute;bottom:-60px;left:-60px;width:260px;height:260px;background:rgba(255,255,255,0.03);border-radius:50%;}
-.brand-area{position:relative;z-index:1;}
+.login-left{width:420px;flex-shrink:0;display:flex;flex-direction:column;justify-content:space-between;padding:48px 44px;position:relative;overflow:hidden;background-image:url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800');background-size:cover;background-position:center;}
+.login-left::before{content:'';position:absolute;inset:0;background:rgba(15,35,65,0.85);}
+.login-left::after{content:'';position:absolute;bottom:-60px;left:-60px;width:260px;height:260px;background:rgba(255,255,255,0.03);border-radius:50%;}.brand-area{position:relative;z-index:1;}
 .brand-logo{width:48px;height:48px;background:var(--blue-500);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:20px;box-shadow:0 4px 16px rgba(0,0,0,0.25);}
 .brand-name{font-size:22px;font-weight:700;color:#fff;letter-spacing:.2px;line-height:1.2;}
 .brand-sub{font-size:11px;font-weight:500;color:rgba(255,255,255,0.4);letter-spacing:1.2px;margin-top:4px;text-transform:uppercase;}
